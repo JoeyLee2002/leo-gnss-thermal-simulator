@@ -1,0 +1,6 @@
+function options = defaultCouplingOptions
+%DEFAULTCOUPLINGOPTIONS Return explicit, disabled coupling-boundary settings.
+options = struct('contacts', struct([]), 'volumeThermal', struct( ...
+    'initialTemperatureK', 293.15, 'fixedNodeIndices', [], ...
+    'fixedTemperatureK', 293.15, 'maximumTemperatureK', 500));
+end

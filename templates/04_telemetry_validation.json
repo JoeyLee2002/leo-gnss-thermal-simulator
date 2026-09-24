@@ -1,0 +1,22 @@
+{
+  "schema": "leotherm.simulation_template.v1",
+  "templateVersion": "1.0.0",
+  "engineApi": "1",
+  "id": "telemetry_validation",
+  "nameZh": "遥测验证",
+  "nameEn": "Telemetry validation",
+  "descriptionZh": "先选择遥测 CSV，软件检查时间、单位、连续性和列映射，再运行验证。",
+  "descriptionEn": "Select a telemetry CSV; the software checks time, units, continuity, and mapping before validation.",
+  "mode": "telemetry",
+  "networkPreset": "default",
+  "scenario": {
+    "name": "template_telemetry_validation",
+    "durationS": 86400,
+    "timeStepS": 60,
+    "warmupOrbits": 10,
+    "convergence": { "enabled": false }
+  },
+  "requiredInputs": [
+    { "kind": "telemetry_csv", "labelZh": "遥测 CSV", "labelEn": "Telemetry CSV", "required": true }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "schema": "leotherm.thermal_model.v1",
+  "metadata": {
+    "modelId": "synthetic_exchange_fixture_v1",
+    "createdUTC": "2026-01-01T00:00:00Z",
+    "units": {
+      "length": "m",
+      "mass": "kg",
+      "time": "s",
+      "temperature": "K",
+      "power": "W",
+      "heatCapacity": "J/K",
+      "conductance": "W/K",
+      "area": "m^2"
+    },
+    "description": "Synthetic two-node example for adapter tests; not spacecraft data."
+  },
+  "nodes": [
+    {
+      "id": "n1",
+      "name": "synthetic_structure",
+      "positionM": [0.0, 0.0, 0.0],
+      "capacityJK": 1200.0,
+      "initialTemperatureK": 293.15,
+      "internalPowerW": 0.0
+    },
+    {
+      "id": "n2",
+      "name": "synthetic_payload",
+      "positionM": [0.1, 0.0, 0.0],
+      "capacityJK": 300.0,
+      "initialTemperatureK": 293.15,
+      "internalPowerW": 2.0
+    }
+  ],
+  "materials": [
+    {
+      "id": "synthetic_aluminum_reference",
+      "name": "Synthetic aluminum-like reference",
+      "kind": "constant",
+      "conductivityWmK": 167.0,
+      "densityKgM3": 2700.0,
+      "specificHeatJkgK": 896.0,
+      "source": "Synthetic fixture only; replace with project evidence.",
+      "confidence": "reference",
+      "uncertainty": {"relative": 0.2},
+      "isReferenceValue": true,
+      "provenance": "reference_only"
+    }
+  ],
+  "components": [
+    {
+      "id": "synthetic_payload_component",
+      "name": "Synthetic payload",
+      "nodeIds": ["n2"],
+      "capacityJK": 300.0,
+      "internalPowerW": 2.0,
+      "projectedAreaM2": 0.01,
+      "radiatingAreaM2": 0.01,
+      "solarAbsorptivity": 0.5,
+      "irEmissivity": 0.8,
+      "source": "Synthetic fixture only",
+      "confidence": "low",
+      "uncertainty": {"capacityJK": 0.1}
+    }
+  ],
+  "contacts": [
+    {"id": "synthetic_contact", "nodeIds": ["n1", "n2"], "conductanceWK": 0.5}
+  ],
+  "boundaries": [],
+  "provenance": {
+    "source": "Synthetic test fixture; not satellite data",
+    "transformations": ["None; values chosen solely for adapter tests."],
+    "status": "unverified_fixture"
+  },
+  "uncertainty": {
+    "enabled": false,
+    "distribution": "stratified_uniform",
+    "seed": 0,
+    "sampleCount": 0,
+    "halfRanges": {
+      "capacity": 0.0,
+      "conductance": 0.0,
+      "power": 0.0,
+      "absorptivity": 0.0,
+      "emissivity": 0.0
+    },
+    "source": "not_declared"
+  }
+}

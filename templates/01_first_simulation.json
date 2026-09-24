@@ -1,0 +1,20 @@
+{
+  "schema": "leotherm.simulation_template.v1",
+  "templateVersion": "1.0.0",
+  "engineApi": "1",
+  "id": "first_simulation",
+  "nameZh": "第一次仿真",
+  "nameEn": "First simulation",
+  "descriptionZh": "用默认接收机热网络完成一次快速仿真，适合第一次使用。",
+  "descriptionEn": "Run a quick simulation with the reference receiver network.",
+  "mode": "scenario",
+  "networkPreset": "default",
+  "scenario": {
+    "name": "template_first_simulation",
+    "durationS": 7200,
+    "timeStepS": 60,
+    "warmupOrbits": 1,
+    "convergence": { "enabled": false }
+  },
+  "requiredInputs": []
+}

@@ -1,0 +1,20 @@
+{
+  "schema": "leotherm.simulation_template.v1",
+  "templateVersion": "1.0.0",
+  "engineApi": "1",
+  "id": "thermal_lag",
+  "nameZh": "热滞后分析",
+  "nameEn": "Thermal-lag analysis",
+  "descriptionZh": "用24小时轨道和周期热状态收敛观察入影、出影和温度滞后。",
+  "descriptionEn": "Study eclipse transitions and thermal lag over a converged 24-hour orbit.",
+  "mode": "scenario",
+  "networkPreset": "default",
+  "scenario": {
+    "name": "template_thermal_lag",
+    "durationS": 86400,
+    "timeStepS": 60,
+    "warmupOrbits": 30,
+    "convergence": { "enabled": true }
+  },
+  "requiredInputs": []
+}

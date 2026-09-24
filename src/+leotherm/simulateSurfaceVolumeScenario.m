@@ -1,0 +1,83 @@
+function result = simulateSurfaceVolumeScenario(scenario, surfaceMesh, volumeMesh, material, options)
+%SIMULATESURFACEVOLUMESCENARIO Run a traceable surface-to-volume workflow.
+%   External face radiation is mapped exactly to matching volume boundary
+%   triangles, then transient volume conduction is solved. Contacts and fixed
+%   volume boundaries are optional and explicit.
+%
+% This release uses a declared one-way coupling: external face radiation is
+% the applied boundary heat load and the volume mesh is the thermal state.
+% Surface face temperatures are retained as an independent preview from the
+% existing radiosity solver; they are not fed back into the volume solve.
+% Nonconforming meshes are rejected. No interpolation, node guessing, or
+% automatic material/contact inference is performed.
+
+if nargin < 4 || isempty(material), material = struct; end
+if nargin < 5 || isempty(options), options = struct; end
+validateInputs(scenario, surfaceMesh, volumeMesh, material, options);
+
+surfaceThermal = fieldOr(options, 'surfaceThermal', struct);
+surfaceResult = leotherm.simulateSurfaceMeshScenario(scenario, surfaceMesh, surfaceThermal);
+[nodalPowerW, couplingDiagnostics] = leotherm.coupleSurfaceToVolumeThermal( ...
+    surfaceMesh, volumeMesh, surfaceResult.externalW, fieldOr(options, 'coupling', struct));
+volumeModel = leotherm.assembleVolumeThermalModel(volumeMesh, material);
+
+contactDiagnostics = struct('pairCount', 0, 'interfaces', struct([]), ...
+    'stiffnessWK', sparse(size(volumeMesh.nodesM,1), size(volumeMesh.nodesM,1)), ...
+    'formulation', 'none');
+if isfield(options, 'contacts') && ~isempty(options.contacts)
+    [volumeModel, contactDiagnostics] = leotherm.applyContactThermalInterfaces( ...
+        volumeModel, options.contacts);
+end
+
+volumeThermal = fieldOr(options, 'volumeThermal', struct);
+[temperatureK, volumeDiagnostics] = leotherm.solveVolumeThermal( ...
+    surfaceResult.timeS, nodalPowerW, volumeModel, volumeThermal);
+
+volumeResult = struct('mesh', volumeMesh, 'model', volumeModel, ...
+    'timeS', surfaceResult.timeS, 'nodalPowerW', nodalPowerW, ...
+    'temperatureK', temperatureK, 'diagnostics', volumeDiagnostics, ...
+    'contactDiagnostics', contactDiagnostics);
+result = struct('schema', 'leotherm.surface_volume_scenario_result.v1', ...
+    'scenario', scenario, 'timeS', surfaceResult.timeS, ...
+    'surface', surfaceResult, 'volume', volumeResult, ...
+    'surfaceMesh', surfaceMesh, 'volumeMesh', volumeMesh, ...
+    'nodalPowerW', nodalPowerW, 'temperatureK', temperatureK, ...
+    'couplingDiagnostics', couplingDiagnostics, 'volumeModel', volumeModel, ...
+    'volumeDiagnostics', volumeDiagnostics, 'contactDiagnostics', contactDiagnostics);
+result.provenance = struct( ...
+    'couplingMode', 'surface_external_radiation_to_volume_conduction', ...
+    'surfaceTemperatureFeedback', false, ...
+    'exactBoundaryTriangleMatching', true, 'interpolation', false, ...
+    'automaticMaterialInference', false, 'automaticContactInference', false, ...
+    'physicalValidation', 'not_established');
+result.metrics = struct( ...
+    'surfaceExternalEnergyJ', surfaceResult.metrics.totalExternalEnergyJ, ...
+    'volumeInputEnergyJ', volumeDiagnostics.integratedNodalPowerJ(end), ...
+    'maximumMappingClosureW', couplingDiagnostics.maximumAbsoluteClosureW, ...
+    'maximumLinearResidual', volumeDiagnostics.maximumLinearResidual, ...
+    'volumeTemperatureMinK', min(temperatureK, [], 'all'), ...
+    'volumeTemperatureMaxK', max(temperatureK, [], 'all'));
+end
+
+function validateInputs(scenario, surfaceMesh, volumeMesh, material, options)
+leotherm.validateScenario(scenario);
+leotherm.validateSurfaceMesh(surfaceMesh);
+leotherm.validateVolumeMesh(volumeMesh);
+if ~isstruct(material) || ~isscalar(material)
+    error('leotherm:InvalidSurfaceVolumeScenario', 'material must be a scalar structure.');
+end
+if ~isstruct(options) || ~isscalar(options)
+    error('leotherm:InvalidSurfaceVolumeScenario', 'options must be a scalar structure.');
+end
+if isfield(options, 'contacts') && ~isempty(options.contacts) && ~isstruct(options.contacts)
+    error('leotherm:InvalidSurfaceVolumeScenario', 'options.contacts must be a structure array.');
+end
+end
+
+function value = fieldOr(source, name, fallback)
+if isstruct(source) && isfield(source, name) && ~isempty(source.(name))
+    value = source.(name);
+else
+    value = fallback;
+end
+end

@@ -1,0 +1,9 @@
+item,value
+SATMO release,"v1.5.0 (downloaded 2026-09-02)"
+SATMO source URL,"https://github.com/alexchipps/SATMO"
+SATMO source ZIP SHA-256,"F8FE156112AFDEA91A32F2A1F697AF992E4C2BD2A557CC4C26D1F36C5DC127A5"
+MATLAB compatibility edits,"UI-only: removed unsupported properties and replaced clim with caxis"
+Comparison duration,"6000 s"
+Time step,"1 s"
+Beta angle,"90 deg"
+Disabled terms,"eclipse, albedo, planetary IR, heaters, solar panels"

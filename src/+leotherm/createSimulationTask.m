@@ -1,0 +1,21 @@
+function task = createSimulationTask(scenario, network, telemetry, calibration, scanSettings, runMode, geometry, volumeMesh)
+if nargin < 3 || isempty(telemetry), telemetry = struct; end
+if nargin < 4 || isempty(calibration), calibration = struct; end
+if nargin < 5 || isempty(scanSettings), scanSettings = struct; end
+if nargin < 6 || isempty(runMode), runMode = 'scenario'; end
+if nargin < 7 || isempty(geometry), geometry = []; end
+if nargin < 8 || isempty(volumeMesh), volumeMesh = []; end
+task = struct;
+task.schemaVersion = 1;
+task.taskId = '';
+task.createdUTC = datetime('now', 'TimeZone', 'UTC');
+task.runMode = char(runMode);
+task.scenario = scenario;
+task.network = network;
+task.telemetry = telemetry;
+task.calibration = calibration;
+task.scanSettings = scanSettings;
+task.geometry = geometry;
+task.volumeMesh = volumeMesh;
+task.inputFingerprint = '';
+end

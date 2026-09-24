@@ -1,0 +1,20 @@
+{
+  "schema": "leotherm.simulation_template.v1",
+  "templateVersion": "1.0.0",
+  "engineApi": "1",
+  "id": "satmo_benchmark",
+  "nameZh": "SATMO风格基准",
+  "nameEn": "SATMO-style benchmark",
+  "descriptionZh": "使用透明的七节点基准网络，适合比较轨道和热流趋势。",
+  "descriptionEn": "Use the transparent seven-node benchmark network for trend comparisons.",
+  "mode": "scenario",
+  "networkPreset": "satmo",
+  "scenario": {
+    "name": "template_satmo_benchmark",
+    "durationS": 86400,
+    "timeStepS": 60,
+    "warmupOrbits": 10,
+    "convergence": { "enabled": false }
+  },
+  "requiredInputs": []
+}

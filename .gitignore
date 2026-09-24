@@ -1,0 +1,14 @@
+results/
+tools/build_tutorial_v101.ps1
+tools/capture_tutorial_v101.m
+docs/images/gui_smoke.mat
+docs/images/gui_smoke_status.txt
+*.asv
+*.m~
+*.mlx
+slprj/
+codegen/
+*.mex*
+.DS_Store
+Thumbs.db
+.matlab_pref_test/
