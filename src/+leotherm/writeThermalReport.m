@@ -31,6 +31,7 @@ else
 end
 
 report = collectReport(bundle);
+report.analysis = leotherm.buildThermalReportAnalysis(bundle);
 report.softwareVersion = leotherm.version;
 report.generatedUTC = datetime('now', 'TimeZone', 'UTC', ...
     'Format', 'yyyy-MM-dd''T''HH:mm:ssXXX');
@@ -56,12 +57,26 @@ for k = 1:numel(languages)
     end
     if ~isempty(bundle.sweep)
         try
-            leotherm.plotSweep(bundle.sweep, ...
-                fullfile(outputDirectory, ['sweep_summary_' lang '.png']), lang);
+            complete = strcmp(string(bundle.sweep.status), 'complete');
+            path = fullfile(outputDirectory, ['sweep_summary_' lang '.png']);
+            if sum(complete) == 1
+                leotherm.plotThermalReportStage(bundle, 'single_sweep', path, lang);
+            else
+                leotherm.plotSweep(bundle.sweep, path, lang);
+            end
         catch exception
             report.warnings = appendWarning(report.warnings, ...
                 ['sweep figure unavailable: ' exception.message]);
         end
+    end
+    for j = 1:numel(report.analysis)
+        stage = report.analysis(j).stage;
+        if isempty(report.analysis(j).figureStem) ...
+                || ~ismember(stage, {'geometry', 'telemetry', 'calibration'})
+            continue
+        end
+        leotherm.plotThermalReportStage(bundle, stage, ...
+            fullfile(outputDirectory, [report.analysis(j).figureStem '_' lang '.png']), lang);
     end
 end
 for k = 1:numel(languages)
@@ -87,7 +102,7 @@ end
 
 function bundle = normalizeBundle(input)
 bundle = struct('scenario', [], 'surface', [], 'volume', [], 'sweep', [], ...
-    'sweepContext', [], 'telemetry', [], 'metadata', []);
+    'sweepContext', [], 'telemetry', [], 'calibration', [], 'metadata', []);
 if ~isstruct(input) || ~isscalar(input)
     error('leotherm:ReportExport', 'Input must be a scalar result or bundle structure.');
 end
@@ -107,6 +122,7 @@ aliases = struct('scenario', {{'scenario','scenarioResult','result'}}, ...
     'sweep', {{'sweep','summary','currentSweep'}}, ...
     'sweepContext', {{'sweepContext','context'}}, ...
     'telemetry', {{'telemetry','telemetryState'}}, ...
+    'calibration', {{'calibration','calibrationResult'}}, ...
     'metadata', {{'metadata','reportMetadata'}});
 names = fieldnames(aliases);
 for i = 1:numel(names)
@@ -377,10 +393,14 @@ end
 
 function writeManifest(report, bundle, directory)
 [~, comparison] = telemetryParts(bundle.telemetry);
+telemetryScored = ~isempty(comparison) && isfield(comparison, 'metrics') ...
+    && istable(comparison.metrics) ...
+    && ismember('used_samples', comparison.metrics.Properties.VariableNames) ...
+    && sum(comparison.metrics.used_samples) > 0;
 manifest = struct('schemaVersion','1.0','softwareVersion',report.softwareVersion, ...
     'generatedUTC',char(report.generatedUTC),'languages',{report.languages}, ...
     'sections',{unique(cellstr(report.sections.section))}, ...
-    'telemetryValidation',~isempty(comparison), ...
+    'telemetryValidation',telemetryScored, ...
     'pdfReports',{cellfun(@(lang) ['thermal_report_' lang '.pdf'], ...
         report.languages, 'UniformOutput', false)}, ...
     'sourceFiles',{table2struct(report.sources)}, ...
@@ -400,6 +420,19 @@ zh = strcmp(language,'zh');
 put(fid, pick(zh,'# 热仿真结果报告','# Thermal simulation results report'));
 put(fid, sprintf(pick(zh,'软件版本：%s；生成时间（UTC）：%s','Software version: %s; generated UTC: %s'), ...
     report.softwareVersion, char(report.generatedUTC)));
+for k = 1:numel(report.analysis)
+    item = report.analysis(k);
+    if zh
+        put(fid, ['## ' item.titleZh]); lines = item.linesZh;
+    else
+        put(fid, ['## ' item.titleEn]); lines = item.linesEn;
+    end
+    for j = 1:numel(lines), put(fid, ['- ' lines{j}]); end
+    figureName = [item.figureStem '_' language '.png'];
+    if ~isempty(item.figureStem) && isfile(fullfile(fileparts(path), figureName))
+        put(fid, ['![' item.stage '](' figureName ')']);
+    end
+end
 put(fid, pick(zh, '## 输入、网格、材料与轨道姿态', '## Inputs, mesh, material, orbit and attitude'));
 put(fid, pick(zh, '| 类别 | 字段 | 数值 | 单位 | 状态 | 来源 | 备注 |', '| Section | Field | Value | Unit | Status | Source | Notes |'));
 put(fid, '|---|---|---|---|---|---|---|');

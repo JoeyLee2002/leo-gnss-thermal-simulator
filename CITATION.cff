@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use this software, please cite the software release and the methodological references in NOTICE.md."
 title: "LEO GNSS Thermal Simulator"
 type: software
-version: 1.0.1
-date-released: 2026-09-24
+version: 1.2.0
+date-released: 2026-09-27
 license: MIT
 authors:
   - name: "LEO GNSS Thermal Simulator contributors"

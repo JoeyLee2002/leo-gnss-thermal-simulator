@@ -12,6 +12,26 @@ lines = summaryLines(report, bundle, language);
 page = textPages(path, page, language, ...
     tr(language, '任务结果概览', 'Task result overview'), lines, 24);
 
+for k = 1:numel(report.analysis)
+    item = report.analysis(k);
+    if strcmp(language, 'zh')
+        titleText = item.titleZh; analysisLines = item.linesZh;
+    else
+        titleText = item.titleEn; analysisLines = item.linesEn;
+    end
+    if ~isempty(item.figureStem)
+        figurePath = fullfile(assetDirectory, [item.figureStem '_' language '.png']);
+        if isfile(figurePath)
+            page = analysisPage(path, page, language, titleText, analysisLines, figurePath);
+        else
+            error('leotherm:ReportExport', ...
+                'Analysis figure is missing for stage %s: %s', item.stage, figurePath);
+        end
+    else
+        page = textPages(path, page, language, titleText, analysisLines, 22);
+    end
+end
+
 rows = sectionLines(report.sections, language);
 if isempty(rows)
     rows = {tr(language, '没有结构化输入记录。', 'No structured input record is available.')};
@@ -20,16 +40,6 @@ for first = 1:22:numel(rows)
     last = min(first + 21, numel(rows));
     page = textPage(path, page, language, ...
         tr(language, '输入与结果明细', 'Inputs and result details'), rows(first:last));
-end
-
-figures = { ...
-    'scenario', tr(language, '单场景温度与热影响', 'Scenario temperature and thermal effects'); ...
-    'sweep', tr(language, '参数扫描结果', 'Parameter sweep results')};
-for k = 1:size(figures, 1)
-    file = fullfile(assetDirectory, [figures{k,1} '_summary_' language '.png']);
-    if isfile(file)
-        page = imagePage(path, page, language, figures{k,2}, file);
-    end
 end
 
 if ~isempty(report.telemetry)
@@ -117,6 +127,30 @@ appendPage(fig, path, true);
 clear cleanup
 end
 
+function page = analysisPage(path, page, language, titleText, lines, imagePath)
+if numel(lines) > 8
+    error('leotherm:ReportExport', 'Analysis text exceeds the figure page.');
+end
+page = page + 1;
+[fig, ax] = newPage(language, titleText, page);
+cleanup = onCleanup(@() close(fig));
+y = 0.825;
+for k = 1:numel(lines)
+    put(ax, 0.075, y, shorten(lines{k}, 105), 9.5, [0.17 0.22 0.23], false);
+    y = y - 0.039;
+end
+top = y - 0.020;
+if top <= 0.36
+    error('leotherm:ReportExport', 'No room for the analysis figure.');
+end
+chart = axes('Parent', fig, 'Units', 'normalized', ...
+    'Position', [0.065 0.14 0.87 top - 0.14]);
+image(chart, imread(imagePath));
+axis(chart, 'image'); axis(chart, 'off');
+appendPage(fig, path, page > 1);
+clear cleanup
+end
+
 function [fig, ax] = newPage(language, titleText, page)
 fig = figure('Visible', 'off', 'Color', 'w', 'Units', 'pixels', ...
     'Position', [80 60 827 1169], 'MenuBar', 'none', 'ToolBar', 'none');
@@ -171,6 +205,10 @@ end
 meta = fieldOr(bundle, 'metadata', struct);
 if isstruct(meta) && isfield(meta, 'taskId') && ~isempty(meta.taskId)
     lines{end+1} = pair(language, '任务 ID', 'Task ID', meta.taskId);
+end
+if isstruct(meta) && isfield(meta, 'calibrationApplied') && meta.calibrationApplied
+    lines{end+1} = pair(language, '设备标定', 'Device calibration', ...
+        fieldOr(meta, 'calibrationStatus', 'not_recorded'));
 end
 lines{end+1} = ['# ' tr(language, '本次实际生成', 'Outputs from this run')];
 parts = {};
@@ -285,6 +323,15 @@ if ~isempty(scenario) && isfield(scenario, 'temperatureK')
         'Finite scenario temperatures', passText(valid, language));
 end
 meta = fieldOr(bundle, 'metadata', struct);
+if isstruct(meta) && isfield(meta, 'stages') && ~isempty(meta.stages)
+    lines{end+1} = ['# ' tr(language, '任务阶段', 'Task stages')];
+    for k = 1:numel(meta.stages)
+        lines{end+1} = sprintf('%s: %s', ...
+            pipelineStageText(meta.stages(k).name, language), ...
+            pipelineStageText(meta.stages(k).status, language)); %#ok<AGROW>
+    end
+end
+
 names = {'scenarioStale','sweepStale','meshStale','volumeStale','coupledStale'};
 sources = {'scenario','sweep','surface','volume','coupled'};
 labelsZh = {'单场景与当前输入','扫描与当前输入','表面结果与当前输入', ...
@@ -326,6 +373,26 @@ lines{end+1} = ['# ' tr(language, '复核文件', 'Audit files')];
 lines{end+1} = tr(language, '同目录提供原始结果 MAT、指标 CSV、Markdown、清单和图像。', ...
     'MAT results, metric CSV, Markdown, manifest, and figures accompany this PDF.');
 lines{end+1} = pair(language, '软件版本', 'Software version', report.softwareVersion);
+end
+
+function value = pipelineStageText(key, language)
+key = char(key);
+if strcmp(language, 'en'), value = strrep(key, '_', ' '); return; end
+switch key
+    case 'snapshot', value = '输入快照';
+    case 'calibration', value = '设备标定';
+    case 'freeze_model', value = '冻结模型';
+    case 'nodal_simulation', value = '节点热仿真';
+    case 'batch_simulation', value = '参数扫描';
+    case 'geometry_simulation', value = '三维几何仿真';
+    case 'telemetry_comparison', value = '遥测对比';
+    case 'numerical_acceptance', value = '数值与数据验收';
+    case 'report', value = '报告生成';
+    case 'complete', value = '完成';
+    case 'skipped', value = '跳过';
+    case 'failed', value = '失败';
+    otherwise, value = key;
+end
 end
 
 function name = fieldName(key, language)

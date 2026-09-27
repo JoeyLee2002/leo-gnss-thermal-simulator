@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.2.0 - Stage-specific analysis reports (2026-09-27)
+
+- Each completed stage now contributes computed findings and its own chart to the PDF and Markdown report. Unselected stages contribute no fabricated analysis.
+- Scenario, sweep, three-dimensional geometry, telemetry comparison, and accepted calibration have separate evidence-aware interpretations.
+- A one-case sweep uses a case-level metric chart and explicitly avoids trend or optimum claims.
+- The PDF places stage interpretation and chart on the same page; Chinese labels no longer expose telemetry or calibration status codes.
+- Reports flag no-warmup transients; unscored telemetry creates neither a residual chart nor a false validation flag.
+- Added report-stage regression tests and kept the v1.1.0 release available as an archive.
+
+## 1.1.0 - Optional stages in one task pipeline (2026-09-27)
+
+- Added one preflighted task pipeline with input snapshot, model freeze, mandatory nodal simulation, numerical acceptance, and a task-specific PDF.
+- Parameter sweep, surface-volume coupling, telemetry comparison, and constrained calibration are independent optional stages. Unselected stages require no inputs and are recorded as skipped.
+- The GUI now offers four stage checkboxes and one Run task command. Previous module run buttons are hidden; module pages remain available for configuration.
+- Saved projects retain stage choices and the last pipeline run. Results display the actual run and open its report in the language used at run time.
+- Added pipeline and GUI regression coverage, including preflight rejection and telemetry/geometry/sweep runs.
+
 ## 1.0.1 - MATLAB Runtime desktop packaging (2026-09-24)
 
 - Added a compiled desktop entry point and a repeatable Windows release build.

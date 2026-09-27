@@ -1,15 +1,19 @@
 # LEO GNSS Thermal Simulator
 
-**Start here:** [Chinese video tutorial (6:45)](tutorial/LEOTherm_v1.0.1_中文使用教学.mp4) ·
-[tutorial chapters](tutorial/README.md) ·
-[Windows standalone package](downloads/LEOTherm_1.0.1_windows.zip).
+**Start here:** [Chinese video walkthrough (v1.1.0 UI)](tutorial/LEOTherm_v1.1.0_中文统一任务教程.mp4) ·
+[Unified task guide](docs/统一任务流水线_v1.1.0.md) ·
+[Windows standalone package v1.2.0](downloads/LEOTherm_1.2.0_windows.zip).
 The standalone build requires the free MATLAB Runtime R2021b, not a MATLAB license.
-See the [installation guide](docs/独立版使用_v1.0.1.md).
+See the [installation guide](docs/独立版使用_v1.2.0.md).
 
-Current release: **1.0.1**. Windows users without MATLAB can use the
-[standalone release guide](docs/独立版使用_v1.0.1.md) with free MATLAB Runtime R2021b.
+Current release: **1.2.0**. Completed optional stages now add quantitative
+findings and charts to the [task analysis report](docs/任务分析报告_v1.2.0.md).
+See the [five-page Chinese sample PDF](examples/reports/参考网络_多工况扫描_报告样例_v1.2.0.pdf),
+based on the reference network rather than flight validation.
+Windows users without MATLAB can use the
+[standalone release guide](docs/独立版使用_v1.2.0.md) with free MATLAB Runtime R2021b.
 Build checks and the remaining Runtime-only-machine test are documented in
-[standalone acceptance](docs/独立版验收_v1.0.1.md).
+[standalone acceptance](docs/独立版验收_v1.2.0.md).
 The GUI opens with a Quick start area, followed by
 Simulation and Results. Scenario, sweep, thermal network,
 telemetry and calibration are configuration sections of one simulation task.
@@ -23,7 +27,7 @@ name, duration, and time step, supplies a CSV when required, and can run after
 strict validation. Saved projects embed the template snapshot for reproducibility.
 Results export creates a multipage PDF analysis report alongside the raw MAT,
 CSV, figures, Markdown, and an audit manifest. The Chinese first-run-to-report
-guide is [here](docs/任务到报告_v1.0.0.md).
+guide is [here](docs/统一任务流水线_v1.1.0.md).
 Release checks and limits are recorded in [v1 acceptance](docs/软件验收_v1.0.0.md).
 
 Version 0.4.3 adds a device-calibration workbench with immutable nominal

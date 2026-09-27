@@ -256,6 +256,7 @@ classdef CalibrationPanel < handle
             panel.Controls{end+1} = panel.ProfileName;
             runButton = panel.button(toolbar, panel.t('标定并保存新运行', 'Calibrate to new run'), @() panel.runUI);
             runButton.Layout.Column = 4;
+            runButton.Visible = 'off';
             runButton.BackgroundColor = [0.12 0.53 0.46]; runButton.FontColor = [1 1 1];
             panel.ProfileStatus = uilabel(layout, 'WordWrap', 'on');
             panel.ProfileStatus.Layout.Row = 2;

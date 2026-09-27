@@ -34,6 +34,8 @@ verifyEqual(testCase, manifest.softwareVersion, leotherm.version);
 verifyFalse(testCase, manifest.telemetryValidation);
 verifyEqual(testCase, numel(manifest.pdfReports), 2);
 verifyEqual(testCase, report.softwareVersion, leotherm.version);
+verifyTrue(testCase, contains(fileread(fullfile(outDir, ...
+    'thermal_report_zh.md')), '未做预热'));
 end
 
 function testImportedTelemetryAloneIsNotValidation(testCase)
@@ -95,6 +97,54 @@ cleanup = onCleanup(@() removeFolder(outDir));
 fid = fopen(fullfile(outDir, 'existing.txt'), 'w'); fprintf(fid, 'x'); fclose(fid);
 verifyError(testCase, @() leotherm.writeThermalReport(struct, outDir), ...
     'leotherm:ReportExport');
+end
+
+function testCalibrationAnalysisUsesDeclaredRoleMetrics(testCase)
+scenario = leotherm.defaultScenario;
+scenario.durationS = 120;
+scenario.timeStepS = 60;
+scenario.warmupOrbits = 0;
+scenario.convergence.enabled = false;
+result = leotherm.simulateScenario(scenario, leotherm.defaultReceiverNetwork);
+metrics = table(["train";"validation";"test"], ...
+    ["rf";"rf";"rf"], [20;10;10], [4;5;6], [2;3;4], ...
+    'VariableNames', {'role','node','used_samples', ...
+    'baseline_rmse_k','calibrated_rmse_k'});
+calibration = struct('status', 'accepted_within_declared_scope', ...
+    'stageMetrics', metrics);
+outDir = tempname;
+cleanup = onCleanup(@() removeFolder(outDir));
+report = leotherm.writeThermalReport(struct('scenarioResult', result, ...
+    'calibration', calibration), outDir, 'both');
+verifyTrue(testCase, any(strcmp({report.analysis.stage}, 'calibration')));
+verifyTrue(testCase, isfile(fullfile(outDir, 'calibration_summary_zh.png')));
+verifyTrue(testCase, isfile(fullfile(outDir, 'calibration_summary_en.png')));
+verifyTrue(testCase, contains(fileread(fullfile(outDir, ...
+    'thermal_report_zh.md')), '训练集'));
+verifyTrue(testCase, contains(fileread(fullfile(outDir, ...
+    'thermal_report_en.md')), 'Training error is not independent validation'));
+verifyPdf(testCase, fullfile(outDir, 'thermal_report_zh.pdf'));
+clear cleanup
+end
+
+function testUnscoredTelemetryReportStatesNoAgreement(testCase)
+metrics = table("rf", 0, NaN, "insufficient_samples", ...
+    'VariableNames', {'node','used_samples','rmse_k','assessment'});
+comparison = struct('metrics', metrics, 'samples', table, ...
+    'datasetKind', 'synthetic_demo_not_flight_data', ...
+    'independence', 'synthetic_not_independent_validation');
+outDir = tempname;
+cleanup = onCleanup(@() removeFolder(outDir));
+report = leotherm.writeThermalReport( ...
+    struct('telemetry', struct('report', comparison)), outDir, 'zh');
+verifyTrue(testCase, any(strcmp({report.analysis.stage}, 'telemetry')));
+verifyFalse(testCase, isfile(fullfile(outDir, 'telemetry_summary_zh.png')));
+verifyTrue(testCase, contains(fileread(fullfile(outDir, ...
+    'thermal_report_zh.md')), '没有可评分样本'));
+manifest = jsondecode(fileread(fullfile(outDir, 'thermal_manifest.json')));
+verifyFalse(testCase, manifest.telemetryValidation);
+verifyPdf(testCase, fullfile(outDir, 'thermal_report_zh.pdf'));
+clear cleanup
 end
 
 function removeFolder(folder)

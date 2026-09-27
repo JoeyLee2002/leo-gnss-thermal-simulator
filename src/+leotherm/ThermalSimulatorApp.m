@@ -20,6 +20,10 @@ classdef ThermalSimulatorApp < handle
         TaskRunButton
         TaskSweepButton
         TaskResultsButton
+        PipelineSweepCheck
+        PipelineGeometryCheck
+        PipelineTelemetryCheck
+        PipelineCalibrationCheck
         QuickStartTemplate
         QuickStartRunButton
         QuickStartWizardButton
@@ -142,6 +146,9 @@ classdef ThermalSimulatorApp < handle
         CurrentSweepMode
         CurrentTask = []
         LastTaskSnapshot = []
+        LastPipelineRun = []
+        PipelineOptions = struct('sweep', false, 'geometry', false, ...
+            'telemetry', false, 'calibration', false)
         TaskValidation = []
         TaskHistory = struct('taskId', {}, 'runType', {}, 'status', {}, ...
             'startedUTC', {}, 'completedUTC', {}, 'inputFingerprint', {})
@@ -250,6 +257,8 @@ classdef ThermalSimulatorApp < handle
             state.taskValidation = app.taskValidationReport(state.task);
             state.lastTaskSnapshot = app.LastTaskSnapshot;
             state.taskHistory = app.TaskHistory;
+            state.pipelineOptions = app.PipelineOptions;
+            state.lastPipelineRun = app.LastPipelineRun;
             state.activeTemplateId = app.ActiveTemplateId;
             state.activeTemplatePath = app.ActiveTemplatePath;
             state.activeTemplateSnapshot = app.ActiveTemplateSnapshot;
@@ -717,6 +726,16 @@ classdef ThermalSimulatorApp < handle
                     && isempty(telemetryState.result) && isempty(telemetryState.report)
                 error('leotherm:ExportFailed','There are no results to export.');
             end
+            if (~isempty(app.CurrentResult) && app.resultIsStale) ...
+                    || (~isempty(app.CurrentSweep) && app.sweepIsStale) ...
+                    || (~isempty(app.CurrentMeshResult) && app.meshResultIsStale) ...
+                    || (~isempty(app.CurrentVolumeResult) && app.volumeResultIsStale) ...
+                    || (~isempty(app.CurrentSurfaceVolumeResult) && app.surfaceVolumeResultIsStale) ...
+                    || ((~isempty(telemetryState.result) || ~isempty(telemetryState.report)) ...
+                        && telemetryState.resultStale)
+                error('leotherm:StaleResult', ...
+                    'A result no longer matches the current inputs. Rerun or remove it before generating a report.');
+            end
             target = java.io.File(char(directory));
             if ~target.isAbsolute(), target = java.io.File(fullfile(pwd,char(directory))); end
             directory = char(target.getCanonicalPath());
@@ -782,6 +801,16 @@ classdef ThermalSimulatorApp < handle
                 'sweepStale',app.sweepIsStale,'configurationPolicy','each_result_owns_its_original_inputs');
             save(fullfile(directory,'export_metadata.mat'),'metadata');
         end
+
+        function run = runPipeline(app, outputDirectory)
+            %RUNPIPELINE Execute the selected optional stages as one task.
+            if app.IsBusy
+                error('leotherm:ProjectBusy', 'Wait for the current operation.');
+            end
+            task = app.buildPipelineTask;
+            run = leotherm.runThermalPipeline(task, outputDirectory);
+            app.adoptPipelineRun(run);
+        end
     end
 
     methods (Access = private)
@@ -829,6 +858,14 @@ classdef ThermalSimulatorApp < handle
 
         function updateResultState(app)
             if isempty(app.ResultStateLabel) || ~isvalid(app.ResultStateLabel), return; end
+            if ~isempty(app.LastPipelineRun)
+                app.ResultStateLabel.Text = sprintf(app.t( ...
+                    '  最近任务：%s | %s', '  Latest task: %s | %s'), ...
+                    app.LastPipelineRun.taskId, ...
+                    app.pipelineStatusLabel(app.LastPipelineRun.status));
+                app.ResultStateLabel.FontColor = [0.10 0.45 0.30];
+                return
+            end
             states = {};
             stale = false;
             if ~isempty(app.CurrentResult)
@@ -882,8 +919,28 @@ classdef ThermalSimulatorApp < handle
                 end
             end
             if isempty(states)
-                text = app.t('尚未运行结果', 'No results have been run yet');
+                telemetry = app.TelemetryWorkspace.getState;
+                if isempty(telemetry.result)
+                    text = app.t('尚未运行结果', 'No results have been run yet');
+                elseif telemetry.resultStale
+                    text = app.t('遥测结果已过期：请重新运行', ...
+                        'Telemetry result is stale; rerun required');
+                    stale = true;
+                else
+                    text = app.t('遥测对比结果有效', 'Telemetry comparison is current');
+                end
             else
+                telemetry = app.TelemetryWorkspace.getState;
+                if ~isempty(telemetry.result)
+                    if telemetry.resultStale
+                        states{end + 1} = app.t('遥测结果已过期：请重新运行', ...
+                            'Telemetry result is stale; rerun required');
+                        stale = true;
+                    else
+                        states{end + 1} = app.t('遥测对比结果有效', ...
+                            'Telemetry comparison is current');
+                    end
+                end
                 text = strjoin(states, ' | ');
             end
             app.ResultStateLabel.Text=['  ' text];
@@ -963,6 +1020,8 @@ classdef ThermalSimulatorApp < handle
             if isfield(state,'task'), app.CurrentTask=state.task; else, app.CurrentTask=[]; end
             if isfield(state,'lastTaskSnapshot'), app.LastTaskSnapshot=state.lastTaskSnapshot; else, app.LastTaskSnapshot=[]; end
             if isfield(state,'taskHistory'), app.TaskHistory=state.taskHistory; else, app.TaskHistory=struct('taskId',{},'runType',{},'status',{},'startedUTC',{},'completedUTC',{},'inputFingerprint',{}); end
+            if isfield(state,'pipelineOptions'), app.PipelineOptions=state.pipelineOptions; end
+            if isfield(state,'lastPipelineRun'), app.LastPipelineRun=state.lastPipelineRun; else, app.LastPipelineRun=[]; end
             app.Language=state.language;
             app.rebuildInterface(state);
         end
@@ -1040,7 +1099,7 @@ classdef ThermalSimulatorApp < handle
             app.SimulationTab = uitab(app.MainTabGroup, ...
                 'Title', app.t('仿真', 'Simulation'));
             simulationLayout = uigridlayout(app.SimulationTab, [2, 1]);
-            simulationLayout.RowHeight = {112, '1x'};
+            simulationLayout.RowHeight = {150, '1x'};
             simulationLayout.Padding = [0, 0, 0, 0];
             app.createTaskPanel(simulationLayout);
             app.TabGroup = uitabgroup(simulationLayout);
@@ -1127,9 +1186,9 @@ classdef ThermalSimulatorApp < handle
         end
 
         function createTaskPanel(app, parent)
-            task = uigridlayout(parent, [3, 1]);
+            task = uigridlayout(parent, [4, 1]);
             task.Layout.Row = 1;
-            task.RowHeight = {26, '1x', 34};
+            task.RowHeight = {26, 28, '1x', 34};
             task.Padding = [14, 5, 14, 4];
             task.RowSpacing = 2;
             task.BackgroundColor = [0.93, 0.96, 0.95];
@@ -1146,23 +1205,49 @@ classdef ThermalSimulatorApp < handle
                 'FontColor', [0.30, 0.38, 0.37], 'Tag', 'TaskGuidanceLabel');
             app.TaskGuidanceLabel.Layout.Column = 3;
 
+            options = uigridlayout(task, [1, 5]);
+            options.Layout.Row = 2;
+            options.ColumnWidth = {170, 170, 170, 170, '1x'};
+            options.Padding = [0, 0, 0, 0];
+            app.PipelineSweepCheck = uicheckbox(options, ...
+                'Text', app.t('参数扫描', 'Parameter sweep'), ...
+                'Value', app.PipelineOptions.sweep, ...
+                'Tag', 'PipelineSweepCheck', ...
+                'ValueChangedFcn', @(~,~) app.pipelineOptionsChanged);
+            app.PipelineGeometryCheck = uicheckbox(options, ...
+                'Text', app.t('三维耦合', '3-D coupling'), ...
+                'Value', app.PipelineOptions.geometry, ...
+                'Tag', 'PipelineGeometryCheck', ...
+                'ValueChangedFcn', @(~,~) app.pipelineOptionsChanged);
+            app.PipelineTelemetryCheck = uicheckbox(options, ...
+                'Text', app.t('遥测对比', 'Telemetry comparison'), ...
+                'Value', app.PipelineOptions.telemetry, ...
+                'Tag', 'PipelineTelemetryCheck', ...
+                'ValueChangedFcn', @(~,~) app.pipelineOptionsChanged);
+            app.PipelineCalibrationCheck = uicheckbox(options, ...
+                'Text', app.t('设备标定', 'Device calibration'), ...
+                'Value', app.PipelineOptions.calibration, ...
+                'Tag', 'PipelineCalibrationCheck', ...
+                'ValueChangedFcn', @(~,~) app.pipelineOptionsChanged);
+
             app.TaskSummaryLabel = uilabel(task, 'Text', '', 'WordWrap', 'on', ...
                 'FontColor', [0.20, 0.28, 0.28], 'Tag', 'TaskSummaryLabel');
-            app.TaskSummaryLabel.Layout.Row = 2;
+            app.TaskSummaryLabel.Layout.Row = 3;
 
-            actions = uigridlayout(task, [1, 4]);
-            actions.ColumnWidth = {145, 145, 145, '1x'};
+            actions = uigridlayout(task, [1, 3]);
+            actions.Layout.Row = 4;
+            actions.ColumnWidth = {145, 160, '1x'};
             actions.Padding = [0, 0, 0, 0];
-            app.TaskCheckButton = uibutton(actions, 'Text', app.t('检查仿真配置', 'Check configuration'), ...
-                'Tag', 'TaskCheckButton', 'ButtonPushedFcn', @(~,~) app.checkTaskUI);
-            app.TaskRunButton = uibutton(actions, 'Text', app.t('运行仿真', 'Run simulation'), ...
+            app.TaskCheckButton = uibutton(actions, 'Text', app.t('检查任务', 'Check task'), ...
+                'Tag', 'TaskCheckButton', 'ButtonPushedFcn', @(~,~) app.checkPipelineUI);
+            app.TaskRunButton = uibutton(actions, 'Text', app.t('运行任务', 'Run task'), ...
                 'FontWeight', 'bold', 'BackgroundColor', [0.12, 0.53, 0.46], ...
-                'FontColor', [1, 1, 1], 'Tag', 'TaskRunButton', 'ButtonPushedFcn', @(~,~) app.runTaskScenario);
-            app.TaskSweepButton = uibutton(actions, 'Text', app.t('运行参数扫描', 'Run parameter sweep'), ...
-                'Tag', 'TaskSweepButton', 'ButtonPushedFcn', @(~,~) app.runTaskSweep);
+                'FontColor', [1, 1, 1], 'Tag', 'TaskRunButton', ...
+                'ButtonPushedFcn', @(~,~) app.runPipelineUI);
+            app.TaskSweepButton = [];
             app.TaskResultsButton = uibutton(actions, 'Text', app.t('查看结果', 'View results'), ...
                 'Tag', 'TaskResultsButton', 'ButtonPushedFcn', @(~,~) app.openTaskResults);
-            app.TaskResultsButton.Layout.Column = 4;
+            app.TaskResultsButton.Layout.Column = 3;
             app.TaskResultsButton.HorizontalAlignment = 'right';
         end
 
@@ -1361,6 +1446,7 @@ classdef ThermalSimulatorApp < handle
                 'ButtonPushedFcn', @(~, ~) app.executeScenarioFromUI);
             app.RunScenarioButton.Layout.Row = 2;
             app.RunScenarioButton.Layout.Column = 1;
+            app.RunScenarioButton.Visible = 'off';
 
             scenarioInputs = {app.StartDate, app.StartTime, app.DurationHours, app.TimeStepS, ...
                 app.WarmupOrbits, app.AltitudeKm, app.InclinationDeg, app.RaanDeg, ...
@@ -1449,6 +1535,7 @@ classdef ThermalSimulatorApp < handle
                 'ButtonPushedFcn', @(~, ~) app.executeSweepFromUI);
             app.RunSweepButton.Layout.Row = 13;
             app.RunSweepButton.Layout.Column = [1, 2];
+            app.RunSweepButton.Visible = 'off';
             scanInputs={app.ScanAltitudeList,app.ScanBetaList,app.ScanBranch, ...
                 app.ScanDateList,app.ScanInclinationList,app.ScanRaanList};
             for k=1:numel(scanInputs), scanInputs{k}.ValueChangedFcn=@(~,~)app.scanEdited; end
@@ -1581,6 +1668,7 @@ classdef ThermalSimulatorApp < handle
                 'Text', app.t('运行面片热仿真', 'Run face thermal simulation'), ...
                 'ButtonPushedFcn', @(~,~) app.runMeshThermalUI);
             app.MeshThermalRunButton.Layout.Column = 6;
+            app.MeshThermalRunButton.Visible = 'off';
             app.MeshDisplayMode = uidropdown(toolbar, ...
                 'Items', app.t({'几何', '太阳直射功率', '总外部辐射功率', '末时刻面片温度', '体网格节点温度'}, ...
                 {'Geometry', 'Direct solar power', 'Total external radiative power', 'Final face temperature', 'Volume nodal temperature'}), ...
@@ -1627,11 +1715,13 @@ classdef ThermalSimulatorApp < handle
                 'Text', app.t('运行体导热', 'Run volume conduction'), ...
                 'ButtonPushedFcn', @(~,~) app.runVolumeThermalUI);
             app.VolumeRunButton.Layout.Column = 8;
+            app.VolumeRunButton.Visible = 'off';
             app.CoupledRunButton = uibutton(volume, 'push', ...
                 'Text', app.t('运行表面—体耦合', 'Run surface-volume coupling'), ...
                 'Tag', 'CoupledRunButton', ...
                 'ButtonPushedFcn', @(~,~) app.runSurfaceVolumeUI);
             app.CoupledRunButton.Layout.Column = 9;
+            app.CoupledRunButton.Visible = 'off';
             app.CouplingOptionsButton = uibutton(volume, 'push', ...
                 'Text', app.t('耦合边界设置', 'Coupling boundaries'), ...
                 'ButtonPushedFcn', @(~,~) app.configureCouplingOptionsUI);
@@ -1942,10 +2032,13 @@ classdef ThermalSimulatorApp < handle
         end
 
         function updateScenarioPlots(app)
-            if isempty(app.CurrentResult)
+            result = app.CurrentResult;
+            if isempty(result) && ~isempty(app.LastPipelineRun)
+                result = app.LastPipelineRun.scenario;
+            end
+            if isempty(result)
                 return
             end
-            result = app.CurrentResult;
             timeHour = result.timeS / 3600;
             for k = 1:4
                 cla(app.ScenarioAxes(k));
@@ -2001,6 +2094,9 @@ classdef ThermalSimulatorApp < handle
 
         function updateSweepPlots(app)
             summary = app.CurrentSweep;
+            if isempty(summary) && ~isempty(app.LastPipelineRun)
+                summary = app.LastPipelineRun.sweep;
+            end
             if isempty(summary)
                 return
             end
@@ -2056,10 +2152,25 @@ classdef ThermalSimulatorApp < handle
             app.updateResultState;
             app.updateTaskPanel;
             app.updateResultConclusion;
-            if isempty(app.CurrentResult)
-                app.MetricsTable.Data = table;
+            displayResult = app.CurrentResult;
+            if isempty(displayResult) && ~isempty(app.LastPipelineRun)
+                displayResult = app.LastPipelineRun.scenario;
+            end
+            if isempty(displayResult)
+                telemetry = app.TelemetryWorkspace.getState;
+                if ~isempty(telemetry.report) && isfield(telemetry.report, 'metrics') ...
+                        && ~isempty(telemetry.report.metrics)
+                    metrics = telemetry.report.metrics;
+                    app.MetricsTable.Data = metrics(:, ...
+                        {'node','used_samples','rmse_k','assessment'});
+                    app.MetricsTable.ColumnName = app.t( ...
+                        {'测温节点','有效配对数','均方根误差（K）','判定'}, ...
+                        {'Temperature node','Scored pairs','RMSE (K)','Assessment'});
+                else
+                    app.MetricsTable.Data = table;
+                end
             else
-                metrics = app.CurrentResult.metrics;
+                metrics = displayResult.metrics;
                 names = fieldnames(metrics);
                 values = strings(numel(names), 1);
                 descriptions = strings(numel(names), 1);
@@ -2095,16 +2206,16 @@ classdef ThermalSimulatorApp < handle
                 app.CurrentScenario.durationS / 3600); ...
                 sprintf(app.t('时间步长：%.3f s', 'Time step: %.3f s'), ...
                 app.CurrentScenario.timeStepS)};
-            if ~isempty(app.CurrentResult)
+            if ~isempty(displayResult)
                 lines{end + 1} = sprintf(app.t('单场景历元：%d', ...
                     'Scenario epochs: %d'), ...
-                    numel(app.CurrentResult.timeS));
+                    numel(displayResult.timeS));
                 lines{end + 1} = sprintf(app.t('平均β角：%.4f°', ...
                     'Mean beta angle: %.4f deg'), ...
-                    app.CurrentResult.metrics.meanBetaDeg);
+                    displayResult.metrics.meanBetaDeg);
                 lines{end + 1} = sprintf(app.t('入影比例：%.4f', ...
                     'Eclipse fraction: %.4f'), ...
-                    app.CurrentResult.metrics.eclipseFraction);
+                    displayResult.metrics.eclipseFraction);
             end
             if ~isempty(app.CurrentMeshResult)
                 lines{end + 1} = sprintf(app.t('面片历元/面数：%d / %d', ...
@@ -2142,12 +2253,31 @@ classdef ThermalSimulatorApp < handle
                 lines{end + 1} = sprintf(app.t('完整/失败：%d / %d', ...
                     'Complete/failed: %d / %d'), complete, failed);
             end
+            telemetry = app.TelemetryWorkspace.getState;
+            if ~isempty(telemetry.report) && isfield(telemetry.report, 'metrics')
+                lines{end + 1} = sprintf(app.t('遥测有效配对：%d', ...
+                    'Telemetry scored pairs: %d'), ...
+                    sum(telemetry.report.metrics.used_samples));
+            end
             if ~isempty(app.LastTaskSnapshot)
                 lines{end + 1} = ' ';
                 lines{end + 1} = sprintf(app.t('最近任务ID：%s', 'Latest task ID: %s'), ...
                     app.LastTaskSnapshot.taskId);
                 lines{end + 1} = sprintf(app.t('历史运行数：%d', 'Recorded runs: %d'), ...
                     numel(app.TaskHistory));
+            end
+            if ~isempty(app.LastPipelineRun)
+                run = app.LastPipelineRun;
+                lines{end + 1} = ' ';
+                lines{end + 1} = sprintf(app.t('流水线任务ID：%s', ...
+                    'Pipeline task ID: %s'), run.taskId);
+                lines{end + 1} = sprintf(app.t('结果目录：%s', ...
+                    'Result directory: %s'), run.outputDirectory);
+                for k = 1:numel(run.stages)
+                    lines{end + 1} = sprintf('%s: %s', ...
+                        app.pipelineStageLabel(run.stages(k).name), ...
+                        app.pipelineStatusLabel(run.stages(k).status)); %#ok<AGROW>
+                end
             end
             lines{end + 1} = ' ';
             lines{end + 1} = app.t('解释边界：', 'Interpretation boundary:');
@@ -2158,15 +2288,30 @@ classdef ThermalSimulatorApp < handle
                 '温度诱导码偏差属于半仿真观测模型。', ...
                 'The temperature-induced code bias is a semi-synthetic observation model.');
             app.SessionSummary.Value = lines;
+            if ~isempty(app.LastPipelineRun)
+                app.ExportResultsButton.Text = app.t('打开本次报告 PDF', ...
+                    'Open this run PDF');
+            else
+                app.ExportResultsButton.Text = app.t('生成分析报告 PDF', ...
+                    'Generate analysis PDF');
+            end
         end
 
         function updateResultConclusion(app)
             if isempty(app.ResultConclusionLabel) || ~isvalid(app.ResultConclusionLabel)
                 return
             end
+            if ~isempty(app.LastPipelineRun)
+                app.ResultConclusionLabel.Text = app.t( ...
+                    '本次流水线已完成：数值与数据检查通过。物理有效性仍需独立证据。', ...
+                    'This pipeline run completed its numerical and data checks. Physical validity still needs independent evidence.');
+                app.ResultConclusionLabel.FontColor = [0.10 0.45 0.30];
+                return
+            end
+            telemetry = app.TelemetryWorkspace.getState;
             if isempty(app.CurrentResult) && isempty(app.CurrentSweep) ...
                     && isempty(app.CurrentMeshResult) && isempty(app.CurrentVolumeResult) ...
-                    && isempty(app.CurrentSurfaceVolumeResult)
+                    && isempty(app.CurrentSurfaceVolumeResult) && isempty(telemetry.result)
                 app.ResultConclusionLabel.Text = app.t( ...
                     '还没有结果。请从“快速开始”选择一个任务，或进入“仿真”配置后运行。', ...
                     'No results yet. Choose a task in Quick start or configure and run it under Simulation.');
@@ -2219,6 +2364,19 @@ classdef ThermalSimulatorApp < handle
                         'The conservative one-way surface-volume run is complete; face temperature was not fed back into the volume state.');
                 end
             end
+            if ~isempty(telemetry.result)
+                if telemetry.resultStale
+                    messages{end + 1} = app.t('遥测结果已过期，请重新运行。', ...
+                        'The telemetry result is stale; rerun it.');
+                    stale = true;
+                elseif isempty(telemetry.report)
+                    messages{end + 1} = app.t('遥测驱动仿真已完成，尚无观测对比。', ...
+                        'Telemetry-driven simulation is complete; no observation comparison is available.');
+                else
+                    messages{end + 1} = app.t('遥测对比已完成；一致性不等于物理验证通过。', ...
+                        'Telemetry comparison is complete; agreement is not proof of physical validity.');
+                end
+            end
             app.ResultConclusionLabel.Text = strjoin(messages, ' ');
             app.ResultConclusionLabel.FontColor = [0.70 0.25 0.12];
             if ~stale
@@ -2239,10 +2397,10 @@ classdef ThermalSimulatorApp < handle
                 app.TaskSummaryLabel.Text = app.t('场景输入尚未完整，暂不能生成仿真任务。', ...
                     'Scenario inputs are incomplete; the simulation task cannot be created yet.');
                 app.TaskRunButton.Enable = 'off';
-                app.TaskSweepButton.Enable = 'off';
                 app.TaskResultsButton.Enable = app.onOff(~isempty(app.CurrentResult) ...
                     || ~isempty(app.CurrentSweep) || ~isempty(app.CurrentMeshResult) ...
-                    || ~isempty(app.CurrentVolumeResult) || ~isempty(app.CurrentSurfaceVolumeResult));
+                    || ~isempty(app.CurrentVolumeResult) || ~isempty(app.CurrentSurfaceVolumeResult) ...
+                    || ~isempty(app.LastPipelineRun));
                 return
             end
             telemetry = app.TelemetryWorkspace.getState;
@@ -2250,10 +2408,21 @@ classdef ThermalSimulatorApp < handle
             if ~isempty(telemetry.source)
                 sourceText = app.t('已载入遥测', 'Telemetry loaded');
             end
+            if ~isempty(telemetry.result)
+                if telemetry.resultStale
+                    sourceText = app.t('遥测结果已过期', 'Telemetry result stale');
+                else
+                    sourceText = app.t('遥测对比已完成', 'Telemetry comparison complete');
+                end
+            end
             calibration = app.CalibrationWorkspace.getState;
             calibrationText = app.t('未标定', 'Not calibrated');
             if ~isempty(calibration.result)
-                calibrationText = app.t('已有标定结果', 'Calibration result available');
+                calibrationText = app.t('结果独立保存，未应用', ...
+                    'Result stored separately, not applied');
+                if calibration.resultStale
+                    calibrationText = app.t('标定结果已过期', 'Calibration result stale');
+                end
             end
             resultStates = {};
             if ~isempty(app.CurrentResult)
@@ -2298,9 +2467,13 @@ classdef ThermalSimulatorApp < handle
             else
                 resultText = strjoin(resultStates, ', ');
             end
-            task = app.buildSimulationTask(scenario, app.CurrentNetwork, telemetry, ...
-                calibration, app.captureScanSettings, 'scenario');
-            audit = app.taskValidationReport(task);
+            try
+                task = app.buildPipelineTask;
+                audit = leotherm.preflightThermalPipeline(task);
+            catch exception
+                audit = struct('ready', false, 'errors', string(exception.message), ...
+                    'warnings', strings(0, 1));
+            end
             ready = audit.ready;
             status = app.t('可运行', 'Ready to run');
             color = [0.10, 0.45, 0.30];
@@ -2309,10 +2482,13 @@ classdef ThermalSimulatorApp < handle
             if ~ready
                 status = app.t('需要检查', 'Needs review');
                 color = [0.70, 0.25, 0.12];
-                guidance = strjoin(cellstr(audit.errors), ' ');
+                guidance = app.pipelinePreflightMessage(audit);
             elseif ~isempty(audit.warnings)
-                warningText = app.localizedTaskWarnings(audit);
-                guidance = strjoin(warningText, ' ');
+                guidance = app.pipelinePreflightWarnings(audit);
+            end
+            if ready
+                guidance = app.t('勾选需要的阶段，检查后运行；未勾选的阶段会跳过。', ...
+                    'Select optional stages, check the task, then run; unselected stages are skipped.');
             end
             summary = sprintf(app.t( ...
                 '场景：%s    热网络：%s    节点：%d\n数据：%s    标定：%s    结果：%s    设置：%.3f h / %.3f s / %d 圈', ...
@@ -2324,12 +2500,19 @@ classdef ThermalSimulatorApp < handle
             app.TaskStatusLabel.FontColor = color;
             app.TaskSummaryLabel.Text = summary;
             app.TaskGuidanceLabel.Text = guidance;
+            app.TaskRunButton.Text = app.t('运行任务', 'Run task');
             app.TaskRunButton.Enable = app.onOff(ready && ~app.IsBusy);
-            app.TaskSweepButton.Enable = app.onOff(ready && ~app.IsBusy);
             app.TaskCheckButton.Enable = app.onOff(~app.IsBusy);
             app.TaskResultsButton.Enable = app.onOff(~isempty(app.CurrentResult) ...
                 || ~isempty(app.CurrentSweep) || ~isempty(app.CurrentMeshResult) ...
-                || ~isempty(app.CurrentVolumeResult) || ~isempty(app.CurrentSurfaceVolumeResult));
+                || ~isempty(app.CurrentVolumeResult) || ~isempty(app.CurrentSurfaceVolumeResult) ...
+                || ~isempty(telemetry.result) || ~isempty(app.LastPipelineRun));
+        end
+
+        function yes = isTelemetryTemplate(app)
+            yes = isstruct(app.ActiveTemplateSnapshot) ...
+                && isfield(app.ActiveTemplateSnapshot, 'mode') ...
+                && strcmp(char(app.ActiveTemplateSnapshot.mode), 'telemetry');
         end
 
         function [ready, message] = checkSimulationTask(app, varargin)
@@ -2346,6 +2529,11 @@ classdef ThermalSimulatorApp < handle
                 if ready
                     message = app.t('场景、热网络和任务设置均有效。可以运行仿真。', ...
                         'Scenario, thermal network and task settings are valid. The simulation can run.');
+                    if app.isTelemetryTemplate
+                        message = [message newline app.t( ...
+                            '遥测数据、列映射和坐标框架将在运行前单独预检。', ...
+                            'Telemetry data, mapping and frame are preflighted separately before the run.')];
+                    end
                     if ~isempty(audit.warnings)
                         message = [message newline strjoin(cellstr(audit.warnings), newline)];
                     end
@@ -3074,12 +3262,276 @@ classdef ThermalSimulatorApp < handle
             end
         end
 
+        function pipelineOptionsChanged(app)
+            app.PipelineOptions = struct( ...
+                'sweep', logical(app.PipelineSweepCheck.Value), ...
+                'geometry', logical(app.PipelineGeometryCheck.Value), ...
+                'telemetry', logical(app.PipelineTelemetryCheck.Value), ...
+                'calibration', logical(app.PipelineCalibrationCheck.Value));
+            app.updateTaskPanel;
+        end
+
+        function label = pipelineStageLabel(app, name)
+            switch char(name)
+                case 'snapshot', label = app.t('输入快照', 'Input snapshot');
+                case 'calibration', label = app.t('设备标定', 'Device calibration');
+                case 'freeze_model', label = app.t('冻结模型', 'Freeze model');
+                case 'nodal_simulation', label = app.t('节点热仿真', 'Nodal thermal simulation');
+                case 'batch_simulation', label = app.t('参数扫描', 'Parameter sweep');
+                case 'geometry_simulation', label = app.t('三维耦合', '3-D coupling');
+                case 'telemetry_comparison', label = app.t('遥测对比', 'Telemetry comparison');
+                case 'numerical_acceptance', label = app.t('数值验收', 'Numerical acceptance');
+                case 'report', label = app.t('结果报告', 'Result report');
+                otherwise, label = char(name);
+            end
+        end
+
+        function label = pipelineStatusLabel(app, status)
+            switch char(status)
+                case 'complete', label = app.t('完成', 'Complete');
+                case 'skipped', label = app.t('已跳过', 'Skipped');
+                case 'failed', label = app.t('失败', 'Failed');
+                otherwise, label = char(status);
+            end
+        end
+
+        function message = pipelinePreflightMessage(app, audit)
+            if strcmp(app.Language, 'en')
+                message = strjoin(cellstr(audit.errors), ' ');
+                return
+            end
+            identifier = '';
+            if isfield(audit, 'errorIdentifier')
+                identifier = char(audit.errorIdentifier);
+            end
+            details = strjoin(cellstr(audit.errors), ' ');
+            switch identifier
+                case 'leotherm:InvalidScenario'
+                    message = '场景参数无效，请检查时间、轨道和单位。';
+                case 'leotherm:InvalidNetwork'
+                    message = '热网络参数无效，请检查节点和材料设置。';
+                case {'leotherm:InvalidSurfaceMesh', 'leotherm:InvalidVolumeMesh'}
+                    message = '已勾选三维耦合，请在三维几何页导入并检查表面、体网格。';
+                case 'leotherm:PipelineDataLeakage'
+                    message = '标定与遥测对比使用了重叠历元，请提供独立测试数据。';
+                case 'leotherm:PipelineTelemetry'
+                    message = '遥测预检未通过，请检查时间、单位、数据覆盖和列映射。';
+                otherwise
+                    if contains(details, 'Calibration requires')
+                        message = '已勾选设备标定，请在标定页配置遥测、设备参数和训练／验证／测试日。';
+                    elseif contains(details, 'sweep inputs are missing')
+                        message = '已勾选参数扫描，请在参数扫描页填写对应的工况列表。';
+                    elseif contains(details, 'Telemetry settings or source')
+                        message = '已勾选遥测对比，请在遥测与验证页导入数据并完成映射。';
+                    else
+                        message = '任务预检未通过，请检查已勾选阶段的输入和依赖。';
+                    end
+            end
+        end
+
+        function message = pipelinePreflightWarnings(app, audit)
+            if strcmp(app.Language, 'en')
+                message = strjoin(cellstr(audit.warnings), ' ');
+                return
+            end
+            notes = {};
+            if app.PipelineOptions.geometry
+                notes{end+1} = '三维表面到体热流为单向映射。';
+            end
+            if app.PipelineOptions.calibration && app.PipelineOptions.telemetry
+                notes{end+1} = '请确认标定与遥测对比的独立性。';
+            end
+            if isempty(notes)
+                message = '本任务存在适用边界，详情见运行报告。';
+            else
+                message = strjoin(notes, ' ');
+            end
+        end
+
+        function task = buildPipelineTask(app)
+            task = leotherm.createThermalPipelineTask( ...
+                app.collectScenario, app.CurrentNetwork);
+            task.language = app.Language;
+            task.sweep.enabled = app.PipelineOptions.sweep;
+            if task.sweep.enabled
+                task.sweep.mode = app.ScanMode.Value;
+                task.sweep.altitudeKm = leotherm.parseNumericList( ...
+                    app.ScanAltitudeList.Value, app.t('高度', 'altitude'));
+                if strcmp(task.sweep.mode, 'beta_altitude')
+                    task.sweep.betaDeg = leotherm.parseNumericList( ...
+                        app.ScanBetaList.Value, app.t('β角', 'beta angle'));
+                    task.sweep.branch = app.ScanBranch.Value;
+                else
+                    task.sweep.dates = leotherm.parseDateList( ...
+                        app.ScanDateList.Value, app.t('日期', 'dates'));
+                    task.sweep.inclinationDeg = leotherm.parseNumericList( ...
+                        app.ScanInclinationList.Value, app.t('倾角', 'inclination'));
+                    task.sweep.raanDeg = leotherm.parseNumericList( ...
+                        app.ScanRaanList.Value, 'RAAN');
+                end
+            end
+            task.geometry.enabled = app.PipelineOptions.geometry;
+            if task.geometry.enabled
+                task.geometry.solver = 'coupled';
+                task.surfaceMesh = app.CurrentGeometry;
+                task.volumeMesh = app.CurrentVolumeMesh;
+                task.material = struct( ...
+                    'conductivityWmK', app.VolumeConductivity.Value, ...
+                    'densityKgM3', app.VolumeDensity.Value, ...
+                    'specificHeatJkgK', app.VolumeSpecificHeat.Value);
+                task.couplingOptions = app.CouplingOptions;
+            end
+            telemetry = app.TelemetryWorkspace.getState;
+            task.telemetry.enabled = app.PipelineOptions.telemetry;
+            if task.telemetry.enabled
+                task.telemetry.source = telemetry.source;
+                task.telemetry.mapping = telemetry.mapping;
+                task.telemetry.options = telemetry.options;
+                task.telemetry.workflow = telemetry.mode;
+            end
+            task.calibration.enabled = app.PipelineOptions.calibration;
+            if task.calibration.enabled
+                calibration = app.CalibrationWorkspace.getState;
+                task.calibration.source = telemetry.source;
+                task.calibration.mapping = telemetry.mapping;
+                task.calibration.profile = calibration.profile;
+                task.calibration.split = calibration.split;
+                task.calibration.settings = calibration.settings;
+                if task.telemetry.enabled && isfield(calibration.settings, ...
+                        'independentHoldoutConfirmed')
+                    task.telemetry.independentHoldoutConfirmed = ...
+                        calibration.settings.independentHoldoutConfirmed;
+                end
+            end
+        end
+
+        function checkPipelineUI(app)
+            try
+                task = app.buildPipelineTask;
+                audit = leotherm.preflightThermalPipeline(task);
+                if audit.ready
+                    message = app.t('任务预检通过。运行将只执行勾选的阶段。', ...
+                        'Task preflight passed. Only selected stages will run.');
+                    if ~isempty(audit.warnings)
+                        message = [message newline app.pipelinePreflightWarnings(audit)];
+                    end
+                    uialert(app.Figure, message, app.t('任务已就绪', 'Task ready'), ...
+                        'Icon', 'success');
+                else
+                    uialert(app.Figure, app.pipelinePreflightMessage(audit), ...
+                        app.t('任务配置需修改', 'Task needs review'), 'Icon', 'warning');
+                end
+            catch exception
+                app.showException(app.t('任务预检失败', 'Task preflight failed'), exception);
+            end
+        end
+
+        function runPipelineUI(app)
+            if app.IsBusy, return; end
+            parent = uigetdir(pwd, app.t('选择任务结果保存位置', ...
+                'Choose where to save the task result'));
+            if isequal(parent, 0), return; end
+            name = ['leotherm_' datestr(now, 'yyyymmdd_HHMMSS') '_' ...
+                char(extractBefore(string(java.util.UUID.randomUUID), 9))];
+            outputDirectory = fullfile(parent, name);
+            try
+                task = app.buildPipelineTask;
+                audit = leotherm.preflightThermalPipeline(task);
+                if ~audit.ready
+                    error('leotherm:PipelinePreflight', '%s', ...
+                        strjoin(cellstr(audit.errors), newline));
+                end
+                app.setBusy(true, app.t('正在运行完整任务...', ...
+                    'Running the complete task...'));
+                cleanup = onCleanup(@() app.finishOperation);
+                run = leotherm.runThermalPipeline(task, outputDirectory);
+                app.adoptPipelineRun(run);
+                app.MainTabGroup.SelectedTab = app.ResultsTab;
+                app.setStatus(sprintf(app.t('任务完成，报告位于：%s', ...
+                    'Task complete; report: %s'), ...
+                    fullfile(outputDirectory, 'report', ...
+                    ['thermal_report_' app.Language '.pdf'])));
+                clear cleanup
+            catch exception
+                app.showException(app.t('任务运行失败', 'Task failed'), exception);
+            end
+        end
+
+        function adoptPipelineRun(app, run)
+            app.LastPipelineRun = run;
+            app.CurrentResult = [];
+            app.CurrentSweep = table;
+            app.CurrentMeshResult = [];
+            app.CurrentVolumeResult = [];
+            app.CurrentSurfaceVolumeResult = [];
+            app.TaskHistory(end+1) = struct('taskId', run.taskId, ...
+                'runType', 'pipeline', 'status', run.status, ...
+                'startedUTC', run.startedUTC, 'completedUTC', run.completedUTC, ...
+                'inputFingerprint', run.inputFingerprint);
+            app.updateScenarioPlots;
+            if ~isempty(run.sweep)
+                app.updateSweepPlots;
+            else
+                for k = 1:numel(app.SweepAxes)
+                    cla(app.SweepAxes(k));
+                end
+                app.updateSweepTable(table);
+            end
+            app.updateResultSummary;
+        end
+
         function runTaskScenario(app)
+            if app.isTelemetryTemplate
+                app.runTelemetryTask;
+                return
+            end
             [ready, ~] = app.checkSimulationTask('scenario');
             if ready
                 app.executeScenarioFromUI;
             else
                 app.checkTaskUI;
+            end
+        end
+
+        function runTelemetryTask(app)
+            if app.IsBusy, return; end
+            [ready, ~] = app.checkSimulationTask('scenario');
+            if ~ready
+                app.checkTaskUI;
+                return
+            end
+            try
+                telemetry = app.TelemetryWorkspace.getState;
+                if isempty(telemetry.source)
+                    app.MainTabGroup.SelectedTab = app.SimulationTab;
+                    app.TabGroup.SelectedTab = app.TelemetryWorkspace.Tab;
+                    app.setStatus(app.t('请先导入遥测 CSV 并确认映射。', ...
+                        'Import a telemetry CSV and confirm its mapping first.'));
+                    return
+                end
+                audit = app.TelemetryWorkspace.preflight;
+                if ~audit.ready
+                    error('leotherm:TelemetryPreflight', ...
+                        'Telemetry preflight did not pass: %s', strjoin(cellstr(audit.codes), ', '));
+                end
+                app.setBusy(true, app.t('正在运行遥测对比...', 'Running telemetry comparison...'));
+                cleanup = onCleanup(@() app.finishOperation);
+                app.TelemetryWorkspace.run;
+                task = app.buildSimulationTask(app.collectScenario, app.CurrentNetwork, ...
+                    app.TelemetryWorkspace.getState, app.CalibrationWorkspace.getState, ...
+                    app.captureScanSettings, 'scenario');
+                app.LastTaskSnapshot = leotherm.freezeSimulationTask(task);
+                app.CurrentTask = app.LastTaskSnapshot;
+                app.recordTaskRun(app.LastTaskSnapshot, 'telemetry', 'complete');
+                app.updateResultSummary;
+                app.MainTabGroup.SelectedTab = app.ResultsTab;
+                app.setStatus(app.t('遥测对比已完成，可以查看结果并生成报告。', ...
+                    'Telemetry comparison complete; review results and generate the report.'));
+                clear cleanup
+            catch exception
+                app.MainTabGroup.SelectedTab = app.SimulationTab;
+                app.TabGroup.SelectedTab = app.TelemetryWorkspace.Tab;
+                app.showException(app.t('遥测任务未完成', 'Telemetry task did not complete'), exception);
             end
         end
 
@@ -3093,9 +3545,12 @@ classdef ThermalSimulatorApp < handle
         end
 
         function openTaskResults(app)
+            telemetry = app.TelemetryWorkspace.getState;
             if ~isempty(app.CurrentResult) || ~isempty(app.CurrentSweep) ...
                     || ~isempty(app.CurrentMeshResult) || ~isempty(app.CurrentVolumeResult) ...
-                    || ~isempty(app.CurrentSurfaceVolumeResult)
+                    || ~isempty(app.CurrentSurfaceVolumeResult) ...
+                    || ~isempty(telemetry.result) || ~isempty(app.LastPipelineRun)
+                app.updateResultSummary;
                 app.MainTabGroup.SelectedTab = app.ResultsTab;
             end
         end
@@ -3153,6 +3608,8 @@ classdef ThermalSimulatorApp < handle
             end
             switch app.QuickStartTemplate.Value
                 case 'telemetry'
+                    app.PipelineOptions.telemetry = true;
+                    app.PipelineTelemetryCheck.Value = true;
                     app.MainTabGroup.SelectedTab = app.SimulationTab;
                     app.TabGroup.SelectedTab = app.TelemetryWorkspace.Tab;
                     app.setStatus(app.t('请在遥测页导入数据并完成预检。', ...
@@ -3175,17 +3632,24 @@ classdef ThermalSimulatorApp < handle
                 app.syncScenarioControls;
                 app.syncNetworkControls;
                 app.CurrentResult = [];
+                app.LastPipelineRun = [];
                 app.CurrentSweep = table;
                 app.CurrentMeshResult = [];
                 app.CurrentVolumeResult = [];
                 app.CurrentSurfaceVolumeResult = [];
                 app.CurrentSweepMode = '';
                 app.SweepContext = [];
+                app.PipelineOptions = struct('sweep', false, 'geometry', false, ...
+                    'telemetry', false, 'calibration', false);
+                app.PipelineSweepCheck.Value = false;
+                app.PipelineGeometryCheck.Value = false;
+                app.PipelineTelemetryCheck.Value = false;
+                app.PipelineCalibrationCheck.Value = false;
                 app.MainTabGroup.SelectedTab = app.SimulationTab;
                 app.TabGroup.SelectedTab = app.ScenarioTab;
                 app.updateTaskPanel;
                 app.updateResultState;
-                app.executeScenarioFromUI;
+                app.runPipelineUI;
             catch exception
                 app.showException(app.t('快速开始失败', 'Quick start failed'), exception);
             end
@@ -3256,6 +3720,7 @@ classdef ThermalSimulatorApp < handle
             app.CurrentScenario = configuration.scenario;
             app.CurrentNetwork = configuration.network;
             app.CurrentResult = [];
+            app.LastPipelineRun = [];
             app.CurrentSweep = table;
             app.CurrentMeshResult = [];
             app.CurrentVolumeResult = [];
@@ -3265,6 +3730,13 @@ classdef ThermalSimulatorApp < handle
             app.ActiveTemplateId = templateEntry.id;
             app.ActiveTemplatePath = templateEntry.path;
             app.ActiveTemplateSnapshot = configuration.template;
+            app.PipelineOptions = struct('sweep', false, 'geometry', false, ...
+                'telemetry', strcmp(configuration.mode, 'telemetry'), ...
+                'calibration', false);
+            app.PipelineSweepCheck.Value = false;
+            app.PipelineGeometryCheck.Value = false;
+            app.PipelineTelemetryCheck.Value = app.PipelineOptions.telemetry;
+            app.PipelineCalibrationCheck.Value = false;
             app.syncScenarioControls;
             app.syncNetworkControls;
             if strcmp(configuration.mode, 'telemetry')
@@ -3298,7 +3770,7 @@ classdef ThermalSimulatorApp < handle
                     'Options', {app.t('立即运行', 'Run now'), app.t('只载入模板', 'Load only')}, ...
                     'DefaultOption', 1, 'CancelOption', 2);
                 if strcmp(choice, app.t('立即运行', 'Run now'))
-                    app.runTaskScenario;
+                    app.runPipelineUI;
                 end
             end
         end
@@ -3570,6 +4042,23 @@ classdef ThermalSimulatorApp < handle
         end
 
         function exportCurrentResults(app)
+            if ~isempty(app.LastPipelineRun)
+                pdfPath = fullfile(app.LastPipelineRun.outputDirectory, ...
+                    'report', ['thermal_report_' app.LastPipelineRun.input.language '.pdf']);
+                if ~isfile(pdfPath)
+                    uialert(app.Figure, app.t( ...
+                        '本次任务的报告文件未找到。请检查结果目录或重新运行。', ...
+                        'This run PDF is missing. Check its result directory or rerun.'), ...
+                        app.t('报告不可用', 'Report unavailable'));
+                    return
+                end
+                try
+                    if ispc, winopen(pdfPath); else, open(pdfPath); end
+                catch exception
+                    app.showException(app.t('无法打开报告', 'Cannot open report'), exception);
+                end
+                return
+            end
             telemetryState = app.TelemetryWorkspace.getState;
             if isempty(app.CurrentResult) && isempty(app.CurrentSweep) ...
                     && isempty(app.CurrentMeshResult) && isempty(app.CurrentVolumeResult) ...
@@ -3685,6 +4174,8 @@ classdef ThermalSimulatorApp < handle
             app.ProgressDialog = [];
             currentMessage = app.StatusLabel.Text;
             app.setBusy(false, currentMessage);
+            app.updateTaskPanel;
+            app.updateResultState;
         end
 
         function setBusy(app, value, message)
@@ -3850,10 +4341,11 @@ classdef ThermalSimulatorApp < handle
                 app.MainTabGroup.SelectedTab = app.MainTabGroup.Children(selectedMainIndex);
             end
             app.updateScanControlState;
-            if ~isempty(app.CurrentResult)
+            if ~isempty(app.CurrentResult) || ~isempty(app.LastPipelineRun)
                 app.updateScenarioPlots;
             end
-            if ~isempty(app.CurrentSweep)
+            if ~isempty(app.CurrentSweep) || (~isempty(app.LastPipelineRun) ...
+                    && ~isempty(app.LastPipelineRun.sweep))
                 app.updateSweepPlots;
             end
             app.updateResultSummary;
@@ -3887,7 +4379,11 @@ classdef ThermalSimulatorApp < handle
 
         function mainTabChanged(app)
             app.refreshCalibrationContext;
-            app.updateTaskPanel;
+            if app.MainTabGroup.SelectedTab == app.ResultsTab
+                app.updateResultSummary;
+            else
+                app.updateTaskPanel;
+            end
         end
 
         function value = t(app, chinese, english)
