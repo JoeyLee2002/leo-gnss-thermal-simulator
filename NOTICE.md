@@ -1,5 +1,10 @@
 # Attribution and scope
 
+The v1.2.4 PDF writer calls the Apache PDFBox 2.x library already included in
+MATLAB/Runtime R2021b for document assembly. PDFBox is licensed under Apache-2.0;
+no additional PDFBox binaries are redistributed in this source repository.
+API reference: https://pdfbox.apache.org/docs/2.0.13/javadocs/org/apache/pdfbox/multipdf/PDFMergerUtility.html
+
 The architecture and validation cases in this repository are informed by:
 
 1. A. Chipps, *SATMO: a Multi-Planet Thermal Analysis Tool for CubeSat

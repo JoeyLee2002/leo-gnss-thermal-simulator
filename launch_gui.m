@@ -2,7 +2,7 @@ function app = launch_gui(language)
 %LAUNCH_GUI Start the graphical LEO GNSS Thermal Simulator workbench.
 
 if nargin < 1 || isempty(language)
-    language = 'zh';
+    language = 'en';
 end
 
 root = fileparts(mfilename('fullpath'));

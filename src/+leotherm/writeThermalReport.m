@@ -32,16 +32,45 @@ end
 
 report = collectReport(bundle);
 report.analysis = leotherm.buildThermalReportAnalysis(bundle);
+[report.details, report.nodeStatistics] = leotherm.buildThermalReportDetails(bundle);
+[gridItem, report.gridComparison] = leotherm.buildThermalGridReport(bundle);
+report.details = [report.details, gridItem];
+report.phaseDiagnostics = leotherm.reportPeakLag(bundle.scenario);
+report.harmonicResponse = leotherm.reportHarmonicResponse(bundle.scenario);
+report.pdfPageCounts = struct;
 report.softwareVersion = leotherm.version;
 report.generatedUTC = datetime('now', 'TimeZone', 'UTC', ...
     'Format', 'yyyy-MM-dd''T''HH:mm:ssXXX');
 report.languages = languages;
 report.metadata = bundle.metadata;
+report.synthesis = leotherm.buildThermalReportSynthesis(bundle, report);
+for k = 1:numel(report.synthesis.details)
+    extra = report.synthesis.details(k);
+    at = find(strcmp({report.details.stage}, extra.stage), 1);
+    if ~isempty(at)
+        report.details(at).linesZh = [report.details(at).linesZh, extra.linesZh];
+        report.details(at).linesEn = [report.details(at).linesEn, extra.linesEn];
+    end
+end
+writetable(report.synthesis.evidence, fullfile(outputDirectory, 'thermal_interpretation_evidence.csv'));
 
 writeSectionCsv(report, outputDirectory);
 writeEnergyCsv(report, outputDirectory);
 writeDiagnosticsCsv(report, outputDirectory);
 writeTelemetryCsv(report, outputDirectory);
+if ~isempty(report.nodeStatistics)
+    writetable(report.nodeStatistics, fullfile(outputDirectory, 'thermal_node_statistics.csv'));
+    n=bundle.scenario.network;
+    [a,b]=find(triu(n.conductanceWK>0,1));
+    g=n.conductanceWK(sub2ind(size(n.conductanceWK),a,b));
+    names=string(n.nodeNames(:));
+    links=table(a,names(a),b,names(b),g,'VariableNames', ...
+        {'from_id','from_name','to_id','to_name','conductance_w_per_k'});
+    writetable(links,fullfile(outputDirectory,'thermal_conductive_links.csv'));
+end
+if ~isempty(report.gridComparison)
+    writetable(report.gridComparison, fullfile(outputDirectory, 'thermal_grid_comparison.csv'));
+end
 writeManifest(report, bundle, outputDirectory);
 
 for k = 1:numel(languages)
@@ -78,10 +107,15 @@ for k = 1:numel(languages)
         leotherm.plotThermalReportStage(bundle, stage, ...
             fullfile(outputDirectory, [report.analysis(j).figureStem '_' lang '.png']), lang);
     end
+    for j = 1:numel(report.details)
+        item = report.details(j);
+        leotherm.plotThermalReportDetail(item, ...
+            fullfile(outputDirectory, [item.figureStem '_' lang '.png']), lang);
+    end
 end
 for k = 1:numel(languages)
     lang = languages{k};
-    leotherm.writeThermalPdfReport(report, bundle, ...
+    report.pdfPageCounts.(lang) = leotherm.writeThermalPdfReport(report, bundle, ...
         fullfile(outputDirectory, ['thermal_report_' lang '.pdf']), lang, outputDirectory);
     writeMarkdown(report, fullfile(outputDirectory, ['thermal_report_' lang '.md']), lang);
 end
@@ -102,7 +136,7 @@ end
 
 function bundle = normalizeBundle(input)
 bundle = struct('scenario', [], 'surface', [], 'volume', [], 'sweep', [], ...
-    'sweepContext', [], 'telemetry', [], 'calibration', [], 'metadata', []);
+    'sweepContext', [], 'telemetry', [], 'calibration', [], 'metadata', [], 'gridRefinement', []);
 if ~isstruct(input) || ~isscalar(input)
     error('leotherm:ReportExport', 'Input must be a scalar result or bundle structure.');
 end
@@ -113,7 +147,8 @@ end
 % their thermal states live under surface and volume. Preserve that context
 % in the report rather than forcing users to build a second bundle manually.
 if isempty(bundle.scenario) && isfield(input, 'scenario') && ...
-        isstruct(input.scenario) && isscalar(input.scenario)
+        isstruct(input.scenario) && isscalar(input.scenario) && ...
+        ~isfield(input.scenario, 'timeS') && ~isfield(input.scenario, 'temperatureK')
     bundle.scenario = input;
 end
 aliases = struct('scenario', {{'scenario','scenarioResult','result'}}, ...
@@ -123,7 +158,7 @@ aliases = struct('scenario', {{'scenario','scenarioResult','result'}}, ...
     'sweepContext', {{'sweepContext','context'}}, ...
     'telemetry', {{'telemetry','telemetryState'}}, ...
     'calibration', {{'calibration','calibrationResult'}}, ...
-    'metadata', {{'metadata','reportMetadata'}});
+    'metadata', {{'metadata','reportMetadata'}}, 'gridRefinement', {{'gridRefinement'}});
 names = fieldnames(aliases);
 for i = 1:numel(names)
     if ~isempty(bundle.(names{i})), continue; end
@@ -210,7 +245,21 @@ rows = addRow(rows, 'orbit_attitude', 'epoch_start_utc', formatValue(fieldOr(sce
 rows = addRow(rows, 'orbit_attitude', 'altitude', fieldOr(fieldOr(scenario,'orbit',struct),'altitudeM',NaN), 'm', statusFor(fieldOr(scenario,'orbit',struct),'altitudeM'), 'scenario.orbit.altitudeM', '');
 rows = addRow(rows, 'orbit_attitude', 'inclination', fieldOr(fieldOr(scenario,'orbit',struct),'inclinationDeg',NaN), 'deg', statusFor(fieldOr(scenario,'orbit',struct),'inclinationDeg'), 'scenario.orbit.inclinationDeg', '');
 rows = addRow(rows, 'orbit_attitude', 'attitude_mode', fieldOr(attitude,'mode','not_recorded'), '', statusFor(attitude,'mode'), 'scenario.attitude.mode', '');
-rows = addRow(rows, 'orbit_attitude', 'trajectory_frame', fieldOr(fieldOr(orbit,'frame',struct),'name','not_recorded'), '', 'not_available', 'result.orbit/frame', 'Frame labels are not present in all result producers.');
+frame = fieldOr(orbit, 'frame', struct);
+frameName = fieldOr(frame, 'name', '');
+if (ischar(frameName) && isrow(frameName)) || (isstring(frameName) && isscalar(frameName) && ~ismissing(frameName))
+    frameName = strtrim(char(frameName));
+else
+    frameName = '';
+end
+if isempty(frameName)
+    rows = addRow(rows, 'orbit_attitude', 'trajectory_frame', ...
+        'source_frame_not_recorded', '', 'not_recorded', 'result.orbit.frame.name', ...
+        'Declare the source trajectory axes and rerun; existing positions are not transformed or relabelled.');
+else
+    rows = addRow(rows, 'orbit_attitude', 'trajectory_frame', frameName, '', ...
+        'available', 'result.orbit.frame.name', fieldOr(frame, 'definition', ''));
+end
 end
 
 function rows = addCouplingRows(rows, bundle)
@@ -246,14 +295,16 @@ end
 function rows = addTelemetryRows(rows, state)
 [result, comparison, data] = telemetryParts(state);
 if isempty(result) && isempty(comparison) && isempty(data)
-    rows = addRow(rows, 'telemetry_comparison', 'status', 'not_available', '', 'not_available', '', ...
+    rows = addRow(rows, 'telemetry_comparison', 'telemetry_status', 'not_run_no_data', '', 'available', '', ...
         'No telemetry result was supplied; validation was not performed.');
     return
 end
 if isempty(comparison)
-    rows = addRow(rows, 'telemetry_comparison', 'status', 'simulation_only', '', 'not_available', '', ...
+    rows = addRow(rows, 'telemetry_comparison', 'telemetry_status', 'not_run', '', 'available', '', ...
         'Telemetry input exists but no comparison report is available.');
 else
+    rows = addRow(rows, 'telemetry_comparison', 'telemetry_status', 'comparison_available', '', ...
+        'available', 'telemetry.report', 'Comparison availability is not a validation pass.');
     rows = addRow(rows, 'telemetry_comparison', 'independence', fieldOr(comparison,'independence','not_recorded'), '', 'available', 'telemetry.report.independence', '');
     rows = addRow(rows, 'telemetry_comparison', 'conclusion', fieldOr(comparison,'conclusion',''), '', 'available', 'telemetry.report.conclusion', '');
 end
@@ -266,7 +317,20 @@ end
 function rows = energyRows(bundle)
 rows = table(strings(0,1), strings(0,1), zeros(0,1), strings(0,1), strings(0,1), ...
     'VariableNames', {'component','quantity','value','unit','status'});
-rows = addEnergy(rows, 'scenario', fieldOr(bundle.scenario,'numerics',struct), ...
+scenarioEnergy = fieldOr(bundle.scenario,'numerics',struct);
+epochs = numel(fieldOr(bundle.scenario,'timeS',[]));
+keys = fieldnames(scenarioEnergy);
+for k = 1:numel(keys)
+    key = keys{k}; value = scenarioEnergy.(key);
+    if ~startsWith(key,'integrated') || ~isnumeric(value), continue; end
+    if isvector(value) && numel(value)==epochs && epochs>1
+        scenarioEnergy.(key) = value-value(1);
+    else
+        % Older archives can contain full warmup histories with no epoch mask.
+        scenarioEnergy = rmfield(scenarioEnergy,key);
+    end
+end
+rows = addEnergy(rows, 'scenario', scenarioEnergy, ...
     {'integratedExternalHeatJ','integratedInternalHeatJ','integratedRadiatedHeatJ','integratedBoundaryHeatJ','integratedNetHeatJ','maximumEnergyClosureJ'}, 'J');
 rows = addEnergy(rows, 'surface', fieldOr(bundle.surface,'numerics',struct), ...
     {'integratedExternalHeatJ','maximumEnergyClosureJ'}, 'J');
@@ -405,6 +469,15 @@ manifest = struct('schemaVersion','1.0','softwareVersion',report.softwareVersion
         report.languages, 'UniformOutput', false)}, ...
     'sourceFiles',{table2struct(report.sources)}, ...
     'metadata', report.metadata);
+manifest.pdfPageCounts = report.pdfPageCounts;
+manifest.detailedAnalyses = {report.details.stage};
+manifest.synthesisEvidence = 'thermal_interpretation_evidence.csv';
+manifest.telemetryComparisonScored = telemetryScored;
+manifest.physicalValidationEstablished = false;
+manifest.telemetryValidationMeaning = 'legacy_scored_comparison_flag_not_independent_physical_validation';
+manifest.phaseDiagnosticsVersion = report.softwareVersion;
+manifest.scenarioIntegratedEnergyScope = 'retained_analysis_interval_rebased_at_first_epoch';
+manifest.maximumEnergyClosureScope = 'solver_maximum_interval_residual_may_include_fixed_warmup';
 if ~isempty(report.warnings), manifest.warnings = report.warnings; else, manifest.warnings = {}; end
 fid = fopen(fullfile(directory, 'thermal_manifest.json'), 'w', 'n', 'UTF-8');
 if fid < 0, error('leotherm:ReportExport', 'Cannot write thermal_manifest.json.'); end
@@ -420,8 +493,9 @@ zh = strcmp(language,'zh');
 put(fid, pick(zh,'# 热仿真结果报告','# Thermal simulation results report'));
 put(fid, sprintf(pick(zh,'软件版本：%s；生成时间（UTC）：%s','Software version: %s; generated UTC: %s'), ...
     report.softwareVersion, char(report.generatedUTC)));
-for k = 1:numel(report.analysis)
-    item = report.analysis(k);
+allAnalysis = [report.analysis, rmfield(report.details, 'charts')];
+for k = 1:numel(allAnalysis)
+    item = allAnalysis(k);
     if zh
         put(fid, ['## ' item.titleZh]); lines = item.linesZh;
     else
@@ -434,6 +508,13 @@ for k = 1:numel(report.analysis)
     end
 end
 put(fid, pick(zh, '## 输入、网格、材料与轨道姿态', '## Inputs, mesh, material, orbit and attitude'));
+for k = 1:height(report.sections)
+    r = report.sections(k,:);
+    if ismember(char(r.field), {'trajectory_frame','telemetry_status'})
+        [label, value] = leotherm.reportMetadataText(char(r.field), char(r.value), language);
+        put(fid, sprintf('- %s: %s', label, value));
+    end
+end
 put(fid, pick(zh, '| 类别 | 字段 | 数值 | 单位 | 状态 | 来源 | 备注 |', '| Section | Field | Value | Unit | Status | Source | Notes |'));
 put(fid, '|---|---|---|---|---|---|---|');
 for k = 1:height(report.sections)
@@ -456,7 +537,11 @@ for k = 1:height(report.diagnostics)
 end
 put(fid, pick(zh,'## 遥测对比','## Telemetry comparison'));
 if isempty(report.telemetry)
-    put(fid, pick(zh,'未提供遥测对比结果；未执行遥测验证。','No telemetry comparison was supplied; telemetry validation was not performed.'));
+    row = report.sections(strcmp(report.sections.field, 'telemetry_status'), :);
+    if ~isempty(row)
+        [label, value] = leotherm.reportMetadataText('telemetry_status', char(row.value(1)), language);
+        put(fid, sprintf('%s: %s', label, value));
+    end
 else
     put(fid, pick(zh,'| 节点 | 有效样本 | RMSE（K） | 评价 |','| Node | Used samples | RMSE (K) | Assessment |'));
     put(fid, '|---|---:|---:|---|');
@@ -478,6 +563,16 @@ if ~isempty(report.warnings)
     put(fid, pick(zh,'### 导出警告','### Export warnings'));
     for k = 1:numel(report.warnings), put(fid, ['- ' report.warnings{k}]); end
 end
+writeSynthesis(report.synthesis.conclusion);
+
+    function writeSynthesis(item)
+        if isempty(item.linesZh), return; end
+        put(fid, ['## ' pick(zh,item.titleZh,item.titleEn)]);
+        if zh, entryLines=item.linesZh; else, entryLines=item.linesEn; end
+        for lineIndex=1:numel(entryLines)
+            put(fid,sprintf('%d. %s',lineIndex,entryLines{lineIndex}));
+        end
+    end
 end
 
 function put(fid, text)

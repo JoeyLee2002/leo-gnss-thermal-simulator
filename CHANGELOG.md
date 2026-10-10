@@ -1,5 +1,68 @@
 # Changelog
 
+## 1.2.7 - Report reading order and paragraph layout (2026-10-10)
+
+- Remove the opening synthesis chapter from PDF and Markdown while retaining chapter analysis and closing conclusions.
+- Remove the research-result footer and center page numbers in both languages.
+- Justify non-final body lines using measured text extents; keep final lines and headings left aligned.
+- Keep closing punctuation with its preceding character during paragraph wrapping.
+
+
+## 1.2.6 - Task-specific interpretation and conclusions (2026-10-10)
+
+- Add bilingual key findings, chapter-level interpretation and closing task conclusions derived from recorded histories.
+- Quantify external heat shares, response-node range relative to network extrema, actual conductive transfer paths, and orbital phase as a fraction of one orbit.
+- Include completed optional-stage findings and supplied refinement results in the synthesis; export auditable interpretation metrics to CSV.
+- Keep thermal parameters and solvers unchanged; distinguish heat-input shares, observed transfer paths and phase descriptors from causal sensitivity experiments.
+
+## 1.2.5 - Coordinate and telemetry report metadata (2026-10-10)
+
+- Record the built-in orbit model's approximate geocentric equatorial axes and retain them through simulation/export.
+- Show declared trajectory axes instead of a hard-coded unavailable status; never infer J2000 for unlabelled archived results.
+- Replace the ambiguous telemetry `status` report field with `telemetry_status`, separating absent inputs, pending comparison and generated comparison results.
+- Use consistent Chinese/English metadata descriptions in PDF and Markdown. This patch does not change thermal parameters or computed histories.
+
+## 1.2.4 - Orbital response and report usability (2026-10-10)
+
+- Add orbital-frequency phase estimation to simulation metrics and sweeps; separate trend and three harmonics on actual epochs. Preserve existing peak-based field definitions.
+- Verify the new estimator against known multipeak signals and an analytic RC solution through the thermal solver.
+- Show component names, zero-valued optical parameters, thermal connectivity and exported link conductances.
+- Remove constant-spacing filler plots and generic interpretation text; use actual event counts and response statistics.
+- Report orbital phase alongside per-cycle peak diagnostics and independent time-grid comparisons.
+- Replace incremental native PDF append with one verified assembly using Runtime's bundled Apache PDFBox; check page count before publishing the final PDF.
+
+## 1.2.3 - Report result audit (2026-10-10)
+
+- Reject aggregate positive peak lag when eligible orbits have mixed signed phases. Retain per-orbit signed diagnostics; known single-frequency delays remain supported.
+- Recompute report peak-phase diagnostics from raw history so cached older metrics cannot restore a misleading positive delay.
+- Count actual illumination transitions, distinguish fixed warmup settings from frozen-Sun periodic initialization, and preserve row pairing in sweeps containing missing values.
+- Accept optional complete grid-refinement reruns for exact-common-epoch comparisons, a dedicated report chapter and a CSV. Different models, changed scenarios and missing coarse epochs are rejected.
+- Explicitly distinguish the legacy scored-telemetry flag from established physical validation in the manifest.
+- Rebase scenario heat-accounting CSV totals to the retained analysis interval, matching the report energy plot; omit older unaligned ledgers instead of guessing their epoch mask.
+
+## 1.2.2 - Detailed thermal analysis reports (2026-10-10)
+
+- Add eleven data-driven diagnostic chapters for nodal tasks, plus all-node statistics and a machine-readable CSV. Normal reference-network reports exceed fifteen pages without adding unexecuted stages.
+- Cover time resolution, capacity, thermal links, optical properties, eclipse structure, absorbed heat, temperature extrema, conductive flow, energy closure, lag identifiability and initialization.
+- Preserve full report paragraphs with automatic wrapping and pagination; record actual PDF page counts in the manifest.
+- Align all energy accounting histories with the retained analysis epochs after warmup.
+- Fix canonical saved-result bundles being mistaken for coupled-model configuration during report re-export.
+- Keep independent telemetry validation, engineering temperature limits and time-grid convergence distinct from successful simulation.
+
+## 1.2.1-portable.1 - No-installer packaging (2026-10-08)
+
+- Add a Windows x64 launcher and complete, unmodified MATLAB Runtime R2021b Update 8 distribution.
+- Set library paths only in the child process; keep startup logs and cache in the user's local application data.
+- Add first-use Runtime license acknowledgement, critical-file integrity checks, bilingual instructions and relocation tests.
+- Keep the thermal workbench executable at 1.2.1. Existing application-level findings remain open.
+
+## 1.2.1 - English startup and introduction (2026-10-04)
+
+- The source GUI, public app constructor and Windows desktop executable start in English.
+- Built-in example projects are regenerated with the English interface; Chinese remains available in the language selector.
+- Standalone smoke checks verify an English task report.
+- Added a narrated English introduction using production GUI captures and actual simulation reports.
+
 ## 1.2.0 - Stage-specific analysis reports (2026-09-27)
 
 - Each completed stage now contributes computed findings and its own chart to the PDF and Markdown report. Unselected stages contribute no fabricated analysis.

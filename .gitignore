@@ -1,4 +1,5 @@
 results/
+downloads/*portable*.zip*
 tools/build_tutorial_v101.ps1
 tools/capture_tutorial_v101.m
 docs/images/gui_smoke.mat
@@ -12,3 +13,6 @@ codegen/
 .DS_Store
 Thumbs.db
 .matlab_pref_test/
+tutorial/english_intro_v1_2_1/audio/
+tutorial/english_intro_v1_2_1/video_parts/
+tutorial/english_intro_v1_2_1/review/

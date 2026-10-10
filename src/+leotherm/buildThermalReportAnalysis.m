@@ -10,38 +10,38 @@ if isstruct(scenario) && isscalar(scenario) ...
     eclipse = fieldOr(m, 'eclipseFraction', NaN);
     zh = { ...
         sprintf('平均β角 %s 度；入影占比 %s。', fmt(fieldOr(m, 'meanBetaDeg', NaN)), percent(eclipse)), ...
-        sprintf('射频节点温度跨度 %s K；温度诱导码偏差跨度 %s m。', ...
+        sprintf('射频节点温度跨度 %s K；模型计算码偏差跨度 %s m。', ...
         fmt(fieldOr(m, 'rfTemperatureSpanK', NaN)), fmt(fieldOr(m, 'codeBiasSpanM', NaN)))};
     en = { ...
         sprintf('Mean beta angle: %s deg; eclipse fraction: %s.', ...
         fmt(fieldOr(m, 'meanBetaDeg', NaN)), percent(eclipse)), ...
         sprintf('RF temperature span: %s K; assumed temperature-induced code-bias span: %s m.', ...
         fmt(fieldOr(m, 'rfTemperatureSpanK', NaN)), fmt(fieldOr(m, 'codeBiasSpanM', NaN)))};
-    lag = fieldOr(m, 'forcingToRfLagS', NaN);
-    if isfiniteScalar(lag)
-        zh{end+1} = sprintf('热流至射频响应的估计时延为 %s s。', fmt(lag));
-        en{end+1} = sprintf('Estimated forcing-to-RF response lag: %s s.', fmt(lag));
+    harmonic = leotherm.reportHarmonicResponse(scenario);
+    if ~isempty(harmonic) && harmonic.available
+        zh{end+1} = sprintf('轨道基频等效相位时延 %.2f s（%.2f min）。',harmonic.phaseDelayS,harmonic.phaseDelayS/60);
+        en{end+1} = sprintf('Orbital-frequency phase delay: %.2f s (%.2f min).',harmonic.phaseDelayS,harmonic.phaseDelayS/60);
     else
-        zh{end+1} = '本次时延指标未定义；不能把它解释成零时延。';
-        en{end+1} = 'The lag metric is undefined in this run, not zero lag.';
+        phase = leotherm.reportPeakLag(scenario);
+        zh{end+1} = leotherm.reportLagExplanation(phase,'zh');
+        en{end+1} = leotherm.reportLagExplanation(phase,'en');
     end
     if isfiniteScalar(eclipse) && eclipse < 0.01
         zh{end+1} = '几乎没有入影，不能据此分析入影后的热滞后。';
         en{end+1} = 'With almost no eclipse, post-eclipse thermal lag cannot be assessed.';
     end
-    transitions = fieldOr(m, 'eclipseTransitionCount', NaN);
+    transitions = NaN;
+    if isfield(scenario.loads,'visibleFraction')
+        transitions = nnz(diff(scenario.loads.visibleFraction >= 0.5));
+    end
     if isfiniteScalar(transitions) && transitions > 0
         zh{end+1} = sprintf('记录 %s 次光照转换；该次数取决于本次时长与轨道条件。', fmt(transitions));
         en{end+1} = sprintf('%s illumination transitions occurred over this run.', fmt(transitions));
     end
-    if isfiniteScalar(lag) && lag > 0 && isfiniteScalar(eclipse) && eclipse > 0
-        zh{end+1} = '射频响应滞后于外部热流，与热惯性相容，但不能单独证明机理。';
-        en{end+1} = 'RF response trails forcing, consistent with thermal inertia but not proof of mechanism.';
-    end
-    zh{end+1} = '上述码偏差由设定的温度灵敏度计算，不是实测GNSS误差。';
-    en{end+1} = 'The code bias uses assumed thermal sensitivity; it is not measured GNSS error.';
     configuration = fieldOr(scenario, 'scenario', struct);
-    if isequal(fieldOr(configuration, 'warmupOrbits', NaN), 0)
+    initialization = fieldOr(scenario,'convergence',struct);
+    if ~fieldOr(initialization,'enabled',false) && ...
+            isequal(fieldOr(configuration, 'warmupOrbits', NaN), 0)
         zh{end+1} = '未做预热；初始温度暂态可能影响温度跨度和时延。';
         en{end+1} = 'No warmup was used; initial-temperature transients may affect spans and lag.';
     end
@@ -71,12 +71,14 @@ if istable(sweep) && ~isempty(sweep) ...
         zh{end+1} = '只有一个有效工况：这是案例结果，不能推断参数趋势或最优值。';
         en{end+1} = 'One valid case is a case result, not a trend or an optimum.';
     else
-        [peak, index] = max(bias);
-        if ~isempty(peak) && isfinite(peak) && numel(beta) >= index
+        paired = isfinite(beta) & isfinite(bias);
+        matchedBeta = beta(paired); matchedBias = bias(paired);
+        [peak, index] = max(matchedBias);
+        if ~isempty(peak)
             zh{end+1} = sprintf('本次网格中最大码偏差跨度 %s m，对应β角 %s 度。', ...
-                fmt(peak), fmt(beta(index)));
+                fmt(peak), fmt(matchedBeta(index)));
             en{end+1} = sprintf('Largest code-bias span on this grid: %s m at beta %s deg.', ...
-                fmt(peak), fmt(beta(index)));
+                fmt(peak), fmt(matchedBeta(index)));
         end
         zh{end+1} = '范围仅描述本次扫描网格；未控制其他变量时不作因果判断。';
         en{end+1} = 'Ranges describe this grid; causal effects require controlled comparisons.';
@@ -197,10 +199,13 @@ end
 end
 
 function value = sweepColumn(data, names)
-value = [];
+value = NaN(height(data),1);
 for k = 1:numel(names)
     if ismember(names{k}, data.Properties.VariableNames)
-        value = finiteValues(data.(names{k}));
+        candidate = data.(names{k});
+        if isnumeric(candidate) && isvector(candidate) && numel(candidate)==height(data)
+            value = candidate(:);
+        end
         return
     end
 end

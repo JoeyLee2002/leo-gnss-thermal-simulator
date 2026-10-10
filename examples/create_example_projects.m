@@ -11,7 +11,7 @@ addpath(fullfile(root, 'src'));
 projects = struct('name', {}, 'path', {}, 'purpose', {});
 
 % 1. A small, fast project for checking the installation.
-app = leotherm.ThermalSimulatorApp('off', 'zh');
+app = leotherm.ThermalSimulatorApp('off');
 cleanup = onCleanup(@() delete(app));
 state = app.getState;
 network = state.network;

@@ -2,6 +2,18 @@ function tests = test_gui_support
 tests = functiontests(localfunctions);
 end
 
+function testDefaultInterfaceIsEnglish(testCase)
+if ~usejava('jvm'), return; end
+app = leotherm.ThermalSimulatorApp('off');
+cleanup = onCleanup(@() delete(app));
+state = app.getState;
+verifyEqual(testCase, state.language, 'en');
+quickStart = findobj(app.Figure, 'Type', 'uitab', 'Title', 'Quick start');
+verifyEqual(testCase, numel(quickStart), 1);
+verifyEqual(testCase, quickStart.Parent.SelectedTab, quickStart);
+verifyEqual(testCase, findobj(app.Figure, 'Tag', 'TaskStatusLabel').Text, 'Ready to run');
+end
+
 function testWorkbenchInitializesActionableTaskState(testCase)
 if ~usejava('jvm')
     return

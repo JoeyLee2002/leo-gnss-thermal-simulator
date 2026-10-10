@@ -11,7 +11,7 @@ output = tempname;
 cleanup = onCleanup(@() removeFolder(output));
 standalone_main('--smoke', output);
 verifyTrue(testCase, isfile(fullfile(output, 'standalone_smoke_status.txt')));
-verifyTrue(testCase, isfile(fullfile(output, 'report', 'thermal_report_zh.pdf')));
+verifyTrue(testCase, isfile(fullfile(output, 'report', 'thermal_report_en.pdf')));
 pipeline = jsondecode(fileread(fullfile(output, 'pipeline_status.json')));
 verifyEqual(testCase, pipeline.status, 'complete');
 verifyEqual(testCase, pipeline.stages(5).status, 'skipped');
@@ -30,7 +30,7 @@ output = tempname;
 cleanup = onCleanup(@() removeFolder(output));
 standalone_main('--gui-smoke', output);
 verifyTrue(testCase, isfile(fullfile(output, 'standalone_gui_status.txt')));
-verifyTrue(testCase, isfile(fullfile(output, 'report', 'thermal_report_zh.pdf')));
+verifyTrue(testCase, isfile(fullfile(output, 'report', 'thermal_report_en.pdf')));
 clear cleanup cleanupPath
 end
 

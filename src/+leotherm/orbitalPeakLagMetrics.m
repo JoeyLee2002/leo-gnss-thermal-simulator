@@ -1,7 +1,7 @@
 function metrics = orbitalPeakLagMetrics(timeS, forcing, response, periodS)
-%ORBITALPEAKLAGMETRICS Per-orbit peak-to-next-peak and trough lags.
-% A modulo-period difference makes the event definition explicit and avoids
-% phase aliases from unrestricted cross-correlation of multi-harmonic signals.
+%ORBITALPEAKLAGMETRICS Sampled signed peak phase with conservative lag gating.
+% Phase is wrapped to half a period. Mixed signs are not pooled as positive
+% delay. Multi-peak forcing and grid dependence still require separate checks.
 
 timeS = timeS(:);
 forcing = forcing(:);
@@ -14,7 +14,8 @@ cycleIndex = floor((timeS - timeS(1)) / periodS);
 cycles = unique(cycleIndex);
 peakLagS = [];
 troughLagS = [];
-signedLagS = []; rejected = 0; complete = 0;
+signedLagS = []; signedTroughLagS = []; rejected = 0; complete = 0;
+scoredCycleNumbers = [];
 for k = 1:numel(cycles)
     select = cycleIndex == cycles(k);
     localTime = timeS(select);
@@ -36,8 +37,10 @@ for k = 1:numel(cycles)
     [~, responseTrough] = min(localResponse);
     signed = mod(localTime(responsePeak)-localTime(forcingPeak)+periodS/2,periodS)-periodS/2;
     signedLagS(end+1,1) = signed; %#ok<AGROW>
+    scoredCycleNumbers(end+1,1) = cycles(k)+1; %#ok<AGROW>
     peak = signed;
     trough = mod(localTime(responseTrough)-localTime(forcingTrough)+periodS/2,periodS)-periodS/2;
+    signedTroughLagS(end+1,1) = trough; %#ok<AGROW>
     if peak < 0 || ~uniqueExtremum(localForcing,'max') || ~uniqueExtremum(localResponse,'max')
         peak = NaN;
     end
@@ -53,17 +56,33 @@ metrics.identifiablePeakCycles = sum(isfinite(peakLagS));
 metrics.rejectedPeakCycles = rejected;
 metrics.signedPeakPhaseMedianS = medianOrNaN(signedLagS);
 metrics.identifiable = metrics.identifiablePeakCycles > 0;
+metrics.signedPeakPhaseByCycleS = signedLagS;
+metrics.scoredCycleNumbers = scoredCycleNumbers;
+metrics.mixedPhaseSigns = any(signedLagS < 0) && any(signedLagS >= 0);
+% Do not select only trailing cycles when other cycles indicate an advance.
+if metrics.mixedPhaseSigns, metrics.identifiable = false; end
 metrics.definition = 'sampled_nonnegative_peak_phase_not_a_thermal_time_constant';
 metrics.status = 'identified_phase_only';
 if ~metrics.identifiable, metrics.status = 'not_identifiable_or_phase_ambiguous'; end
+if metrics.mixedPhaseSigns, metrics.status = 'inconsistent_peak_phase_across_cycles'; end
 metrics.samplingResolutionS = NaN;
 if numel(timeS)>1, metrics.samplingResolutionS = median(diff(timeS)); end
 metrics.peakToPeakLagMedianS = medianOrNaN(peakLagS);
 metrics.peakToPeakLagP05S = percentileOrNaN(peakLagS, 5);
 metrics.peakToPeakLagP95S = percentileOrNaN(peakLagS, 95);
+if ~metrics.identifiable
+    metrics.peakToPeakLagMedianS = NaN;
+    metrics.peakToPeakLagP05S = NaN;
+    metrics.peakToPeakLagP95S = NaN;
+end
 metrics.troughToTroughLagMedianS = medianOrNaN(troughLagS);
 metrics.troughToTroughLagP05S = percentileOrNaN(troughLagS, 5);
 metrics.troughToTroughLagP95S = percentileOrNaN(troughLagS, 95);
+if any(signedTroughLagS < 0) && any(signedTroughLagS >= 0)
+    metrics.troughToTroughLagMedianS = NaN;
+    metrics.troughToTroughLagP05S = NaN;
+    metrics.troughToTroughLagP95S = NaN;
+end
 end
 
 function value = medianOrNaN(values)

@@ -1,0 +1,4 @@
+00:00 Start a task
+00:46 Thermal simulation
+02:09 Optional stages
+04:32 Report and reproducibility

@@ -41,6 +41,11 @@ else
         'Forcing-to-response lag (s)', 'Code-bias span (m)'};
     xLabel = 'Actual beta angle (deg)';
 end
+if ismember('orbital_phase_delay_s',data.Properties.VariableNames)
+    variables{3}='orbital_phase_delay_s';
+    if strcmp(language,'zh'), labels{3}='轨道基频相位时延（s）';
+    else, labels{3}='Orbital-frequency phase delay (s)'; end
+end
 for panel = 1:4
     nexttile; hold on
     for k = 1:numel(altitudes)

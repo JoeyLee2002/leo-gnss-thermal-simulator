@@ -1,0 +1,83 @@
+{
+  "version": "1.2.1",
+  "resolution": [
+    1920,
+    1080
+  ],
+  "fps": 20.0,
+  "durationSeconds": 325.35,
+  "scenes": 12,
+  "chapters": 4,
+  "fullDecodePassed": true,
+  "sampledFrames": 24,
+  "audioChecks": [
+    {
+      "scene": "01",
+      "peak": 0.72686767578125,
+      "rms": 0.09923586027203145
+    },
+    {
+      "scene": "02",
+      "peak": 0.726226806640625,
+      "rms": 0.09834571258398657
+    },
+    {
+      "scene": "03",
+      "peak": 0.708221435546875,
+      "rms": 0.09769589080581854
+    },
+    {
+      "scene": "04",
+      "peak": 0.767425537109375,
+      "rms": 0.09543588008872746
+    },
+    {
+      "scene": "05",
+      "peak": 0.803802490234375,
+      "rms": 0.09476325635998498
+    },
+    {
+      "scene": "06",
+      "peak": 0.764739990234375,
+      "rms": 0.10012242927197523
+    },
+    {
+      "scene": "07",
+      "peak": 0.74810791015625,
+      "rms": 0.09780228076836797
+    },
+    {
+      "scene": "08",
+      "peak": 0.7569580078125,
+      "rms": 0.09756370429227737
+    },
+    {
+      "scene": "09",
+      "peak": 0.667510986328125,
+      "rms": 0.0987784650572737
+    },
+    {
+      "scene": "10",
+      "peak": 0.720428466796875,
+      "rms": 0.10196965755401022
+    },
+    {
+      "scene": "11",
+      "peak": 0.709808349609375,
+      "rms": 0.09179805565762547
+    },
+    {
+      "scene": "12",
+      "peak": 0.682830810546875,
+      "rms": 0.10025578989462625
+    }
+  ],
+  "taskStatus": {
+    "base_run": "complete",
+    "sweep_run": "complete",
+    "geometry_run": "complete",
+    "telemetry_run": "complete"
+  },
+  "voice": "Microsoft Zira (English, synthetic)",
+  "scope": "Edited production GUI captures and actual reports. Calibration configuration only. Telemetry is synthetic."
+}

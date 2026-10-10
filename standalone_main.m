@@ -24,9 +24,10 @@ if ~isempty(varargin) && ismember(char(varargin{1}), {'--smoke','--gui-smoke'})
     scenario.convergence.enabled = false;
     task = leotherm.createThermalPipelineTask( ...
         scenario, leotherm.defaultReceiverNetwork);
+    task.language = 'en';
     run = leotherm.runThermalPipeline(task, outputDirectory);
     assert(strcmp(run.status, 'complete'), 'Pipeline did not complete.');
-    pdf = fullfile(outputDirectory, 'report', 'thermal_report_zh.pdf');
+    pdf = fullfile(outputDirectory, 'report', 'thermal_report_en.pdf');
     assert(isfile(pdf), 'The standalone report PDF was not created.');
     fid = fopen(fullfile(outputDirectory, 'standalone_smoke_status.txt'), 'w');
     assert(fid >= 0, 'Cannot write standalone smoke status.');
@@ -38,12 +39,12 @@ end
 if ~isempty(varargin)
     error('leotherm:StandaloneArguments', 'Unknown standalone argument.');
 end
-app = leotherm.launchApp('zh');
+app = leotherm.launchApp;
 waitfor(app.Figure);
 end
 
 function guiSmoke(outputDirectory)
-app = leotherm.ThermalSimulatorApp('off', 'zh');
+app = leotherm.ThermalSimulatorApp('off');
 cleanup = onCleanup(@() delete(app));
 scenario = leotherm.defaultScenario;
 scenario.name = 'standalone_gui_smoke';
@@ -54,7 +55,7 @@ scenario.convergence.enabled = false;
 app.runScenario(scenario, leotherm.defaultReceiverNetwork);
 run = app.runPipeline(outputDirectory);
 assert(strcmp(run.status, 'complete'), 'GUI pipeline did not complete.');
-pdf = fullfile(outputDirectory, 'report', 'thermal_report_zh.pdf');
+pdf = fullfile(outputDirectory, 'report', 'thermal_report_en.pdf');
 assert(isfile(pdf), 'The GUI report PDF was not created.');
 fid = fopen(fullfile(outputDirectory, 'standalone_gui_status.txt'), 'w');
 assert(fid >= 0, 'Cannot write standalone GUI status.');

@@ -45,7 +45,7 @@ for d = 1:numel(dates)
                     'eclipse_fraction', NaN, ...
                     'rf_temperature_span_k', NaN, ...
                     'code_bias_span_m', NaN, ...
-                    'forcing_to_rf_lag_s', NaN);
+                    'forcing_to_rf_lag_s', NaN,'orbital_phase_delay_s',NaN);
                 if ~cancelled && ~isempty(progress), cancelled=logical(progress(index-1,nRows)); end
                 if cancelled
                     row.status={'cancelled'}; row.message={'Cancelled before this case started.'};
@@ -61,6 +61,7 @@ for d = 1:numel(dates)
                     row.rf_temperature_span_k = m.rfTemperatureSpanK;
                     row.code_bias_span_m = m.codeBiasSpanM;
                     row.forcing_to_rf_lag_s = m.forcingToRfLagS;
+                    row.orbital_phase_delay_s = m.orbitalPhaseDelayS;
                 catch exception
                     row.status = {'failed'};
                     if isempty(exception.identifier)

@@ -1,0 +1,18 @@
+{
+  "LEOTherm_v1.2.0_中文完整教程.mp4": {
+    "bytes": 14002405,
+    "sha256": "a6e5eee2610d31eecf637ac1bcf410e9b0cd8771ebbcb9d2d81ab5a32b043fcf"
+  },
+  "教学案例与报告.zip": {
+    "bytes": 7542846,
+    "sha256": "ba81a7def03c120b85a5db444c7976f3eeed956e333fb512457d89274b643113"
+  },
+  "tutorial_zh.srt": {
+    "bytes": 17235,
+    "sha256": "e6523193d4d7ba81bb2e184b309ba6196d1fef56f51d2c99a295412db1aabfc3"
+  },
+  "chapters.txt": {
+    "bytes": 217,
+    "sha256": "6f8b344ccf6ee69be90049c6cf6b1528ecea6df3dbeec48aa29f3ba41d907d2b"
+  }
+}

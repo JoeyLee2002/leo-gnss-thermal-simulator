@@ -56,7 +56,14 @@ result.frame = frame(analysisMask, :, :);
 result.loads = trimStructure(loads, analysisMask, nEpoch);
 result.temperatureK = temperatureK(analysisMask, :);
 result.numerics = numerics;
-result.numerics.integratedNetHeatJ = numerics.integratedNetHeatJ(analysisMask);
+% All accounting histories must use the same retained epochs as temperature.
+historyFields = {'integratedNetHeatJ','integratedExternalHeatJ', ...
+    'integratedInternalHeatJ','integratedRadiatedHeatJ', ...
+    'integratedBoundaryHeatJ','energyClosureResidualJ'};
+for k = 1:numel(historyFields)
+    key = historyFields{k};
+    result.numerics.(key) = numerics.(key)(analysisMask);
+end
 result.codeBiasM = leotherm.temperatureCodeBias(result.temperatureK, network.bias);
 result.metrics = leotherm.computeMetrics(result.timeS, result.orbit, result.loads, ...
     result.temperatureK, result.codeBiasM, network);

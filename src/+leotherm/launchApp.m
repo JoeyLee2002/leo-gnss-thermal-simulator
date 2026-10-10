@@ -2,7 +2,7 @@ function app = launchApp(language)
 %LAUNCHAPP Open the interactive LEO GNSS Thermal Simulator workbench.
 
 if nargin < 1 || isempty(language)
-    language = 'zh';
+    language = 'en';
 end
 
 if ~usejava('jvm')

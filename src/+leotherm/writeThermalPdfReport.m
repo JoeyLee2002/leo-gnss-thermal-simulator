@@ -1,4 +1,4 @@
-function writeThermalPdfReport(report, bundle, path, language, assetDirectory)
+function page = writeThermalPdfReport(report, bundle, path, language, assetDirectory)
 %WRITETHERMALPDFREPORT Render a readable, task-specific PDF without toolboxes.
 language = leotherm.normalizeLanguage(language);
 if ~ismember(language, {'zh','en'})
@@ -7,6 +7,10 @@ end
 if isfile(path)
     error('leotherm:ReportExport', 'PDF already exists: %s', path);
 end
+destination = path;
+path = tempname(fileparts(destination));
+mkdir(path);
+pageCleanup = onCleanup(@() removePageDirectory(path));
 page = 0;
 lines = summaryLines(report, bundle, language);
 page = textPages(path, page, language, ...
@@ -32,15 +36,41 @@ for k = 1:numel(report.analysis)
     end
 end
 
+if isfield(report, 'details')
+    for k = 1:numel(report.details)
+        item = report.details(k);
+        if strcmp(language, 'zh')
+            titleText = item.titleZh; analysisLines = item.linesZh;
+        else
+            titleText = item.titleEn; analysisLines = item.linesEn;
+        end
+        page = analysisPage(path, page, language, titleText, analysisLines, ...
+            fullfile(assetDirectory, [item.figureStem '_' language '.png']));
+    end
+end
+if isfield(report, 'nodeStatistics') && ~isempty(report.nodeStatistics)
+    values = report.nodeStatistics;
+    displayNames = leotherm.nodeDisplayNames(cellstr(values.node_name),language);
+    lines = {tr(language, '温度为 K，热容为 J/K，功耗为配置值 W。均值采用时间加权。', ...
+        'Temperature: K; capacity: J/K; configured power: W. Means are time-weighted.')};
+        for k = 1:height(values)
+            row = values(k,:);
+            lines{end+1} = sprintf('# %d: %s',row.node_id,displayNames{k}); %#ok<AGROW>
+            lines{end+1} = sprintf(tr(language, '最低 %.3f | 均值 %.3f | 最高 %.3f | 完整极差 %.3f', ...
+                'Min %.3f | Mean %.3f | Max %.3f | Full range %.3f'), ...
+                row.minimum_k,row.time_mean_k,row.maximum_k,row.peak_to_peak_k); %#ok<AGROW>
+            lines{end+1} = sprintf(tr(language, '热容 %.5g | 内部功耗 %.5g | 末端减起点 %.3f K', ...
+                'Capacity %.5g | Internal power %.5g | End minus start %.3f K'), ...
+                row.capacity_j_per_k,row.configured_internal_power_w,row.end_minus_start_k); %#ok<AGROW>
+        end
+    page = textPages(path,page,language,tr(language,'全节点统计附表','All-node statistics'),lines,30);
+end
 rows = sectionLines(report.sections, language);
 if isempty(rows)
     rows = {tr(language, '没有结构化输入记录。', 'No structured input record is available.')};
 end
-for first = 1:22:numel(rows)
-    last = min(first + 21, numel(rows));
-    page = textPage(path, page, language, ...
-        tr(language, '输入与结果明细', 'Inputs and result details'), rows(first:last));
-end
+page = textPages(path, page, language, ...
+    tr(language, '输入与结果明细', 'Inputs and result details'), rows, 24);
 
 if ~isempty(report.telemetry)
     lines = telemetryLines(report.telemetry, language);
@@ -48,16 +78,33 @@ if ~isempty(report.telemetry)
         tr(language, '遥测对比', 'Telemetry comparison'), lines, 24);
 end
 lines = acceptanceLines(report, bundle, language);
-textPages(path, page, language, tr(language, '验收与解释边界', ...
-    'Acceptance and interpretation boundary'), lines, 24);
+page = textPages(path, page, language, tr(language, '计算检查与复核记录', ...
+    'Computation checks and audit record'), lines, 24);
+if isfield(report,'synthesis')
+    item=report.synthesis.conclusion;
+    page=textPages(path,page,language,tr(language,item.titleZh,item.titleEn), ...
+        synthesisLines(item,language),24);
+end
 
-fid = fopen(path, 'rb');
-if fid < 0, error('leotherm:ReportExport', 'PDF was not created: %s', path); end
+pages = arrayfun(@(k) fullfile(path,sprintf('page_%04d.pdf',k)),1:page,'UniformOutput',false);
+leotherm.mergeReportPdfPages(pages,destination);
+fid = fopen(destination, 'rb');
+if fid < 0, error('leotherm:ReportExport', 'PDF was not created: %s', destination); end
 cleanup = onCleanup(@() fclose(fid));
 header = fread(fid, 5, '*char')';
 if ~strcmp(header, '%PDF-')
     error('leotherm:ReportExport', 'Invalid PDF output: %s', path);
 end
+end
+
+function removePageDirectory(path)
+% This directory was created by tempname for this report only.
+if isfolder(path), rmdir(path,'s'); end
+end
+
+function lines=synthesisLines(item,language)
+if strcmp(language,'zh'), lines=item.linesZh; else, lines=item.linesEn; end
+for k=1:numel(lines), lines{k}=sprintf('%d. %s',k,lines{k}); end
 end
 
 function page = textPages(path, page, language, titleText, lines, limit)
@@ -88,8 +135,8 @@ end
 end
 
 function cost = lineCost(value)
-if startsWith(value, '# '), cost = 0.048;
-else, cost = 0.026; end
+if startsWith(value, '# '), cost = 0.024*numel(wrapText(extractAfter(value,2),85))+0.024;
+else, cost = 0.024*numel(wrapText(value,100))+0.008; end
 end
 
 function page = textPage(path, page, language, titleText, lines)
@@ -98,20 +145,26 @@ page = page + 1;
 cleanup = onCleanup(@() close(fig));
 y = 0.835;
 for k = 1:numel(lines)
-    value = shorten(lines{k}, 105);
+    value = char(lines{k});
     if startsWith(value, '# ')
         y = y - 0.010;
-        put(ax, 0.075, y, extractAfter(value, 2), 12, [0.08 0.35 0.31], true);
-        y = y - 0.038;
+        wrapped = wrapText(extractAfter(value,2),85);
+        for j = 1:numel(wrapped)
+            put(ax,0.075,y,wrapped{j},11,[0.08 0.35 0.31],true); y = y-0.024;
+        end
+        y = y-0.014;
     else
-        put(ax, 0.075, y, value, 9.5, [0.17 0.22 0.23], false);
-        y = y - 0.026;
+        wrapped = wrapText(value,100);
+        for j = 1:numel(wrapped)
+            leotherm.drawReportBodyLine(ax,wrapped{j},y,j<numel(wrapped)); y = y-0.024;
+        end
+        y = y-0.008;
     end
     if y < 0.105
         error('leotherm:ReportExport', 'PDF page has too much text.');
     end
 end
-appendPage(fig, path, page > 1);
+appendPage(fig, path, page);
 clear cleanup
 end
 
@@ -123,21 +176,30 @@ ax = axes('Parent', fig, 'Units', 'normalized', 'Position', [0.06 0.17 0.88 0.65
 image(ax, imread(imagePath));
 axis(ax, 'image');
 axis(ax, 'off');
-appendPage(fig, path, true);
+appendPage(fig, path, page);
 clear cleanup
 end
 
 function page = analysisPage(path, page, language, titleText, lines, imagePath)
-if numel(lines) > 8
-    error('leotherm:ReportExport', 'Analysis text exceeds the figure page.');
+wrapped = {};
+justify = false(1,0);
+for k = 1:numel(lines)
+    paragraph = wrapText(lines{k},100);
+    wrapped = [wrapped,paragraph]; %#ok<AGROW>
+    justify = [justify,true(1,numel(paragraph)-1),false]; %#ok<AGROW>
+end
+if numel(wrapped) > 12
+    page = textPages(path,page,language,titleText,lines,24);
+    page = imagePage(path,page,language,titleText,imagePath);
+    return
 end
 page = page + 1;
 [fig, ax] = newPage(language, titleText, page);
 cleanup = onCleanup(@() close(fig));
 y = 0.825;
-for k = 1:numel(lines)
-    put(ax, 0.075, y, shorten(lines{k}, 105), 9.5, [0.17 0.22 0.23], false);
-    y = y - 0.039;
+for k = 1:numel(wrapped)
+    leotherm.drawReportBodyLine(ax,wrapped{k},y,justify(k));
+    y = y - 0.027;
 end
 top = y - 0.020;
 if top <= 0.36
@@ -147,7 +209,7 @@ chart = axes('Parent', fig, 'Units', 'normalized', ...
     'Position', [0.065 0.14 0.87 top - 0.14]);
 image(chart, imread(imagePath));
 axis(chart, 'image'); axis(chart, 'off');
-appendPage(fig, path, page > 1);
+appendPage(fig, path, page);
 clear cleanup
 end
 
@@ -157,6 +219,7 @@ fig = figure('Visible', 'off', 'Color', 'w', 'Units', 'pixels', ...
 ax = axes('Parent', fig, 'Units', 'normalized', 'Position', [0 0 1 1], ...
     'XLim', [0 1], 'YLim', [0 1], 'Visible', 'off');
 hold(ax, 'on');
+ax.Toolbar.Visible = 'off';
 patch(ax, [0 1 1 0], [0 0 1 1], [1 1 1], 'EdgeColor', 'none');
 patch(ax, [0 1 1 0], [0.945 0.945 1 1], [0.09 0.20 0.22], 'EdgeColor', 'none');
 put(ax, 0.075, 0.966, tr(language, '低轨卫星热仿真任务报告', ...
@@ -164,26 +227,22 @@ put(ax, 0.075, 0.966, tr(language, '低轨卫星热仿真任务报告', ...
 put(ax, 0.075, 0.890, titleText, 18, [0.08 0.22 0.24], true);
 plot(ax, [0.075 0.925], [0.865 0.865], 'Color', [0.15 0.55 0.48], 'LineWidth', 1.2);
 plot(ax, [0.075 0.925], [0.072 0.072], 'Color', [0.78 0.82 0.81], 'LineWidth', 0.7);
-put(ax, 0.075, 0.045, tr(language, '研究级结果 | 数据与配置见同目录', ...
-    'Research result | Data and configuration accompany this PDF'), ...
-    8, [0.40 0.45 0.46], false);
-put(ax, 0.88, 0.045, sprintf('%d', page), 8, [0.40 0.45 0.46], false);
+h=put(ax, 0.5, 0.045, sprintf('%d', page), 8, [0.40 0.45 0.46], false);
+set(h,'HorizontalAlignment','center');
 end
 
-function put(ax, x, y, value, size, color, bold)
+function h=put(ax, x, y, value, size, color, bold)
 weight = 'normal';
 if bold, weight = 'bold'; end
-text(ax, x, y, char(value), 'FontName', 'Microsoft YaHei', ...
+h=text(ax, x, y, char(value), 'FontName', 'Microsoft YaHei', ...
     'FontSize', size, 'FontWeight', weight, 'Color', color, ...
     'Interpreter', 'none', 'VerticalAlignment', 'middle');
 end
 
-function appendPage(fig, path, append) %#ok<INUSL>
-if append
-    evalc('exportgraphics(fig, path, ''ContentType'', ''vector'', ''Append'', true);');
-else
-    evalc('exportgraphics(fig, path, ''ContentType'', ''vector'');');
-end
+function appendPage(fig, path, page) %#ok<INUSL>
+singlePage = fullfile(path,sprintf('page_%04d.pdf',page)); %#ok<NASGU>
+% Avoid the native incremental-PDF merger on R2021b.
+evalc('exportgraphics(fig, singlePage, ''ContentType'', ''vector'');');
 end
 
 function lines = summaryLines(report, bundle, language)
@@ -240,8 +299,14 @@ if ~isempty(scenario)
     lines{end+1} = pair(language, '半仿真码偏差跨度', 'Semi-synthetic code-bias span', ...
         [number(fieldOr(metrics, 'codeBiasSpanM', NaN), language) ' m']);
     if isfield(metrics, 'forcingToRfLagS')
-        lines{end+1} = pair(language, '热流至射频响应时延', 'Heat-to-RF response lag', ...
-            [number(metrics.forcingToRfLagS, language) ' s']);
+        harmonic=leotherm.reportHarmonicResponse(scenario);
+        if ~isempty(harmonic) && harmonic.available
+            lines{end+1}=pair(language,'轨道基频等效相位时延','Orbital-frequency phase delay', ...
+                sprintf('%.2f s',harmonic.phaseDelayS));
+        else
+            phase = leotherm.reportPeakLag(scenario);
+            lines{end+1} = leotherm.reportLagExplanation(phase,language);
+        end
     end
 end
 if ~isempty(fieldOr(bundle, 'sweep', []))
@@ -267,21 +332,6 @@ if ~isempty(closure)
     lines{end+1} = pair(language, '最大能量闭合差', 'Maximum energy closure', ...
         [number(max(abs(closure.value)), language) ' J']);
 end
-lines{end+1} = ['# ' tr(language, '阅读结论', 'Interpretation')];
-if ~isempty(scenario)
-    eclipse = fieldOr(fieldOr(scenario, 'metrics', struct), 'eclipseFraction', NaN);
-    if isfinite(eclipse) && eclipse < 0.01
-        lines{end+1} = tr(language, '此场景几乎没有入影，入影事件时延不适用。', ...
-            'This scenario has almost no eclipse; eclipse-event lag is not applicable.');
-    else
-        lines{end+1} = tr(language, '温度与时延描述本次场景；请结合输入和图表解释。', ...
-            'Temperature and lag describe this scenario; interpret them with the inputs and plots.');
-    end
-end
-if ~isempty(scenario)
-    lines{end+1} = tr(language, '码偏差由设定的温度灵敏度生成，不代表实测 GNSS 误差。', ...
-        'Code bias comes from assumed thermal sensitivity, not measured GNSS error.');
-end
 end
 
 function lines = sectionLines(sections, language)
@@ -290,14 +340,18 @@ for k = 1:height(sections)
     row = sections(k, :);
     key = char(row.field);
     if ismember(key, {'node_names','simulation_provenance'}), continue; end
-    name = fieldName(key, language);
-    value = localValue(key, char(row.value), language);
+    if ismember(key, {'trajectory_frame','telemetry_status'})
+        [name, value] = leotherm.reportMetadataText(key, char(row.value), language);
+    else
+        name = fieldName(key, language);
+        value = localValue(key, char(row.value), language);
+    end
     unit = char(row.unit);
     status = char(row.status);
     if strcmp(status, 'not_available')
         value = tr(language, '未提供', 'Not available');
     end
-    lines{end+1} = sprintf('%s: %s %s', name, shorten(value, 65), ...
+    lines{end+1} = sprintf('%s: %s %s', name, value, ...
         unitName(unit, language)); %#ok<AGROW>
 end
 end
@@ -352,8 +406,11 @@ for k = 1:numel(names)
 end
 [~, comparison] = telemetryParts(fieldOr(bundle, 'telemetry', []));
 if isempty(comparison)
-    lines{end+1} = tr(language, '遥测验证：未执行。', ...
-        'Telemetry validation: not performed.');
+    row = report.sections(strcmp(report.sections.field, 'telemetry_status'), :);
+    if ~isempty(row)
+        [label, value] = leotherm.reportMetadataText('telemetry_status', char(row.value(1)), language);
+        lines{end+1} = sprintf('%s: %s', label, value);
+    end
 else
     lines{end+1} = pair(language, '遥测比较独立性', ...
         'Telemetry comparison independence', ...
@@ -362,13 +419,9 @@ else
     lines{end+1} = tr(language, '遥测误差与样本数见上一页；阈值由用户自行设定。', ...
         'Telemetry errors and sample counts are on the preceding page; user criteria apply.');
 end
-lines{end+1} = ['# ' tr(language, '解释边界', 'Interpretation limits')];
-lines{end+1} = tr(language, '默认网络是研究示例，不能作为具体卫星热真空鉴定结果。', ...
-    'The reference network is a research example, not flight qualification.');
-lines{end+1} = tr(language, '数值计算完成不等于物理验证；未提供的证据不能推断为通过。', ...
-    'A completed computation is not physical validation; missing evidence is not a pass.');
-lines{end+1} = tr(language, '报告结论：数值与配置检查见上方；物理有效性需独立证据。', ...
-    'Report conclusion: numerical and input checks are above; physical validity needs independent evidence.');
+lines{end+1} = ['# ' tr(language, '本次评估范围', 'Assessment scope')];
+lines{end+1} = tr(language, '本报告评估所配置热网络的仿真结果及数值检查；设备温限符合性不在本次评估范围内。', ...
+    'This report evaluates the configured thermal simulation and numerical checks. Device temperature-limit compliance is outside this assessment.');
 lines{end+1} = ['# ' tr(language, '复核文件', 'Audit files')];
 lines{end+1} = tr(language, '同目录提供原始结果 MAT、指标 CSV、Markdown、清单和图像。', ...
     'MAT results, metric CSV, Markdown, manifest, and figures accompany this PDF.');
@@ -405,14 +458,14 @@ keys = {'scenario_name','duration','time_step','warmup_orbits','node_count', ...
     'boundary_matching','matched_boundary_faces','maximum_absolute_closure', ...
     'contact_pair_count','status','independence','conclusion','source', ...
     'simulation_provenance'};
-zh = {'场景名称','分析时长','时间步长','预热圈数','节点数','节点名称', ...
+zh = {'场景名称','分析时长','时间步长','固定预热配置（非收敛模式）','节点数','节点名称', ...
     '导热系数范围','内部功耗范围','面片数','总面积','视因子来源', ...
     '热参数来源','辐射时序','四面体数','求解形式','导热率范围', ...
     '密度范围','比热范围','开始历元 UTC','轨道高度','轨道倾角', ...
     '姿态模式','轨道坐标系','耦合输入类型','边界匹配方式', ...
     '匹配边界面数','最大热流闭合差','接触对数','状态','独立性', ...
     '结论','数据来源','仿真来源'};
-en = {'Scenario name','Duration','Time step','Warmup orbits','Node count', ...
+en = {'Scenario name','Duration','Time step','Fixed warmup setting (non-convergence mode)','Node count', ...
     'Node names','Conductance range','Internal power range','Face count', ...
     'Total area','View-factor source','Thermal parameter source', ...
     'Radiation history','Tetrahedron count','Formulation','Conductivity range', ...
@@ -495,12 +548,32 @@ switch unit
 end
 end
 
-function value = shorten(value, limit)
-value = char(string(value));
-value = strrep(value, newline, ' ');
-if numel(value) > limit
-    value = [value(1:limit-3) '...'];
+function lines = wrapText(value, width)
+% Preserve full text; use double-width accounting for CJK characters.
+value = strrep(char(value), newline, ' '); lines = {};
+while ~isempty(value)
+    weights = 1+double(value > 255);
+    last = find(cumsum(weights) <= width,1,'last');
+    if isempty(last), last = 1; end
+    if last < numel(value)
+        if ~any(value(1:last)>255)
+            space = find(value(1:last)==' ',1,'last');
+            if ~isempty(space) && space > last/2, last = space; end
+        elseif value(last)<=255 && value(last+1)<=255 && ...
+                ~isspace(value(last)) && ~isspace(value(last+1))
+            % Mixed Chinese text may break at CJK boundaries, not only spaces.
+            boundary=find(value(1:last)>255 | isspace(value(1:last)),1,'last');
+            if ~isempty(boundary), last=boundary; end
+        end
+        % Keep closing punctuation with the preceding character.
+        while last>1 && any(value(last+1)=='，。；：！？、）》】,.!?;:')
+            last=last-1;
+        end
+    end
+    lines{end+1} = strtrim(value(1:last)); %#ok<AGROW>
+    value = strtrim(value(last+1:end));
 end
+if isempty(lines), lines = {''}; end
 end
 
 function value = tr(language, chinese, english)

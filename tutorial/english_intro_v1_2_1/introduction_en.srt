@@ -1,0 +1,299 @@
+1
+00:00:00,000 --> 00:00:05,087
+Welcome to LEOTherm, a thermal simulation workbench for low Earth orbit satellite research.
+
+2
+00:00:05,087 --> 00:00:08,609
+Version one point two point one starts in English.
+
+3
+00:00:08,609 --> 00:00:12,914
+This introduction uses the actual application, computed results and generated reports.
+
+4
+00:00:12,914 --> 00:00:19,567
+We will start from an example, run a thermal simulation, explore optional stages, and finish with a
+
+5
+00:00:19,567 --> 00:00:21,915
+report that records what was calculated.
+
+6
+00:00:22,550 --> 00:00:27,772
+The Quick start page provides ready to use templates, a task wizard and saved projects.
+
+7
+00:00:27,772 --> 00:00:30,209
+For a first run, choose First simulation.
+
+8
+00:00:30,209 --> 00:00:34,038
+The wizard asks for a task name, duration and output interval.
+
+9
+00:00:34,038 --> 00:00:38,216
+You can also copy a readable template and change a few fields.
+
+10
+00:00:38,216 --> 00:00:42,045
+The Windows executable needs free MATLAB Runtime twenty twenty one b.
+
+11
+00:00:42,045 --> 00:00:45,875
+Source users start the application with launch underscore g u i.
+
+12
+00:00:46,500 --> 00:00:51,993
+On Simulation, review the start time, duration, orbit altitude, inclination and orbit direction.
+
+13
+00:00:51,993 --> 00:00:58,754
+Select the satellite attitude, then enable direct sunlight, reflected sunlight and Earth infrared radiation as needed.
+
+14
+00:00:58,754 --> 00:01:00,444
+Check the displayed units.
+
+15
+00:01:00,444 --> 00:01:03,824
+Warmup orbits reduce the influence of starting temperatures.
+
+16
+00:01:03,824 --> 00:01:08,895
+Periodic convergence checks whether repeated orbits have reached a stable thermal cycle.
+
+17
+00:01:08,895 --> 00:01:15,233
+The example network is a reference model, so mission specific studies need their own parameters.
+
+18
+00:01:15,850 --> 00:01:19,905
+The thermal network represents satellite parts as connected temperature nodes.
+
+19
+00:01:19,905 --> 00:01:23,960
+Set heat capacity, optical properties, internal power and thermal links.
+
+20
+00:01:23,960 --> 00:01:30,448
+The solver calculates heat entering the satellite, heat exchanged between parts and heat radiated to space.
+
+21
+00:01:30,448 --> 00:01:34,503
+It then integrates the temperature of each part over time.
+
+22
+00:01:34,503 --> 00:01:40,180
+Receiver, antenna and oscillator roles help identify the response channels used in derived analyses.
+
+23
+00:01:40,800 --> 00:01:42,736
+Check the task before running.
+
+24
+00:01:42,736 --> 00:01:46,220
+Required inputs are checked for the stages you selected.
+
+25
+00:01:46,220 --> 00:01:48,544
+The basic nodal simulation always runs.
+
+26
+00:01:48,544 --> 00:01:53,964
+In this example, the two hour task actually completed and passed its numerical checks.
+
+27
+00:01:53,964 --> 00:01:58,223
+Temperature and illumination plots show the response through sunlight and shadow.
+
+28
+00:01:58,223 --> 00:02:02,869
+The Results and export page provides the run status and report controls.
+
+29
+00:02:02,869 --> 00:02:09,064
+Numerical acceptance means the declared checks passed; measured satellite data are needed to test physical agreement.
+
+30
+00:02:09,700 --> 00:02:14,430
+Enable Parameter sweep when you want to compare conditions within one task.
+
+31
+00:02:14,430 --> 00:02:19,160
+This demonstration runs six cases: two altitudes and three target beta angles.
+
+32
+00:02:19,160 --> 00:02:23,890
+Beta describes the angle between the Sun direction and the orbital plane.
+
+33
+00:02:23,890 --> 00:02:27,437
+Another mode varies dates, inclinations and orbit directions directly.
+
+34
+00:02:27,437 --> 00:02:30,590
+Check each case status before comparing temperature ranges.
+
+35
+00:02:30,590 --> 00:02:36,109
+These short demonstration runs include starting transients and do not establish a global optimum.
+
+36
+00:02:36,750 --> 00:02:41,437
+The geometry stage accepts a surface model and a tetrahedral volume mesh.
+
+37
+00:02:41,437 --> 00:02:44,952
+Declare mesh units, material properties, contacts and thermal boundaries.
+
+38
+00:02:44,952 --> 00:02:50,811
+This example actually runs surface to volume coupling: calculated surface heat loads drive internal conduction.
+
+39
+00:02:50,811 --> 00:02:55,107
+The current coupling is one way and requires matching boundary geometry.
+
+40
+00:02:55,107 --> 00:03:01,747
+The task report is the source for the newly computed results; the geometry panel may still display
+
+41
+00:03:01,747 --> 00:03:02,918
+an older result.
+
+42
+00:03:02,918 --> 00:03:06,043
+Inspect heat flow accounting as well as temperatures.
+
+43
+00:03:06,650 --> 00:03:11,210
+Engineering thermal model exchange provides a route for reusing existing models.
+
+44
+00:03:11,210 --> 00:03:18,257
+Import a supported exchange file, inspect it, define the node mapping and preview the changes before applying
+
+45
+00:03:18,257 --> 00:03:18,672
+them.
+
+46
+00:03:18,672 --> 00:03:22,817
+Custom adapters and external solver interfaces are available to developers.
+
+47
+00:03:22,817 --> 00:03:26,134
+A successful file import checks the declared format.
+
+48
+00:03:26,134 --> 00:03:30,694
+Units, materials and boundaries still need to represent the intended device.
+
+49
+00:03:30,694 --> 00:03:35,253
+This introduction shows the exchange interface, not a commercial solver execution.
+
+50
+00:03:35,900 --> 00:03:40,699
+Telemetry and validation maps time, measured temperatures and their corresponding model nodes.
+
+51
+00:03:40,699 --> 00:03:46,298
+Check the time span, units, missing values and exact time alignment before comparing results.
+
+52
+00:03:46,298 --> 00:03:53,096
+This demonstration runs the built in synthetic example, which teaches the workflow and is not an in
+
+53
+00:03:53,096 --> 00:03:53,896
+orbit validation.
+
+54
+00:03:53,896 --> 00:03:58,295
+For your satellite, use traceable measurements and independently held out days.
+
+55
+00:03:58,295 --> 00:04:01,894
+The report includes the scored comparison and its limits.
+
+56
+00:04:01,894 --> 00:04:04,293
+Missing data are not silently interpolated.
+
+57
+00:04:04,900 --> 00:04:11,348
+Device calibration uses nominal device parameters, explicit allowed ranges and penalties for moving away from the reference
+
+58
+00:04:11,348 --> 00:04:11,727
+values.
+
+59
+00:04:11,727 --> 00:04:15,140
+Split whole days into training, validation and test sets.
+
+60
+00:04:15,140 --> 00:04:18,554
+Only accepted fitted parameters should drive a later simulation.
+
+61
+00:04:18,554 --> 00:04:23,864
+This screen explains the configuration; no new calibration fit is claimed in this introduction.
+
+62
+00:04:23,864 --> 00:04:30,311
+Use separate test data to judge agreement, and review the warnings before treating a fit as a
+
+63
+00:04:30,311 --> 00:04:31,449
+validated device model.
+
+64
+00:04:32,050 --> 00:04:35,393
+The final analysis report is the main deliverable.
+
+65
+00:04:35,393 --> 00:04:40,827
+It records the task settings, temperature statistics, calculated response metrics and numerical acceptance.
+
+66
+00:04:40,827 --> 00:04:45,424
+Each completed optional stage adds its own findings, charts and tables.
+
+67
+00:04:45,424 --> 00:04:48,767
+Skipped stages are identified in the stage record.
+
+68
+00:04:48,767 --> 00:04:53,365
+Interpret the findings together with the model assumptions and warmup checks.
+
+69
+00:04:53,365 --> 00:04:59,634
+The reports shown here were generated by the actual base, sweep, geometry and telemetry tasks.
+
+70
+00:05:00,250 --> 00:05:05,522
+Each run also retains the input snapshot, frozen model, computed data and stage status.
+
+71
+00:05:05,522 --> 00:05:11,925
+Save the project to continue your work, then run changed settings in a new directory so earlier
+
+72
+00:05:11,925 --> 00:05:13,055
+evidence remains available.
+
+73
+00:05:13,055 --> 00:05:19,457
+Start with the simple template, add only the stages you need, and finish by reading the report.
+
+74
+00:05:19,457 --> 00:05:21,717
+The language selector still supports Chinese.
+
+75
+00:05:21,717 --> 00:05:24,729
+Your saved project remembers its language and configuration.

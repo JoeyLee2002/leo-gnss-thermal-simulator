@@ -63,6 +63,8 @@ xlabel(pick(language, '时间（h）', 'Elapsed time (h)'));
 ylabel(pick(language, '码偏差（m）', 'Code bias (m)')); grid on
 legend('Location', 'eastoutside');
 
+plotAxes = findall(figureHandle, 'Type', 'axes');
+for k = 1:numel(plotAxes), plotAxes(k).Toolbar.Visible = 'off'; end
 exportgraphics(figureHandle, outputPath, 'Resolution', 200);
 if nargout == 0
     close(figureHandle);
