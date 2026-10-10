@@ -19,7 +19,8 @@ if isempty(data)
         'The sweep contains no complete accessible cases to plot.');
 end
 altitudes = unique(data.altitude_km);
-colors = lines(numel(altitudes));
+s = leotherm.thermalFigureStyle(language);
+colors = s.colors(1+mod(0:numel(altitudes)-1,size(s.colors,1)),:);
 if ismember('actual_beta_deg', data.Properties.VariableNames)
     xName = 'actual_beta_deg';
     temperatureName = 'response_temperature_span_k';
@@ -28,8 +29,6 @@ else
     temperatureName = 'rf_temperature_span_k';
 end
 
-figureHandle = figure('Color', 'w', 'Position', [100, 100, 1050, 760]);
-tiledlayout(2, 2, 'TileSpacing', 'compact', 'Padding', 'compact');
 variables = {'eclipse_fraction', temperatureName, ...
     'forcing_to_rf_lag_s', 'code_bias_span_m'};
 if strcmp(language, 'zh')
@@ -46,7 +45,16 @@ if ismember('orbital_phase_delay_s',data.Properties.VariableNames)
     if strcmp(language,'zh'), labels{3}='轨道基频相位时延（s）';
     else, labels{3}='Orbital-frequency phase delay (s)'; end
 end
-for panel = 1:4
+available=cellfun(@(name) any(isfinite(data.(name))),variables);
+variables=variables(available); labels=labels(available);
+panels=numel(variables);
+if panels==0, error('leotherm:NoCompleteCases','No finite sweep metrics to plot.'); end
+cols=1; if panels>=4, cols=2; end
+rows=ceil(panels/cols);
+figureHandle = figure('Color', 'w', 'Units','centimeters', ...
+    'Position', [2, 2, s.widthCm, max(12,rows*5.5)]);
+tiledlayout(rows, cols, 'TileSpacing', 'compact', 'Padding', 'loose');
+for panel = 1:panels
     nexttile; hold on
     for k = 1:numel(altitudes)
         rows = data.altitude_km == altitudes(k);
@@ -54,13 +62,14 @@ for panel = 1:4
         value = data.(variables{panel})(rows);
         [beta, order] = sort(beta);
         plot(beta, value(order), '-o', 'Color', colors(k, :), ...
-            'LineWidth', 1.1, 'MarkerSize', 4, ...
+            'LineStyle',s.lineStyles{1+mod(k-1,4)}, ...
+            'MarkerFaceColor','w','LineWidth', 1.55, 'MarkerSize', 5, ...
             'DisplayName', altitudeLabel(language, altitudes(k)));
     end
-    xlabel(xLabel); ylabel(labels{panel}); title(labels{panel}); grid on
-    legend('Location', 'best');
+    xlabel(xLabel); ylabel(labels{panel}); title(char('a'+panel-1)); grid on
+    legend('Location', 'southoutside','Orientation','horizontal','NumColumns',2);
 end
-exportgraphics(figureHandle, outputPath, 'Resolution', 200);
+leotherm.exportThermalFigure(figureHandle, outputPath, language);
 if nargout == 0
     close(figureHandle);
 end

@@ -1,0 +1,9 @@
+function labels=thermalFigureLabels(labels)
+%THERMALFIGURELABELS Compact known component names without changing identities.
+from={'卫星导航射频前端','卫星导航振荡器','卫星导航天线','卫星主体结构', ...
+    '接收机数字板','GNSS RF front end','GNSS oscillator','GNSS antenna', ...
+    'Spacecraft structure','Receiver digital board'};
+to={'射频前端','振荡器','导航天线','主体结构','数字板', ...
+    'RF front end','Oscillator','GNSS antenna','Structure','Digital board'};
+for k=1:numel(from), labels=strrep(labels,from{k},to{k}); end
+end

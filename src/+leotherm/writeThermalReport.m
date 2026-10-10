@@ -112,6 +112,7 @@ for k = 1:numel(languages)
         leotherm.plotThermalReportDetail(item, ...
             fullfile(outputDirectory, [item.figureStem '_' lang '.png']), lang);
     end
+    leotherm.writeThermalPublicationFigures(report.details, outputDirectory, lang);
 end
 for k = 1:numel(languages)
     lang = languages{k};

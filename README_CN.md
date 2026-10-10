@@ -1,24 +1,27 @@
 # 低轨卫星热仿真工作台
 
-**最新发布：[v1.2.7](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.7)。**
+**v1.2.9 更新：** 原生 MATLAB 科研图形、带数值的导热矩阵及论文同源导出；单周期峰值时间差改为文字，不再单独占图。见[图形使用说明](docs/科研图形导出_v1.2.9.md)和[使用教程](docs/使用教程_v1.2.9.md)。
+
+**最新发布：[v1.2.9](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.9)。**
 在发布页 Assets 中下载 Windows 应用包，配合免费的 MATLAB Runtime R2021b 使用。
 不需要购买 MATLAB；已有兼容 Runtime 无需重装。
 旧免安装整包仍为 1.2.1，不是本次新版；其[使用说明](docs/免安装版使用.md)保留供旧版用户参考。
 
-**第一次使用：**[v1.2.7 中文使用教程](docs/使用教程_v1.2.7.md) ·
-[English guide](docs/quickstart_v1.2.7.md) ·
-[下载 Windows 独立版 v1.2.7](downloads/LEOTherm_1.2.7_windows.zip)。
+**第一次使用：**[v1.2.9 中文使用教程](docs/使用教程_v1.2.9.md) ·
+[English guide](docs/quickstart_v1.2.9.md) ·
+[下载 Windows 独立版 v1.2.9](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/download/v1.2.9/LEOTherm_1.2.9_windows.zip)。
 独立版不需要购买 MATLAB，但必须安装免费的 MATLAB Runtime R2021b；
 安装步骤见[英文独立版使用说明](docs/standalone_en.md)，启动后可切换中文。
 
-当前版本为 **1.2.7**：删除开头的“关键发现与解读”，保留章节分析与末尾总结；正文两端对齐，删除说明性页脚，页码居中。热仿真计算不变。见[本版更新说明](patches/PATCH_v1.2.7.md)。
+当前版本为 **1.2.9**：删除开头的“关键发现与解读”，保留章节分析与末尾总结；正文两端对齐，删除说明性页脚，页码居中。热仿真计算不变。见[本版更新说明](patches/PATCH_v1.2.9.md)。
 见[新版报告使用说明](docs/详细分析报告_v1.2.2.md)。启动界面和内置示例默认使用英文，可切换中文。
-[英文介绍视频（v1.2.1 录制）](tutorial/english_intro_v1_2_1/LEOTherm_English_Introduction.mp4)和[中文完整教程（v1.2.0 录制）](tutorial/v1_2_0_full/README_CN.md)保留供学习流程；当前报告样式及导出步骤以 v1.2.7 文字教程为准。
+[英文介绍视频（v1.2.1 录制）](tutorial/english_intro_v1_2_1/LEOTherm_English_Introduction.mp4)和[中文完整教程（v1.2.0 录制）](tutorial/v1_2_0_full/README_CN.md)保留供学习流程；当前报告样式及导出步骤以 v1.2.9 文字教程为准。
 基础仿真始终运行，扫描、三维耦合、遥测对比和设备标定均可按需勾选或跳过；完成的阶段会进入[分析报告](docs/任务分析报告_v1.2.0.md)。
-先看[新版中文报告](examples/reports/thermal_report_v1.2.7_zh.pdf)，本例使用参考热网络和已有四组时间网格结果。
+先看[新版中文报告](examples/reports/thermal_report_v1.2.9_zh.pdf)，本例使用参考热网络和已有四组时间网格结果。
 没有 MATLAB 的 Windows 用户可使用[独立版安装说明](docs/独立版使用_v1.2.0.md)；
 需要另装免费的 MATLAB Runtime R2021b。
-本版专项测试与独立 Runtime 检查见[验收记录](docs/verification_v1.2.7.md)。
+本版专项测试与独立 Runtime 检查见[验收记录](docs/verification_v1.2.9.md)。
+论文六工况任务可使用[复现脚本](examples/paper_example_v1_2_9.m)运行。
 第一次使用请看[统一任务流水线指南](docs/统一任务流水线_v1.1.0.md)。
 发布测试与适用边界见[软件验收记录](docs/软件验收_v1.0.0.md)。
 场景、扫描、热网络、

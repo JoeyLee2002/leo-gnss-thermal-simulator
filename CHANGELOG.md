@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.2.9 - Report scalar peak timing as text (2026-10-11)
+
+- Remove standalone peak-timing charts and chapters for zero or one scored orbit.
+- Retain scalar values or diagnostic explanations in temperature-analysis text.
+- Retain signed per-orbit charts for multiple scored cycles and independent energy-balance publication exports.
+- Preserve raw result arrays and all thermal calculations; update bilingual examples and guides.
+
+## 1.2.8 - Native MATLAB report figures (2026-10-11)
+
+- Share typography, colour/line encoding and PNG/vector-PDF exports across report plots.
+- Replace crossing conductive-network edges with a labelled, numerically annotated conductance matrix.
+- Split dense node histories into panels with shared limits, without changing samples.
+- Export publication chart groups and their source arrays from the report pipeline itself.
+- Preserve zero-valued optical/area inputs and all scored telemetry points.
+- Omit sweep panels whose metric has no finite values; preserve those values in the underlying result tables.
+- Keep solver, physical parameters and acceptance thresholds unchanged.
+
 ## 1.2.7 - Report reading order and paragraph layout (2026-10-10)
 
 - Remove the opening synthesis chapter from PDF and Markdown while retaining chapter analysis and closing conclusions.

@@ -7,7 +7,7 @@ r = fixture;
 r.timeS = [0;20;120];
 r.temperatureK(:,:) = repmat([290;300;310],1,size(r.temperatureK,2));
 [d,n] = leotherm.buildThermalReportDetails(struct('scenario',r));
-verifyEqual(testCase,numel(d),11);
+verifyEqual(testCase,numel(d),10);
 verifyEqual(testCase,n.time_mean_k,repmat(303.333333333333,height(n),1),'AbsTol',1e-9);
 verifyEqual(testCase,n.peak_to_peak_k,repmat(20,height(n),1));
 verifyEqual(testCase,n.end_minus_start_k,repmat(20,height(n),1));
@@ -27,17 +27,19 @@ end
 function testUndefinedLagIsNotZero(testCase)
 r = fixture;
 d = leotherm.buildThermalReportDetails(struct('scenario',r));
-item = d(strcmp({d.stage},'lag_detail'));
+verifyFalse(testCase,any(strcmp({d.stage},'lag_detail')));
+item = d(strcmp({d.stage},'temperatures'));
 verifyTrue(testCase,contains(strjoin(item.linesEn),'no cycle covers'));
 verifyFalse(testCase,contains(strjoin(item.linesEn),'NaN'));
-verifyEmpty(testCase,item.charts.y);
+phase = leotherm.reportPeakLag(r);
+verifyTrue(testCase,isnan(phase.peakToPeakLagMedianS));
 end
 
 function testConstantSpacingDoesNotCreateFillerFigure(testCase)
 r=fixture;
 d=leotherm.buildThermalReportDetails(struct('scenario',r));
 verifyFalse(testCase,any(strcmp({d.stage},'coverage')));
-verifyEqual(testCase,numel(d),10);
+verifyEqual(testCase,numel(d),9);
 end
 
 function testNamesZeroValuesAndTopologyArePreserved(testCase)

@@ -13,7 +13,9 @@ timeHour = result.timeS / 3600;
 network = result.network;
 [temperatureNodes, temperatureLabels] = resolveTemperatureNodes(network, language);
 
-figureHandle = figure('Color', 'w', 'Position', [100, 100, 1050, 780]);
+s = leotherm.thermalFigureStyle(language);
+figureHandle = figure('Color', 'w', 'Units','centimeters', ...
+    'Position', [2, 2, s.widthCm, 22]);
 tiledlayout(4, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 
 nexttile
@@ -48,7 +50,9 @@ nexttile
 hold on
 for k = 1:numel(temperatureNodes)
     plot(timeHour, result.temperatureK(:, temperatureNodes(k)), ...
-        'LineWidth', 1.0, 'DisplayName', temperatureLabels{k});
+        'Color',s.nodeColors(mod(temperatureNodes(k)-1,11)+1,:), ...
+        'LineStyle',s.lineStyles{1+mod(k-1,4)}, ...
+        'LineWidth', 1.55, 'DisplayName', temperatureLabels{k});
 end
 ylabel(pick(language, '温度（K）', 'Temperature (K)'));
 legend('Location', 'eastoutside', 'Interpreter', 'none');
@@ -65,7 +69,7 @@ legend('Location', 'eastoutside');
 
 plotAxes = findall(figureHandle, 'Type', 'axes');
 for k = 1:numel(plotAxes), plotAxes(k).Toolbar.Visible = 'off'; end
-exportgraphics(figureHandle, outputPath, 'Resolution', 200);
+leotherm.exportThermalFigure(figureHandle, outputPath, language);
 if nargout == 0
     close(figureHandle);
 end

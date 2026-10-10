@@ -1,8 +1,9 @@
 function plotThermalReportStage(bundle, stage, path, language)
 %PLOTTHERMALREPORTSTAGE Draw only observed outputs of completed stages.
 language = leotherm.normalizeLanguage(language);
-fig = figure('Visible', 'off', 'Color', 'w', ...
-    'Position', [80 80 1050 720]);
+s = leotherm.thermalFigureStyle(language);
+fig = figure('Visible', 'off', 'Color', 'w', 'Units','centimeters', ...
+    'Position', [2 2 s.widthCm 16]);
 cleanup = onCleanup(@() close(fig));
 switch stage
     case 'single_sweep'
@@ -16,7 +17,7 @@ switch stage
     otherwise
         error('leotherm:ReportFigure', 'Unsupported report stage: %s', stage);
 end
-exportgraphics(fig, path, 'Resolution', 170);
+leotherm.exportThermalFigure(fig, path, language);
 clear cleanup
 end
 
@@ -94,12 +95,12 @@ if isempty(samples)
     error('leotherm:ReportFigure', 'Telemetry has no scored samples.');
 end
 nodes = unique(string(samples.node), 'stable');
-colors = lines(numel(nodes));
+s=leotherm.thermalFigureStyle(language);
+colors=s.colors(1+mod(0:numel(nodes)-1,size(s.colors,1)),:);
 layout = tiledlayout(2, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 nexttile(layout); hold on
 for k = 1:numel(nodes)
     rows = find(string(samples.node) == nodes(k));
-    rows = rows(round(linspace(1, numel(rows), min(numel(rows), 1200))));
     scatter(samples.observed_k(rows), samples.predicted_k(rows), 10, ...
         colors(k, :), 'filled', 'MarkerFaceAlpha', 0.45, ...
         'DisplayName', char(nodes(k)));
@@ -118,7 +119,6 @@ nexttile(layout); hold on
 first = min(samples.epoch_utc);
 for k = 1:numel(nodes)
     rows = find(string(samples.node) == nodes(k));
-    rows = rows(round(linspace(1, numel(rows), min(numel(rows), 1200))));
     elapsed = hours(samples.epoch_utc(rows) - first);
     plot(elapsed, samples.residual_k(rows), '.', 'Color', colors(k, :), ...
         'DisplayName', char(nodes(k)));

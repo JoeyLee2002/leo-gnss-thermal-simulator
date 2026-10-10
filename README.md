@@ -1,29 +1,32 @@
 # LEO GNSS Thermal Simulator
 
-**Latest release: [v1.2.7](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.7).**
+**New in v1.2.9:** native MATLAB publication graphics, annotated conductance matrices and shared report/paper exports. Single-orbit peak timing uses text instead of a standalone plot. See the [updated guide](docs/quickstart_v1.2.9.md).
+
+**Latest release: [v1.2.9](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.9).**
 Download the Windows application package from Assets and use the free MATLAB Runtime R2021b.
 A MATLAB license is not required. Existing compatible Runtime installations can be reused.
 The older no-installer bundle contains application 1.2.1, not this release;
 its [portable guide](docs/portable_en.md) is retained for existing users.
 
-**Start here:** [v1.2.7 user guide](docs/quickstart_v1.2.7.md) ·
-[中文版教程](docs/使用教程_v1.2.7.md) ·
-[Windows standalone package v1.2.7](downloads/LEOTherm_1.2.7_windows.zip).
+**Start here:** [v1.2.9 user guide](docs/quickstart_v1.2.9.md) ·
+[中文版教程](docs/使用教程_v1.2.9.md) ·
+[Windows standalone package v1.2.9](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/download/v1.2.9/LEOTherm_1.2.9_windows.zip).
 The standalone build requires the free MATLAB Runtime R2021b, not a MATLAB license.
 See the [installation guide](docs/standalone_en.md).
 
-Current release: **1.2.7**. Reports retain chapter analysis and closing conclusions, omit the opening synthesis, justify body paragraphs and center page numbers without a footer disclaimer. Thermal calculations are unchanged. See the [English sample](examples/reports/thermal_report_v1.2.7_en.pdf) and [patch notes](patches/PATCH_v1.2.7.md). New sessions and built-in examples start in English.
+Current release: **1.2.9**. Reports retain chapter analysis and closing conclusions, omit the opening synthesis, justify body paragraphs and center page numbers without a footer disclaimer. Thermal calculations are unchanged. See the [English sample](examples/reports/thermal_report_v1.2.9_en.pdf) and [patch notes](patches/PATCH_v1.2.9.md). New sessions and built-in examples start in English.
 See the [English introduction (v1.2.1 recording)](tutorial/english_intro_v1_2_1/LEOTherm_English_Introduction.mp4)
 and [Chinese full tutorial (v1.2.0 recording)](tutorial/v1_2_0_full/README_CN.md).
-These videos explain the workflow; the v1.2.7 written guides describe the current report layout and export behavior.
+These videos explain the workflow; the v1.2.9 written guides describe the current report layout and export behavior.
 Completed optional stages add quantitative
 findings and charts to the [task analysis report](docs/任务分析报告_v1.2.0.md).
-See the [current Chinese sample PDF](examples/reports/thermal_report_v1.2.7_zh.pdf),
+See the [current Chinese sample PDF](examples/reports/thermal_report_v1.2.9_zh.pdf),
 based on the reference network rather than flight validation.
 Windows users without MATLAB can use the
 [standalone release guide](docs/独立版使用_v1.2.0.md) with free MATLAB Runtime R2021b.
 Current targeted tests and independent Runtime checks are documented in
-[v1.2.7 verification](docs/verification_v1.2.7.md).
+[v1.2.9 verification](docs/verification_v1.2.9.md).
+The reproducible six-case manuscript example is [here](examples/paper_example_v1_2_9.m).
 The GUI opens with a Quick start area, followed by
 Simulation and Results. Scenario, sweep, thermal network,
 telemetry and calibration are configuration sections of one simulation task.

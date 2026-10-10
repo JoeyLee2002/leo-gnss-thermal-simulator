@@ -1,9 +1,9 @@
-# Windows standalone: LEOTherm 1.2.7
+# Windows standalone: LEOTherm 1.2.9
 
 The application ZIP includes `USAGE_EN.md` and `USAGE_CN.md` with the current step-by-step task and report workflow.
 
 1. Install free MATLAB Runtime R2021b from the MathWorks MATLAB Runtime download page.
-2. Extract LEOTherm_1.2.7_windows.zip to a writable directory.
+2. Extract LEOTherm_1.2.9_windows.zip to a writable directory.
 3. Open LEOTherm.exe. The initial interface is English.
 4. On Quick start, choose First simulation or open a saved project. Edit the duration and output interval when needed.
 5. On Simulation, select optional stages, check the task, then run it in a new directory.
@@ -12,6 +12,10 @@ The application ZIP includes `USAGE_EN.md` and `USAGE_CN.md` with the current st
 The language selector also supports Chinese. Saved projects restore their recorded language. MATLAB itself and a MATLAB license are not required for this executable. Runtime R2021b is required.
 
 Each run retains its input snapshot, frozen model, numerical results, stage status, plots and analysis PDF. Reference models and synthetic examples teach the workflow; replace them with mission-specific inputs for satellite validation.
+
+Version 1.2.8 uses shared native MATLAB figure styling and annotates the conductance matrix with actual link values. Each report chart has PNG and vector PDF exports. The `publication_*` groups and companion source MAT files can be used directly in a manuscript. Temperature samples and physical parameters are unchanged. Sample reports and a plotting guide accompany the application package.
+
+Version 1.2.9 reports a single per-orbit peak difference in text and omits empty peak-timing charts. Multiple scored orbits retain their signed values and original cycle numbers in a chart. Energy-balance publication figures remain available independently.
 
 Version 1.2.7 removes the opening synthesis chapter and footer disclaimer, centers page numbers, and justifies body paragraphs except their final lines. Chapter interpretation and closing task conclusions remain, including quantitative external heat shares, response-component variation and actual mean conductive paths. Optional completed stages are included. The interpretation metrics are exported as CSV for audit. Re-export results into a new directory to obtain the new report structure.
 
