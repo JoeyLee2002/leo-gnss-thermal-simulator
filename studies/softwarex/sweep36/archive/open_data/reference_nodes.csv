@@ -1,0 +1,12 @@
+node_id,node_name,capacity_j_per_k,internal_power_w,projected_area_m2,radiating_area_m2,solar_absorptivity,ir_emissivity
+1,face_+X_forward,6200,0,0.9,0.9,0.43,0.78
+2,face_-X_aft,6200,0,0.9,0.9,0.43,0.78
+3,face_+Y_orbit_left,7000,0,1.2,1.2,0.62,0.84
+4,face_-Y_orbit_right,7000,0,1.2,1.2,0.62,0.84
+5,face_+Z_nadir,8500,0,1.08,1.08,0.38,0.76
+6,face_-Z_zenith,8000,0,0.96,0.88,0.55,0.82
+7,spacecraft_structure,26000,2,0,0,0,0
+8,gnss_antenna,3200,0.4,0.1,0.1,0.7,0.86
+9,gnss_rf_frontend,1800,5,0,0,0,0
+10,gnss_oscillator,320,0.8,0,0,0,0
+11,receiver_digital,5200,12,0,0,0,0

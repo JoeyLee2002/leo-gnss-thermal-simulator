@@ -1,0 +1,16 @@
+from_id,from_name,to_id,to_name,conductance_w_per_k
+1,face_+X_forward,7,spacecraft_structure,1.4
+2,face_-X_aft,7,spacecraft_structure,1.4
+3,face_+Y_orbit_left,7,spacecraft_structure,1.4
+4,face_-Y_orbit_right,7,spacecraft_structure,1.4
+5,face_+Z_nadir,7,spacecraft_structure,1.4
+6,face_-Z_zenith,7,spacecraft_structure,1.4
+6,face_-Z_zenith,8,gnss_antenna,0.9
+7,spacecraft_structure,8,gnss_antenna,0.45
+7,spacecraft_structure,9,gnss_rf_frontend,0.62
+8,gnss_antenna,9,gnss_rf_frontend,0.32
+7,spacecraft_structure,10,gnss_oscillator,0.1
+9,gnss_rf_frontend,10,gnss_oscillator,0.24
+7,spacecraft_structure,11,receiver_digital,0.85
+9,gnss_rf_frontend,11,receiver_digital,0.45
+10,gnss_oscillator,11,receiver_digital,0.38

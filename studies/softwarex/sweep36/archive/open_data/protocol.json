@@ -1,0 +1,419 @@
+{
+  "version": "1.2.9",
+  "altitudeKm": [
+    400,
+    600,
+    800
+  ],
+  "betaDeg": [
+    0,
+    30,
+    60,
+    75
+  ],
+  "conductanceWK": [
+    0.31,
+    0.62,
+    1.24
+  ],
+  "samplesPerOrbit": 360,
+  "analysisOrbits": 6,
+  "referenceConductanceWK": 0.62,
+  "parameterMeaning": "Symmetric structure-to-RF conductance; other parameters fixed",
+  "designBasis": "Half, nominal and twice the reference value; not measured hardware",
+  "scenario": {
+    "name": "reference_600km_nadir",
+    "startEpoch": "2024-03-20T12:00:00Z",
+    "durationS": 86400,
+    "timeStepS": 20,
+    "warmupOrbits": 0,
+    "convergence": {
+      "enabled": true,
+      "minimumCycles": 5,
+      "maximumCycles": 80,
+      "requiredStableCycles": 2,
+      "toleranceK": 0.001,
+      "failOnNonConvergence": true
+    },
+    "orbit": {
+      "altitudeM": 600000,
+      "inclinationDeg": 97.6,
+      "raanDeg": 20,
+      "argumentLatitudeDeg": 0,
+      "useJ2": false
+    },
+    "attitude": {
+      "mode": "nadir",
+      "eulerOffsetDeg": [
+        0,
+        0,
+        0
+      ]
+    },
+    "environment": {
+      "solarConstantWm2": 1361,
+      "earthIRWm2": 239,
+      "earthIRModel": "finite_disk",
+      "albedo": 0.3,
+      "deepSpaceK": 3,
+      "includeDirectSolar": true,
+      "includeAlbedo": true,
+      "includeEarthIR": true,
+      "freezeSunAtEpoch": true
+    },
+    "integration": {
+      "minimumTemperatureK": 100,
+      "maximumTemperatureK": 500
+    }
+  },
+  "network": {
+    "name": "reference_11_node_gnss_receiver",
+    "nodeNames": [
+      "face_+X_forward",
+      "face_-X_aft",
+      "face_+Y_orbit_left",
+      "face_-Y_orbit_right",
+      "face_+Z_nadir",
+      "face_-Z_zenith",
+      "spacecraft_structure",
+      "gnss_antenna",
+      "gnss_rf_frontend",
+      "gnss_oscillator",
+      "receiver_digital"
+    ],
+    "capacityJK": [
+      6200,
+      6200,
+      7000,
+      7000,
+      8500,
+      8000,
+      26000,
+      3200,
+      1800,
+      320,
+      5200
+    ],
+    "initialTemperatureK": [
+      293.15,
+      293.15,
+      293.15,
+      293.15,
+      293.15,
+      293.15,
+      293.15,
+      293.15,
+      293.15,
+      293.15,
+      293.15
+    ],
+    "internalPowerW": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      2,
+      0.4,
+      5,
+      0.8,
+      12
+    ],
+    "projectedAreaM2": [
+      0.9,
+      0.9,
+      1.2,
+      1.2,
+      1.08,
+      0.96,
+      0,
+      0.1,
+      0,
+      0,
+      0
+    ],
+    "radiatingAreaM2": [
+      0.9,
+      0.9,
+      1.2,
+      1.2,
+      1.08,
+      0.88,
+      0,
+      0.1,
+      0,
+      0,
+      0
+    ],
+    "normalBody": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        -1,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        -1,
+        0
+      ],
+      [
+        0,
+        0,
+        1
+      ],
+      [
+        0,
+        0,
+        -1
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        -1
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    "solarAbsorptivity": [
+      0.43,
+      0.43,
+      0.62,
+      0.62,
+      0.38,
+      0.55,
+      0,
+      0.7,
+      0,
+      0,
+      0
+    ],
+    "irEmissivity": [
+      0.78,
+      0.78,
+      0.84,
+      0.84,
+      0.76,
+      0.82,
+      0,
+      0.86,
+      0,
+      0,
+      0
+    ],
+    "conductanceWK": [
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1.4,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1.4,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1.4,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1.4,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1.4,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1.4,
+        0.9,
+        0,
+        0,
+        0
+      ],
+      [
+        1.4,
+        1.4,
+        1.4,
+        1.4,
+        1.4,
+        1.4,
+        0,
+        0.45,
+        0.62,
+        0.1,
+        0.85
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.9,
+        0.45,
+        0,
+        0.32,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.62,
+        0.32,
+        0,
+        0.24,
+        0.45
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.1,
+        0,
+        0.24,
+        0,
+        0.38
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.85,
+        0,
+        0.45,
+        0.38,
+        0
+      ]
+    ],
+    "bias": {
+      "linearMPerK": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0.025,
+        0.08,
+        0.12,
+        0.02
+      ],
+      "quadraticNode": 9,
+      "quadraticMPerK2": 0.0008
+    },
+    "roles": {
+      "response": 9,
+      "antenna": 8,
+      "oscillator": 10
+    }
+  },
+  "id": "v129_frozen_sun_6orbits_grid360_tol1e-3_G7_9",
+  "schema": "leotherm.sweep36.protocol.v1",
+  "units": {
+    "temperature": "K",
+    "time": "s",
+    "altitudeGrid": "km",
+    "scenarioAltitude": "m",
+    "angles": "deg",
+    "power": "W",
+    "capacity": "J/K",
+    "conductance": "W/K",
+    "area": "m^2"
+  },
+  "refinementCaseIds": [
+    2,
+    20,
+    36
+  ],
+  "refinementSamplesPerOrbit": 720
+}

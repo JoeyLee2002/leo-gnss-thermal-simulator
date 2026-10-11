@@ -1,0 +1,15 @@
+section,field,value,unit,status,source,notes
+task_input,scenario_name,"reference_network_report_demo",,available,scenario.name,
+task_input,duration,"7200",s,available,scenario.durationS,
+task_input,time_step,"60",s,available,scenario.timeStepS,
+task_input,warmup_orbits,"0",orbit,available,scenario.warmupOrbits,
+network,node_count,"11",node,available,network.nodeNames,
+network,node_names,"face_+X_forward, face_-X_aft, face_+Y_orbit_left, face_-Y_orbit_right, face_+Z_nadir, face_-Z_zenith, spacecraft_structure, gnss_antenna, gnss_rf_frontend, gnss_oscillator, receiver_digital",,available,network.nodeNames,
+network,conductance_range,"[0, 1.4]",W/K,available,network.conductanceWK,
+network,internal_power_range,"[0, 12]",W,available,network.internalPowerW,
+orbit_attitude,epoch_start_utc,"2024-03-20 12:00:00",,available,scenario.startEpoch,
+orbit_attitude,altitude,"600000",m,available,scenario.orbit.altitudeM,
+orbit_attitude,inclination,"97.6",deg,available,scenario.orbit.inclinationDeg,
+orbit_attitude,attitude_mode,"nadir",,available,scenario.attitude.mode,
+orbit_attitude,trajectory_frame,"approximate_geocentric_equatorial",,available,result.orbit.frame.name,Approximate equatorial axes shared by the circular orbit and solarVectorECI; no precision precession/nutation transformation.
+telemetry_comparison,telemetry_status,"not_run_no_data",,available,,No telemetry result was supplied; validation was not performed.

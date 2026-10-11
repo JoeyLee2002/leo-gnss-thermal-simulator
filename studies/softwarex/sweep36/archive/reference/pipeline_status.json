@@ -1,0 +1,72 @@
+{
+  "schema": "leotherm.pipeline_run.v1",
+  "taskId": "ae125891-66fd-4e09-a728-7bc983c1182f",
+  "inputFingerprint": "6166cd714cfbb609410b293b3d1fd3d88449f10cc47b9971948b97c32ebcb194",
+  "mode": "pipeline",
+  "status": "complete",
+  "stages": [
+    {
+      "name": "snapshot",
+      "status": "complete",
+      "startedUTC": "2026-10-11 03:24:25",
+      "completedUTC": "2026-10-11 03:24:25",
+      "message": "Input frozen before computation."
+    },
+    {
+      "name": "calibration",
+      "status": "skipped",
+      "startedUTC": "2026-10-11 03:24:26",
+      "completedUTC": "2026-10-11 03:24:26",
+      "message": "Calibration was not selected."
+    },
+    {
+      "name": "freeze_model",
+      "status": "complete",
+      "startedUTC": "2026-10-11 03:24:26",
+      "completedUTC": "2026-10-11 03:24:26",
+      "message": "Model parameters frozen after optional calibration."
+    },
+    {
+      "name": "nodal_simulation",
+      "status": "complete",
+      "startedUTC": "2026-10-11 03:24:26",
+      "completedUTC": "2026-10-11 03:24:26",
+      "message": "Orbit, environmental loads, nodal temperatures and lag metrics computed."
+    },
+    {
+      "name": "batch_simulation",
+      "status": "skipped",
+      "startedUTC": "2026-10-11 03:24:26",
+      "completedUTC": "2026-10-11 03:24:26",
+      "message": "Parameter sweep was not selected."
+    },
+    {
+      "name": "geometry_simulation",
+      "status": "skipped",
+      "startedUTC": "2026-10-11 03:24:26",
+      "completedUTC": "2026-10-11 03:24:26",
+      "message": "Three-dimensional analysis was not selected."
+    },
+    {
+      "name": "telemetry_comparison",
+      "status": "skipped",
+      "startedUTC": "2026-10-11 03:24:26",
+      "completedUTC": "2026-10-11 03:24:26",
+      "message": "Telemetry was not selected; physical validation is not claimed."
+    },
+    {
+      "name": "numerical_acceptance",
+      "status": "complete",
+      "startedUTC": "2026-10-11 03:24:27",
+      "completedUTC": "2026-10-11 03:24:27",
+      "message": "Numerical and data-quality checks passed; not a claim of physical validity."
+    },
+    {
+      "name": "report",
+      "status": "complete",
+      "startedUTC": "2026-10-11 03:24:27",
+      "completedUTC": "2026-10-11 03:26:06",
+      "message": "Task-specific PDF and audit tables written."
+    }
+  ]
+}

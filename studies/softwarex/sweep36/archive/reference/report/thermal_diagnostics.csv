@@ -1,0 +1,7 @@
+component,name,value,status
+scenario,absoluteToleranceK,1e-06,available
+scenario,relativeTolerance,1e-08,available
+scenario,acceptedSteps,120,available
+scenario,rejectedSteps,0,available
+scenario,maximumAcceptedErrorRatio,0.959316703862,available
+scenario,maximumEnergyClosureJ,2.0008883439e-09,available

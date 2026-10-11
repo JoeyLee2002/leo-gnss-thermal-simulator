@@ -26,7 +26,10 @@ Windows users without MATLAB can use the
 [standalone release guide](docs/独立版使用_v1.2.0.md) with free MATLAB Runtime R2021b.
 Current targeted tests and independent Runtime checks are documented in
 [v1.2.9 verification](docs/verification_v1.2.9.md).
-The reproducible six-case manuscript example is [here](examples/paper_example_v1_2_9.m).
+The current manuscript's **36-case orbital and mounting study** includes
+[complete data, figures and reproducible MATLAB scripts](studies/softwarex/sweep36/README.md).
+See [the study package release](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.9-sweep36.1).
+The [earlier six-case report example](examples/paper_example_v1_2_9.m) is retained.
 The GUI opens with a Quick start area, followed by
 Simulation and Results. Scenario, sweep, thermal network,
 telemetry and calibration are configuration sections of one simulation task.

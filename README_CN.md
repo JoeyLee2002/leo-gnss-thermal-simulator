@@ -21,7 +21,9 @@
 没有 MATLAB 的 Windows 用户可使用[独立版安装说明](docs/独立版使用_v1.2.0.md)；
 需要另装免费的 MATLAB Runtime R2021b。
 本版专项测试与独立 Runtime 检查见[验收记录](docs/verification_v1.2.9.md)。
-论文六工况任务可使用[复现脚本](examples/paper_example_v1_2_9.m)运行。
+当前论文的**36工况轨道与安装热导研究**提供[完整数据、图形及复现教程](studies/softwarex/sweep36/README_CN.md)，
+见[研究材料发布页](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.9-sweep36.1)。
+[原六工况报告示例](examples/paper_example_v1_2_9.m)保留供学习。
 第一次使用请看[统一任务流水线指南](docs/统一任务流水线_v1.1.0.md)。
 发布测试与适用边界见[软件验收记录](docs/软件验收_v1.0.0.md)。
 场景、扫描、热网络、

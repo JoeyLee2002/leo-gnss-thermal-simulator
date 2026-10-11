@@ -1,0 +1,121 @@
+{
+  "schemaVersion": "1.0",
+  "softwareVersion": "1.2.9",
+  "generatedUTC": "2026-10-11T03:24:28Z",
+  "languages": [
+    "en"
+  ],
+  "sections": [
+    "network",
+    "orbit_attitude",
+    "task_input",
+    "telemetry_comparison"
+  ],
+  "telemetryValidation": false,
+  "pdfReports": [
+    "thermal_report_en.pdf"
+  ],
+  "sourceFiles": [
+    {
+      "component": "software",
+      "source": "1.2.9",
+      "status": "available"
+    },
+    {
+      "component": "scenario",
+      "source": "reference_network_report_demo",
+      "status": "available"
+    }
+  ],
+  "metadata": {
+    "taskId": "ae125891-66fd-4e09-a728-7bc983c1182f",
+    "inputFingerprint": "6166cd714cfbb609410b293b3d1fd3d88449f10cc47b9971948b97c32ebcb194",
+    "frozenModelFingerprint": "7e9330275e6fb73c9682611cb51113612a25400682d2048bf5a6794f2b9c0a7e",
+    "taskMode": "pipeline",
+    "pipelineStatus": "accepted_before_report",
+    "calibrationApplied": false,
+    "calibrationStatus": "not_run",
+    "physicalValidationEstablished": false,
+    "oneWaySurfaceVolumeCoupling": false,
+    "stages": [
+      {
+        "name": "snapshot",
+        "status": "complete",
+        "startedUTC": "2026-10-11 03:24:25",
+        "completedUTC": "2026-10-11 03:24:25",
+        "message": "Input frozen before computation."
+      },
+      {
+        "name": "calibration",
+        "status": "skipped",
+        "startedUTC": "2026-10-11 03:24:26",
+        "completedUTC": "2026-10-11 03:24:26",
+        "message": "Calibration was not selected."
+      },
+      {
+        "name": "freeze_model",
+        "status": "complete",
+        "startedUTC": "2026-10-11 03:24:26",
+        "completedUTC": "2026-10-11 03:24:26",
+        "message": "Model parameters frozen after optional calibration."
+      },
+      {
+        "name": "nodal_simulation",
+        "status": "complete",
+        "startedUTC": "2026-10-11 03:24:26",
+        "completedUTC": "2026-10-11 03:24:26",
+        "message": "Orbit, environmental loads, nodal temperatures and lag metrics computed."
+      },
+      {
+        "name": "batch_simulation",
+        "status": "skipped",
+        "startedUTC": "2026-10-11 03:24:26",
+        "completedUTC": "2026-10-11 03:24:26",
+        "message": "Parameter sweep was not selected."
+      },
+      {
+        "name": "geometry_simulation",
+        "status": "skipped",
+        "startedUTC": "2026-10-11 03:24:26",
+        "completedUTC": "2026-10-11 03:24:26",
+        "message": "Three-dimensional analysis was not selected."
+      },
+      {
+        "name": "telemetry_comparison",
+        "status": "skipped",
+        "startedUTC": "2026-10-11 03:24:26",
+        "completedUTC": "2026-10-11 03:24:26",
+        "message": "Telemetry was not selected; physical validation is not claimed."
+      },
+      {
+        "name": "numerical_acceptance",
+        "status": "complete",
+        "startedUTC": "2026-10-11 03:24:27",
+        "completedUTC": "2026-10-11 03:24:27",
+        "message": "Numerical and data-quality checks passed; not a claim of physical validity."
+      }
+    ]
+  },
+  "pdfPageCounts": {
+    "en": 16
+  },
+  "detailedAnalyses": [
+    "capacity",
+    "conductance",
+    "optics",
+    "illumination",
+    "heat_inputs",
+    "temperatures",
+    "gradients",
+    "energy_balance",
+    "initial_state"
+  ],
+  "synthesisEvidence": "thermal_interpretation_evidence.csv",
+  "telemetryComparisonScored": false,
+  "physicalValidationEstablished": false,
+  "telemetryValidationMeaning": "legacy_scored_comparison_flag_not_independent_physical_validation",
+  "phaseDiagnosticsVersion": "1.2.9",
+  "scenarioIntegratedEnergyScope": "retained_analysis_interval_rebased_at_first_epoch",
+  "maximumEnergyClosureScope": "solver_maximum_interval_residual_may_include_fixed_warmup",
+  "warnings": []
+}

@@ -1,0 +1,7 @@
+component,quantity,value,unit,status
+scenario,integratedExternalHeatJ,8746565.15451487,J,available
+scenario,integratedInternalHeatJ,145440,J,available
+scenario,integratedRadiatedHeatJ,10657621.1445022,J,available
+scenario,integratedBoundaryHeatJ,0,J,available
+scenario,integratedNetHeatJ,-1765615.98998733,J,available
+scenario,maximumEnergyClosureJ,2.00088834390044e-09,J,available

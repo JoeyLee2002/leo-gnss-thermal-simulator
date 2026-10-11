@@ -1,0 +1,15 @@
+{
+  "schema": "leotherm.sweep36.verification.v1",
+  "caseCount": 36,
+  "refinementCases": 3,
+  "cacheResumePassed": true,
+  "changedCaseRejected": true,
+  "changedProtocolRejected": true,
+  "archiveWriteRejected": true,
+  "maximumMetricDifference": 0,
+  "codeAnalyzerFindings": 0,
+  "matlabRelease": "2021b",
+  "architecture": "PCWIN64",
+  "engineVersion": "1.2.9",
+  "sourceFingerprint": "4e840436bbbe86d5de276f605c792c4f39f60a8604daa610227b476c47837620"
+}
