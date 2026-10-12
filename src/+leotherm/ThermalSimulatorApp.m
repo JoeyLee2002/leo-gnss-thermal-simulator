@@ -1274,9 +1274,9 @@ classdef ThermalSimulatorApp < handle
             selection.Padding = [0, 0, 0, 0];
             uilabel(selection, 'Text', app.t('我要做什么', 'I want to'));
             app.QuickStartTemplate = uidropdown(selection, ...
-                'Items', app.t({'第一次仿真', '热滞后分析', '遥测验证'}, ...
-                {'First simulation', 'Thermal-lag analysis', 'Telemetry validation'}), ...
-                'ItemsData', {'first', 'lag', 'telemetry'}, 'Value', 'first', ...
+                'Items', app.t({'第一次仿真', '热滞后分析', '遥测验证', '复现论文：参考任务与36工况'}, ...
+                {'First simulation', 'Thermal-lag analysis', 'Telemetry validation', 'Paper: reference task and 36 cases'}), ...
+                'ItemsData', {'first', 'lag', 'telemetry', 'paper'}, 'Value', 'first', ...
                 'Tag', 'QuickStartTemplate', ...
                 'Tooltip', app.t('选择任务目标，不需要先理解所有模型参数。', ...
                 'Choose a task goal without learning every model parameter first.'), ...
@@ -1333,6 +1333,11 @@ classdef ThermalSimulatorApp < handle
                 return
             end
             switch app.QuickStartTemplate.Value
+                case 'paper'
+                    app.QuickStartInfoLabel.Text = app.t( ...
+                        '自动运行论文参考任务、36工况和3个步长加密算例，并生成本次结果的报告。当前工作区设置不变。', ...
+                        'Recompute the paper reference task, 36 cases and three refined cases, then generate the study report. Current workspace settings are preserved.');
+                    app.QuickStartRunButton.Text = app.t('复现论文并生成报告', 'Reproduce paper and report');
                 case 'first'
                     app.QuickStartInfoLabel.Text = app.t( ...
                         '第一次仿真：使用600 km对地定向参考场景，运行2小时，适合确认软件流程。', ...
@@ -2062,7 +2067,7 @@ classdef ThermalSimulatorApp < handle
                 sum(result.loads.earthIRW, 2), 'LineWidth', 1.0, ...
                 'DisplayName', app.t('地球红外', 'Earth infrared'));
             hold(app.ScenarioAxes(2), 'off');
-            title(app.ScenarioAxes(2), app.t('外部热流', 'External heat loads'));
+            title(app.ScenarioAxes(2), app.t('吸收的外部功率', 'Absorbed external power'));
             xlabel(app.ScenarioAxes(2), app.t('时间（h）', 'Time (h)'));
             ylabel(app.ScenarioAxes(2), app.t('功率（W）', 'Power (W)'));
             legend(app.ScenarioAxes(2), 'Location', 'best');
@@ -2126,6 +2131,9 @@ classdef ThermalSimulatorApp < handle
             if ismember('orbital_phase_delay_s',data.Properties.VariableNames)
                 variables{3}='orbital_phase_delay_s';
                 labels{3}=app.t('轨道基频相位时延（s）','Orbital-frequency phase delay (s)');
+            end
+            for metricIndex=2:4
+                labels{metricIndex}=leotherm.thermalMetricLabel(variables{metricIndex},app.Language);
             end
             altitudes = unique(data.altitude_km);
             colors = lines(numel(altitudes));
@@ -2837,7 +2845,7 @@ classdef ThermalSimulatorApp < handle
                 app.t('长度','length'), values{1}, app.t('质量','mass'), values{2}, ...
                 app.t('时间','time'), values{3}, app.t('温度','temperature'), values{4}, ...
                 app.t('功率','power'), values{5}, app.t('热容','heat capacity'), values{6}, ...
-                app.t('导热','conductance'), values{7}, app.t('面积','area'), values{8});
+                app.t('热导','thermal conductance'), values{7}, app.t('面积','area'), values{8});
         end
 
         function importMeshUI(app)
@@ -3596,6 +3604,23 @@ classdef ThermalSimulatorApp < handle
 
         function executeQuickStart(app)
             if app.IsBusy
+                return
+            end
+            if strcmp(app.QuickStartTemplate.Value,'paper')
+                parent=uigetdir(pwd,app.t('选择论文复现结果保存位置','Choose where to save the paper study'));
+                if isequal(parent,0), return; end
+                destination=fullfile(parent,['paper_' datestr(now,'yyyymmdd_HHMMSS') '_' char(extractBefore(string(java.util.UUID.randomUUID),9))]);
+                try
+                    app.setBusy(true,app.t('正在复现参考任务与36工况...','Recomputing the reference task and 36 cases...'));
+                    cleanup=onCleanup(@() app.finishOperation);
+                    leotherm.runPaperStudy(destination,app.Language);
+                    pdf=fullfile(destination,'report',['thermal_report_' app.Language '.pdf']);
+                    app.setStatus(sprintf(app.t('论文复现完成，报告：%s','Paper study complete; report: %s'),pdf));
+                    clear cleanup
+                    winopen(pdf);
+                catch exception
+                    app.showException(app.t('论文复现失败','Paper study failed'),exception);
+                end
                 return
             end
             if ismember(app.QuickStartTemplate.Value, {'first', 'lag'}) ...
@@ -4595,6 +4620,8 @@ classdef ThermalSimulatorApp < handle
         end
 
         function value = sweepColumnDescription(app, name)
+            value=leotherm.thermalMetricLabel(name,app.Language);
+            if ~isempty(value), return; end
             pairs = {
                 'epoch', '日期', 'Epoch';
                 'altitude_km', '高度（千米）', 'Altitude (km)';
@@ -4645,6 +4672,8 @@ classdef ThermalSimulatorApp < handle
         end
 
         function description = metricDescription(app, name)
+            description=string(leotherm.thermalMetricLabel(name,app.Language));
+            if strlength(description)>0, return; end
             chinese = struct( ...
                 'peakPhaseIdentifiable','峰值相位可识别', ...
                 'peakPhaseIdentifiableCycles','峰值相位有效周期数', ...

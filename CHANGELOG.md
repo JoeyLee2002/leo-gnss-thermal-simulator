@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.10 - Consistent physical terminology (2026-10-11)
+
+- Share bilingual metric names between GUI tables and sweep plots.
+- Distinguish P95-P5 differences, full temperature ranges, peak time lag, and orbital-frequency phase delay.
+- Specify absorbed power as the lag reference and export metric definitions with reports.
+- Preserve solvers, input parameters, numerical arrays, and legacy project/CSV keys.
+
 ## 1.2.9 - Report scalar peak timing as text (2026-10-11)
 
 - Remove standalone peak-timing charts and chapters for zero or one scored orbit.

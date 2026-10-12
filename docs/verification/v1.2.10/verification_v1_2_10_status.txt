@@ -1,0 +1,8 @@
+outcome=complete
+version=1.2.10
+code_analyzer_findings=0
+tests_passed=381
+tests_total=381
+test_batches=60
+benchmark_rows=6
+matlab_release=2021b

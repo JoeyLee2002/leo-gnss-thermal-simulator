@@ -1,7 +1,9 @@
 # SoftwareX 论文：36工况公开复现材料
 
 本目录提供论文使用的36工况完整数据、输入参数、运行脚本和原生 MATLAB 绘图程序。
-计算引擎仍为 **LEOTherm 1.2.9**；材料发布标签为 `v1.2.9-sweep36.1`。
+`archive/` 是原LEOTherm 1.2.9公开数据，保留 `v1.2.9-sweep36.1` 标签与校验值。
+新计算使用当前安装版本；v1.2.10推荐入口为 `leotherm.runPaperStudy`，同时完成
+参考任务、36工况、三个步长加密算例及综合报告，详见[新版复现说明](../../../docs/论文结果复现_v1.2.10.md)。
 
 ## 不运行软件也能看结果
 
@@ -22,7 +24,8 @@ CSV 提供跨软件可读的时间序列；MAT 保留完整计算结构。所有
 
 复算与重绘使用 **Windows 上的 MATLAB R2021b（桌面及 JVM 环境）**。
 本实验不使用 Aerospace Toolbox 或 Optimization Toolbox，图形完全由 MATLAB 原生生成。
-Runtime 不能直接执行可编辑的 `.m` 脚本；Runtime 图形应用仍可从软件发布页下载。
+Runtime不能直接执行可编辑的 `.m` 脚本；v1.2.10编译程序已包含完整论文复现入口，
+可从快速开始选择论文任务，或使用 `LEOTherm.exe --paper-study 新目录 both`。
 源代码采用仓库 MIT 许可证；本目录原始仿真数据及图形采用 [CC BY 4.0](DATA_LICENSE.md)。
 
 ## 先校验数据，再重绘图5
@@ -30,29 +33,29 @@ Runtime 不能直接执行可编辑的 `.m` 脚本；Runtime 图形应用仍可�
 在 MATLAB 中打开下载的仓库根目录，执行：
 
 ```matlab
-addpath(fullfile(pwd,'studies','softwarex','sweep36'));
+addpath(fullfile(pwd,'src'),fullfile(pwd,'studies','softwarex','sweep36'));
 verify_sweep36_archive;
 study = fileparts(which('verify_sweep36_archive'));
 make_sweep36_figure_v129(fullfile(study,'archive','sweep36'));
 ```
 
-校验程序检查全部归档文件的 SHA-256、36个参数组合、收敛情况及模型一致性。
+归档校验程序检查原文件SHA-256；新计算的参数组合、收敛情况和模型一致性由独立结果审计检查。
 重绘结果写入 `results/softwarex_sweep36/figures/`，包含中英文 PNG、矢量 PDF、
 可编辑 FIG 和图形数据 MAT。程序不会向归档目录写入。
 
 ## 从零复算论文任务
 
 ```matlab
-addpath(fullfile(pwd,'studies','softwarex','sweep36'));
-run = paper_example_revision4;
+addpath(fullfile(pwd,'src'));
+study = leotherm.runPaperStudy(fullfile(pwd,'results','my_paper_run'),'both');
 ```
 
 程序先运行两小时参考任务并生成 PDF 分析报告，然后计算36个周期初始化工况、
-3个时间步加密工况，检查结果并生成图5。输出为 `results/softwarex_sweep36/`。
-两小时参考任务要求新的输出目录；第二次运行可以指定：
+3个时间步加密工况，检查结果并生成图5及综合报告。输出为 `results/my_paper_run/`。
+整个论文复现任务要求新的输出目录；第二次运行可以指定：
 
 ```matlab
-run = paper_example_revision4(fullfile(tempdir,'leotherm_manuscript_run_02'));
+study = leotherm.runPaperStudy(fullfile(tempdir,'leotherm_manuscript_run_02'),'both');
 ```
 
 加入研究脚本路径后，程序根据自身位置寻找计算引擎，不依赖某个盘符，也不依赖
@@ -78,7 +81,7 @@ export_sweep36_open_data(studyOutput);
 | --- | --- |
 | 轨道高度 | 400、600、800 km |
 | 目标有符号 beta 角 | 0、30、60、75 度 |
-| 主体结构（7）与射频前端（9）安装热导 | 0.31、0.62、1.24 W/K |
+| 主体结构（7）与射频前端（9）等效热导 | 0.31、0.62、1.24 W/K |
 
 合计 3 × 4 × 3 = **36个确定性工况**。只改变7—9的双向导热连接；其他热容、
 功耗、光学参数和热导均相同。三档热导分别为参考值的一半、原值和两倍，属于
@@ -90,16 +93,16 @@ export_sweep36_open_data(studyOutput);
 分析覆盖6个完整轨道周期，每圈360个等时间间隔。
 预先指定第2、20、36工况，将每圈间隔数加密到720并重新初始化。
 
-射频温度跨度为95%分位数减5%分位数，单位 K；谐波时延相对于卫星吸收的外部
+射频温度P95−P5为第95百分位数减第5百分位数，单位K；轨道基频相位时延相对于卫星吸收的外部
 总功率计算，CSV 为秒，图5显示为分钟。两小时参考任务未预热，单独展示初始
 温度调整过程，与36工况的周期响应属于两种分析设置。
 
 ## 怎么理解结果
 
-36工况全部在16—19圈内收敛。射频温度跨度0.995—6.048 K，谐波时延37.18—43.43 min。
-在本次参考网络中，beta 角0、30、60度时，增强安装热导会增大温度跨度；
+36工况全部在16—19圈内收敛。射频温度P95−P5为0.995—6.048 K，轨道基频相位时延37.18—43.43 min。
+在本次参考网络中，beta角0、30、60度时，增大等效热导会增大温度P95−P5；
 75度持续光照时趋势反转。在全部12个高度与 beta 角组合中，增强热导都会缩短
-谐波时延。这些结论对应本研究的参考网络及已计算的轨道条件。
+轨道基频相位时延。这些结论对应本研究的参考网络及已计算的轨道条件。
 
 加密检查中，所有节点温度的最大差为0.219 K，射频温度跨度差小于0.0006 K，
 谐波时延差小于0.13 s。能量闭合指标检查的是数值能量账目。

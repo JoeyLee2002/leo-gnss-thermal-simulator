@@ -1,5 +1,13 @@
 function standalone_main(varargin)
 %STANDALONE_MAIN Entry point for the MATLAB Runtime desktop release.
+if ~isempty(varargin) && strcmp(char(varargin{1}), '--paper-study')
+    if numel(varargin) < 2 || numel(varargin) > 3
+        error('leotherm:PaperStudyArguments','Use --paper-study NEW_DIRECTORY [zh|en|both].');
+    end
+    language='both'; if numel(varargin)==3, language=char(varargin{3}); end
+    leotherm.runPaperStudy(char(varargin{2}),language);
+    return
+end
 if ~isempty(varargin) && ismember(char(varargin{1}), {'--smoke','--gui-smoke'})
     if numel(varargin) ~= 2
         error('leotherm:StandaloneSmoke', ...

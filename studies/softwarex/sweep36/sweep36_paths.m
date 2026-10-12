@@ -8,8 +8,8 @@ addpath(fullfile(repoRoot,'src'),'-begin');
 loaded=char(java.io.File(which('leotherm.defaultScenario')).getCanonicalPath());
 expected=char(java.io.File(fullfile(repoRoot,'src','+leotherm','defaultScenario.m')).getCanonicalPath());
 assert(strcmp(loaded,expected),'sweep36:SourcePath','Another LEOTherm source is shadowing this release.');
-assert(strcmp(strtrim(fileread(fullfile(repoRoot,'VERSION'))),'1.2.9') && ...
-    strcmp(leotherm.version,'1.2.9'),'sweep36:Version','This study requires engine v1.2.9.');
+assert(strcmp(strtrim(fileread(fullfile(repoRoot,'VERSION'))),leotherm.version), ...
+    'sweep36:Version','Loaded engine version differs from the repository VERSION.');
 if nargin<1 || isempty(outputDirectory)
     outputDirectory=fullfile(repoRoot,'results','softwarex_sweep36');
 end

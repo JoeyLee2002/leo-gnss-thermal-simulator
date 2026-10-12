@@ -1,0 +1,78 @@
+1
+00:00:00,000 --> 00:00:12,447
+This is LEOTherm version one point two point ten. Start in Quick start. Chinese and English use the same model and
+solver; language only changes the interface, plots and report.
+
+2
+00:00:12,447 --> 00:00:20,743
+In the goal dropdown, select Paper: reference task and 36 cases. You do not need to enter model parameters
+individually. This entry uses the fixed paper protocol and runs the reference task, all 36 conditions and three
+
+3
+00:00:20,743 --> 00:00:29,039
+time-refinement cases.
+
+4
+00:00:29,039 --> 00:00:38,869
+Click Reproduce paper and report. Choose a parent folder for the outputs. The software creates a new task subfolder
+without overwriting previous results. Wait for the computations and report export to finish. Computation time is
+
+5
+00:00:38,869 --> 00:00:48,700
+omitted here. On completion, the report opens in the current language.
+
+6
+00:00:48,700 --> 00:00:59,642
+The reference task covers two hours with a 60-second output interval and no warmup. The 36-case study combines
+three orbital altitudes, four target beta angles and three effective thermal conductances between the structure and RF
+
+7
+00:00:59,642 --> 00:01:10,585
+front end. Each case is initialized periodically before six orbits are analyzed. Keep this separate from the reference-task
+initial transient.
+
+8
+00:01:10,585 --> 00:01:18,938
+The eleven-node network distinguishes six exterior faces, the structure, antenna and receiver electronics. The matrix
+records effective thermal conductance in watts per kelvin. The study changes only the structure-to-RF link; all other
+
+9
+00:01:18,938 --> 00:01:27,291
+equipment parameters stay fixed.
+
+10
+00:01:27,291 --> 00:01:36,049
+The combined study report is in the report folder of the new task directory. It includes reference temperatures,
+absorbed external power, conductive paths, 36-case curves and paired comparisons. Both language reports come from
+
+11
+00:01:36,049 --> 00:01:44,807
+the same results; a separate simulation is not needed.
+
+12
+00:01:44,807 --> 00:01:57,059
+The upper panels compare RF temperature P95 minus P5; the lower panels compare orbital-frequency phase delay
+relative to total absorbed external power. The temperature difference ranges from about 0.995 to 6.048 kelvin.
+
+13
+00:01:57,059 --> 00:02:09,311
+Increasing conductance increases fluctuations in eclipsing cases, reduces them under continuous sunlight, and shortens
+phase delay in all twelve orbital pairs.
+
+14
+00:02:09,311 --> 00:02:19,596
+Check that the task status is complete and the case count is 36. Then inspect the audit and time-refinement tables.
+Cases two, twenty and thirty-six are independently recomputed at twice the output resolution. The report shows the
+
+15
+00:02:19,596 --> 00:02:29,881
+measured differences. Full temperature histories are retained in open_data for independent checking.
+
+16
+00:02:29,881 --> 00:02:39,689
+With MATLAB, use the source command shown here. Without a MATLAB license, install the free R2021b Runtime and
+use the paper-study argument of the new executable. The output directory must be new. If execution stops, inspect the
+
+17
+00:02:39,689 --> 00:02:49,497
+stage and error in the status file before rerunning into a fresh directory.

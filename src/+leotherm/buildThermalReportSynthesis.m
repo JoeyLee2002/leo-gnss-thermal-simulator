@@ -167,8 +167,8 @@ synthesis.evidence=cell2table(records,'VariableNames',{'metric','value','unit','
             delay=harmonic.phaseDelayS; fraction=100*abs(delay)/period;
             if delay>=0, directionZh='滞后'; directionEn='lags';
             else, directionZh='超前'; directionEn='leads'; end
-            zh=sprintf('轨道基频上，响应温度相对全网络外部吸热%s %.2f min，相当于一个轨道周期的 %.1f%%。这说明只按同一时刻的热流大小解释温度会遗漏周期相位差；此数值是基频相位关系，不是热量传播耗时。',directionZh,abs(delay)/60,fraction);
-            en=sprintf('At the orbital fundamental, response temperature %s total external absorption by %.2f min, or %.1f%% of an orbit. Same-time heat-input comparisons omit this phase relationship; the value is not a heat-transport travel time.',directionEn,abs(delay)/60,fraction);
+            zh=sprintf('轨道基频上，响应温度相对总外部吸收功率%s %.2f min，相当于一个轨道周期的 %.1f%%。这说明只按同一时刻的吸收功率解释温度会遗漏周期相位差；此数值是基频相位关系，不是热量传播耗时。',directionZh,abs(delay)/60,fraction);
+            en=sprintf('At the orbital fundamental, response temperature %s total absorbed external power by %.2f min, or %.1f%% of an orbit. Same-time heat-input comparisons omit this phase relationship; the value is not a heat-transport travel time.',directionEn,abs(delay)/60,fraction);
             overview(zh,en); detail('orbital_response',zh,en); conclusion(zh,en);
             record('orbital_phase_fraction',fraction,'percent','abs(phaseDelayS)/periodS');
         end

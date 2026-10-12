@@ -1,0 +1,75 @@
+[
+  {
+    "chapter": "启动软件",
+    "start": 0,
+    "duration": 14.457460317460319,
+    "source": "01_start.png",
+    "control": []
+  },
+  {
+    "chapter": "选择论文复现任务",
+    "start": 14.457460317460319,
+    "duration": 18.886530612244897,
+    "source": "02_paper.png",
+    "control": [
+      216,
+      269,
+      360,
+      44
+    ]
+  },
+  {
+    "chapter": "点击运行并选择保存位置",
+    "start": 33.343990929705214,
+    "duration": 22.539410430839002,
+    "source": "03_run.png",
+    "control": [
+      36,
+      325,
+      220,
+      116
+    ]
+  },
+  {
+    "chapter": "确认固定实验配置",
+    "start": 55.88340136054421,
+    "duration": 25.40108843537415,
+    "source": "protocol.png",
+    "control": []
+  },
+  {
+    "chapter": "查看11节点热网络",
+    "start": 81.28448979591836,
+    "duration": 20.250702947845806,
+    "source": "05_network.png",
+    "control": []
+  },
+  {
+    "chapter": "打开本次任务报告",
+    "start": 101.53519274376417,
+    "duration": 19.851927437641724,
+    "source": "report.png",
+    "control": []
+  },
+  {
+    "chapter": "核对36工况与论文结果",
+    "start": 121.38712018140589,
+    "duration": 25.89655328798186,
+    "source": "study.png",
+    "control": []
+  },
+  {
+    "chapter": "检查完整性和步长加密",
+    "start": 147.28367346938774,
+    "duration": 24.189115646258504,
+    "source": "checks.png",
+    "control": []
+  },
+  {
+    "chapter": "源码和Runtime复现入口",
+    "start": 171.47278911564624,
+    "duration": 24.743083900226758,
+    "source": "commands.png",
+    "control": []
+  }
+]

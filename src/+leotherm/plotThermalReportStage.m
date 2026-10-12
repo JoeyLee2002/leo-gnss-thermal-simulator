@@ -27,8 +27,8 @@ if height(data) ~= 1
     error('leotherm:ReportFigure', 'Single-case sweep plot requires one complete case.');
 end
 names = {'eclipse_fraction', 'rf_temperature_span_k', 'code_bias_span_m'};
-titlesZh = {'入影比例', '射频温度跨度', '码偏差跨度'};
-titlesEn = {'Eclipse fraction', 'RF temperature span', 'Code-bias span'};
+titlesZh = {'入影比例', '温度百分位差 P95-P5', '码偏差百分位差 P95-P5'};
+titlesEn = {'Eclipse fraction', 'Temperature P95-P5', 'Code bias P95-P5'};
 units = {'%', 'K', 'm'};
 colors = [0.11 0.50 0.62; 0.18 0.57 0.40; 0.74 0.31 0.19];
 layout = tiledlayout(1, 3, 'TileSpacing', 'compact', 'Padding', 'compact');

@@ -2,6 +2,11 @@ function figureHandle = plotThermalReportDetail(item, path, language)
 %PLOTTHERMALREPORTDETAIL Plot retained samples with a shared publication style.
 % Returning a handle permits inspection; callers then own its lifetime.
 language=leotherm.normalizeLanguage(language); zh=strcmp(language,'zh');
+if strcmp(item.stage,'paper_study')
+    fig=leotherm.plotPaperStudyFigure(item,path,language);
+    if nargout>0, figureHandle=fig; else, close(fig); end
+    return
+end
 s=leotherm.thermalFigureStyle(language);
 charts=expandCharts(item.charts); count=numel(charts);
 barGrid=all(strcmp({charts.kind},'bar')) && count>1;
@@ -9,10 +14,12 @@ networkComposite=count==3 && strcmp(charts(1).kind,'network');
 cols=1; if barGrid || count>=4, cols=2; end
 if networkComposite, cols=2; end
 rows=ceil(count/cols);
+if strcmp(item.stage,'paper_study'), cols=3; rows=2; end
 height=max(10.8,rows*7.0+1.5);
 if barGrid || cols==2, height=max(13,rows*10.5); end
 if count==1 && strcmp(charts(1).kind,'network'), height=15.5; end
 if networkComposite, height=25; end
+if strcmp(item.stage,'paper_study'), height=16.5; end
 fig=figure('Visible','off','Color','w','Units','centimeters', ...
     'Position',[2 2 s.widthCm height],'MenuBar','none','ToolBar','none');
 try

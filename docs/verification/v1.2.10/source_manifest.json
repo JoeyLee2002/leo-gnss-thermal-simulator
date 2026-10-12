@@ -1,0 +1,945 @@
+{
+  "version": "1.2.10",
+  "snapshot_file": "leo-gnss-thermal-simulator_v1.2.10_final_paper_reproduction_20261011.zip",
+  "snapshot_sha256": "0175555f84dc81831cbe1ef5fc435448db2504f6610648d7162b86669845471d",
+  "test_files": 60,
+  "test_functions": 381,
+  "files": [
+    {
+      "path": "src/+leotherm/+adapter/builtins.m",
+      "sha256": "75aed07ff2481e7f68f1b9bbeab24086d89be917e785ea8304d7caa1416df8b4"
+    },
+    {
+      "path": "src/+leotherm/+adapter/execute.m",
+      "sha256": "a7f1a141e5b25fcbb6f0be75ea642a5545e826400293de6092f13e1c2e20b838"
+    },
+    {
+      "path": "src/+leotherm/+adapter/get.m",
+      "sha256": "b102c2c11df64aa12c131308fb2a8736155670848ef9ecb4d7bd042d41cb2103"
+    },
+    {
+      "path": "src/+leotherm/+adapter/list.m",
+      "sha256": "515e21132417b5daf8e3e5867a5abc1b695e8b32e2253da74bfde960ac31f373"
+    },
+    {
+      "path": "src/+leotherm/+adapter/profiles.m",
+      "sha256": "32c86e51aa70438a3ffee11f7d9e4736a5ae2c9fd033ea68dddb23981c2cf6be"
+    },
+    {
+      "path": "src/+leotherm/+adapter/register.m",
+      "sha256": "44d6d26322f3708faf1efba07fc6958bec65fdf9d70fa3c1b663a203e1d592ed"
+    },
+    {
+      "path": "src/+leotherm/+adapter/registerFromFile.m",
+      "sha256": "fc6e06cad13b623ce72704ed71168dbcb7b5d09d99d80e4e7d442c2ea42e071d"
+    },
+    {
+      "path": "src/+leotherm/+adapter/registry.m",
+      "sha256": "897fff143f8d3d7b167b198082cebb25966f2a58ea17aa94a4f1aff7731fb146"
+    },
+    {
+      "path": "src/+leotherm/+adapter/validate.m",
+      "sha256": "3f1dd3097789b55e6c18952860f3221e1cfcefe6e7d204f1b2b95b27a6a2fe8a"
+    },
+    {
+      "path": "src/+leotherm/+io/exportThermalModel.m",
+      "sha256": "c6cef189ede54089285005dea350e30e26f59f85b535f4b7aa617a81982ff2c7"
+    },
+    {
+      "path": "src/+leotherm/+io/importThermalModel.m",
+      "sha256": "419e4d4bd04ef1e5347f3b2581ba89ccd80b26af13cbff23b2bedeac828ea8e0"
+    },
+    {
+      "path": "src/+leotherm/+io/importThermalResult.m",
+      "sha256": "87f62ce668713864db2a9d5890a30b25211f06d3366232a35a8e7245338b5113"
+    },
+    {
+      "path": "src/+leotherm/+io/readThermalModelJson.m",
+      "sha256": "7f7c143c10a6565c9990ed514daeb423795a029be1b10037971e9312239f5882"
+    },
+    {
+      "path": "src/+leotherm/+io/runExternalThermalSolver.m",
+      "sha256": "e1c8f5d0d3363c14ec8e8037e9024450c2dd5b7982788b75559d5f12740d072e"
+    },
+    {
+      "path": "src/+leotherm/+io/validateThermalModel.m",
+      "sha256": "16068d3d60fde01e305f7dd8e4c54b76be95b19089375906a908f770d7143085"
+    },
+    {
+      "path": "src/+leotherm/+io/validateThermalResult.m",
+      "sha256": "7e771aa8c12bbd9301d64f3fdc2093695181da3a2466a13bbdce64b35b185d15"
+    },
+    {
+      "path": "src/+leotherm/+io/writeThermalModelJson.m",
+      "sha256": "10ee459d5f4c5a85653fda8df9b5f7a6dc54ebc65f71658be72c6a9d777ede7e"
+    },
+    {
+      "path": "src/+leotherm/+model/applyNetworkMapping.m",
+      "sha256": "f8d99876c4aae0aeb120aa6874caf090c76f20f5cc267487823e8fcfb9a88fe7"
+    },
+    {
+      "path": "src/+leotherm/+model/normalize.m",
+      "sha256": "a11244324d123e447bee0b4763883cbe0fdf861b11dbae6dc21adbc06b4ba52b"
+    },
+    {
+      "path": "src/+leotherm/+model/normalizeModel.m",
+      "sha256": "a67d4fc1d7ba9871014f76e3a8d0519726ac9ecf6e8baf596a34c94233285e3e"
+    },
+    {
+      "path": "src/+leotherm/+model/parameterProvenance.m",
+      "sha256": "8e77f42f478e2f23281077a76a7b6862beef9ec24610838ac3e34afb623fe9bf"
+    },
+    {
+      "path": "src/+leotherm/+model/previewNetworkMapping.m",
+      "sha256": "275d093da8cbd95658a668622d6143340a0c999376db405448b99711eeb0bf5d"
+    },
+    {
+      "path": "src/+leotherm/+model/provenance.m",
+      "sha256": "dd929fcac85fdf72a025b1230c4ebc4b137ee96b7522f07c38a907ce921a4b0c"
+    },
+    {
+      "path": "src/+leotherm/+model/sampleUncertainty.m",
+      "sha256": "64b29b1748943e37516470c44b38b0bbff493bd3383247337d8b36637890dbf3"
+    },
+    {
+      "path": "src/+leotherm/+model/uncertainty.m",
+      "sha256": "a1bc798d5ab1d9f372c7d20da84c44cc936eaf5bf6c801fa90cb06195933909e"
+    },
+    {
+      "path": "src/+leotherm/+model/validate.m",
+      "sha256": "0390826da10f66dd5aae5072fd5a3dc1f5198a1bf9f0f9427fab80ee9e11a43c"
+    },
+    {
+      "path": "src/+leotherm/+model/validateModel.m",
+      "sha256": "d71e5c008165d6d7c0f4dd7a505844d063376d6d7b4389046b9c405f80e7d1ed"
+    },
+    {
+      "path": "src/+leotherm/+model/validateNetworkMapping.m",
+      "sha256": "4cb75e6ffbe9d24193a370daa61ea2926e0baebce1173990fdd977807070a4a3"
+    },
+    {
+      "path": "src/+leotherm/+report/writeThermalSimulationReport.m",
+      "sha256": "b89fe2a5b848ddd9465523db397f94104e4107b7d6a77148cb4067e5d7188f9b"
+    },
+    {
+      "path": "src/+leotherm/CalibrationPanel.m",
+      "sha256": "3328f2b13abc55b3db10a9299447af9a68bd6794fbacdff14f66833ceaa47a46"
+    },
+    {
+      "path": "src/+leotherm/Contents.m",
+      "sha256": "7ade4948588b96046fb4392b623366f2d078246d92bc024bb6762b8f9f24b64f"
+    },
+    {
+      "path": "src/+leotherm/TelemetryPanel.m",
+      "sha256": "1b0ee1b43e44c197c22154d4e13d141c574765ac86a10162f64726fd8b162c4e"
+    },
+    {
+      "path": "src/+leotherm/ThermalSimulatorApp.m",
+      "sha256": "41b363edbb681b63855a6d8e070a236c447ccedcfdaa8f1e4d36795db68def83"
+    },
+    {
+      "path": "src/+leotherm/applyContactThermalInterfaces.m",
+      "sha256": "72de6ff4ab4300dfc30d1af8a90ca957057aff7a0fbf67e8992dc38b33a83d1c"
+    },
+    {
+      "path": "src/+leotherm/applyDeviceCalibrationProfile.m",
+      "sha256": "ae4a9722309efee2122793ec65e8cc30f956cb1da096f3ceb6024137440f8ba5"
+    },
+    {
+      "path": "src/+leotherm/applySimulationTemplate.m",
+      "sha256": "34d75fb87c9fe0a379de5dee9056740a350280808f40fba3d2e1186ec60f1379"
+    },
+    {
+      "path": "src/+leotherm/applyThermalAsymmetry.m",
+      "sha256": "4b8f3871144159120ceb401eb86f807a3e32075ba4baa831457ee11998002304"
+    },
+    {
+      "path": "src/+leotherm/assembleContactThermalInterfaces.m",
+      "sha256": "6862ea8f8f95950cbddbbe4bda4fe5f86f418ed3febf489e796f662aed41f352"
+    },
+    {
+      "path": "src/+leotherm/assembleThermalBoundaryConditions.m",
+      "sha256": "a59fdb4dc42921af2e457099eb8868850150745d71a36b502fe2ccd0a0a1bd51"
+    },
+    {
+      "path": "src/+leotherm/assembleVolumeThermalModel.m",
+      "sha256": "fc3ea52b61f27499355400b9a389a9746bf240228b458dae3c0b55a1e5a26501"
+    },
+    {
+      "path": "src/+leotherm/bodyFrame.m",
+      "sha256": "a730521112f437853c7e6ee2925e33ce03deefe551da2ddc72a7177426e63fde"
+    },
+    {
+      "path": "src/+leotherm/buildPaperStudyReport.m",
+      "sha256": "d685b8fe2b9326febb36d2c9058c7a341550f4586e7043424a4ede619a22c6df"
+    },
+    {
+      "path": "src/+leotherm/buildThermalGridReport.m",
+      "sha256": "627060e327971b71d19b33d08d3bedf458b96d19db8692aca0ad45ba69e8ab34"
+    },
+    {
+      "path": "src/+leotherm/buildThermalReportAnalysis.m",
+      "sha256": "0e433e6615f5d7d3efb0be08ac2a2aa8e3083bb01074094130ba081a7bb32393"
+    },
+    {
+      "path": "src/+leotherm/buildThermalReportDetails.m",
+      "sha256": "63f92749520f66242fe08e66d983ffa728dca2c540a23ef2bbe2619377f7e119"
+    },
+    {
+      "path": "src/+leotherm/buildThermalReportSynthesis.m",
+      "sha256": "1a650d954d4ce342f10895e0c9fc08c7be8f79a719c38981c02bded912c528f8"
+    },
+    {
+      "path": "src/+leotherm/calibrateTelemetry.m",
+      "sha256": "ff091781fce2d02c49aab802665b3a76ba87d2373407da1b711ee0edb3848164"
+    },
+    {
+      "path": "src/+leotherm/calibrationCoverage.m",
+      "sha256": "591e10b8b01ec6ee9b7fdbfd126c9e5ccc0a7622a38d96fb5955e72ccd944de6"
+    },
+    {
+      "path": "src/+leotherm/calibrationDaySplit.m",
+      "sha256": "e19d912e79492f57ddfb3e4e014800571c95ddc839ce7da0903cc716ef465d04"
+    },
+    {
+      "path": "src/+leotherm/checkThermalPipelineResult.m",
+      "sha256": "4acbb6f0f790e34f1a28b81a7dde91887705214b4d2db794f609377b90abfd73"
+    },
+    {
+      "path": "src/+leotherm/componentModel.m",
+      "sha256": "3252a6fbfc6badaacb04ec6470f3e1a52909c874b8869c6aad205748305152b1"
+    },
+    {
+      "path": "src/+leotherm/computeMeshViewFactors.m",
+      "sha256": "30064b2de588bf8d78bac8fdc24c08be806d791a1f6d9df307d13a191d31ba70"
+    },
+    {
+      "path": "src/+leotherm/computeMetrics.m",
+      "sha256": "84f4cd6bbd4fd54a5eff1217f2388dfbe0f8c46617e05b0556f1892a1959e0b9"
+    },
+    {
+      "path": "src/+leotherm/conicalShadowFraction.m",
+      "sha256": "3fd39eca6320506214ca3fd62c64784d92f418976c20a96aee4d28657aa5d147"
+    },
+    {
+      "path": "src/+leotherm/constants.m",
+      "sha256": "2547f5fd145cce2afcfd3ad2062baed4011d083434cb26e33ca5471382ecb080"
+    },
+    {
+      "path": "src/+leotherm/contactHeatLedger.m",
+      "sha256": "91e68d6d4967d9baabbcf2f910a2e101652e45d74f8f4cecb65355545b2b9de8"
+    },
+    {
+      "path": "src/+leotherm/coupleSurfaceToVolumeThermal.m",
+      "sha256": "6fdf1b190f2e3e59595cc2dabffd0fdcfb636514831c4d5ce214d7513eb66754"
+    },
+    {
+      "path": "src/+leotherm/createSimulationTask.m",
+      "sha256": "f2e6b1a1146ed280e5b376d1ace5495ed81b223e94bf332fda63f46ba3a296d3"
+    },
+    {
+      "path": "src/+leotherm/createThermalPipelineTask.m",
+      "sha256": "d6cb24d794a3514b3ebd318c3e4ddb9d2b0386bb69a96991cb47f6b89857d144"
+    },
+    {
+      "path": "src/+leotherm/defaultCouplingOptions.m",
+      "sha256": "a01990f9a8f1b03ba194f3f5bff45f35d797fe6289c828e1b0ee772dc458cecb"
+    },
+    {
+      "path": "src/+leotherm/defaultReceiverNetwork.m",
+      "sha256": "89c13f9f6570042553886540255781205d91d9d9ace7d9acd38fcd26fea98144"
+    },
+    {
+      "path": "src/+leotherm/defaultScenario.m",
+      "sha256": "032bb421f09ad26145ca314398824b198c81fb726274259b4f491b075bc5b4a1"
+    },
+    {
+      "path": "src/+leotherm/deviceCalibrationDemo.m",
+      "sha256": "32d95e9e027ef98e6f46c260b4cf05c49b5ecaf9cf3c392619164ae9a3d9866b"
+    },
+    {
+      "path": "src/+leotherm/deviceCalibrationOptions.m",
+      "sha256": "4b43a27f15060866140115288ba107160c1c975c67e85973bb1f4b0842940c92"
+    },
+    {
+      "path": "src/+leotherm/deviceCalibrationProfile.m",
+      "sha256": "dfbad44cf8c85dc5aa882b514848c91ed58362889cea70112aff015d6d7a6088"
+    },
+    {
+      "path": "src/+leotherm/deviceCalibrationText.m",
+      "sha256": "3082e045b10688e46d684ec55c36764d628b2fedd32e592119bf66d5b8d33e47"
+    },
+    {
+      "path": "src/+leotherm/drawReportBodyLine.m",
+      "sha256": "7a1cfec30c9c150c2f561c34f59a72c5e5bc953bb3d640c38b01dceb1a12e4b4"
+    },
+    {
+      "path": "src/+leotherm/drawTelemetry.m",
+      "sha256": "531ef8e9a24b8f0575b863ee577ce97197e90633d084bd43e8c9a566a2ad4024"
+    },
+    {
+      "path": "src/+leotherm/earthDiskViewFactor.m",
+      "sha256": "832093205e87143a8003586433c43bf546277b3182b467aa54b7c988751f5e12"
+    },
+    {
+      "path": "src/+leotherm/environmentHeatLoads.m",
+      "sha256": "fd3a3d33771f4719ce1116b2a50159f48729dbdbc74ea9d0ede931eeb0569942"
+    },
+    {
+      "path": "src/+leotherm/exportThermalFigure.m",
+      "sha256": "b33bbb3f140626dde5ab0990bbdff77ec2221630bab0ef9718dda3fd86d076cb"
+    },
+    {
+      "path": "src/+leotherm/fitThermalParameters.m",
+      "sha256": "42218193318f62a13a43db93691e91b454c1dbc3994911b60cffb9592a74bced"
+    },
+    {
+      "path": "src/+leotherm/freezeSimulationTask.m",
+      "sha256": "d99aef57ab50124aa9fe52e43d8987701c3e76164ab089ae44a2c61c8aada3f6"
+    },
+    {
+      "path": "src/+leotherm/hysteresisLoopMetrics.m",
+      "sha256": "fbcb776233b09bcaa358f943fa081069a2650722749c53570b468659d0d6e27f"
+    },
+    {
+      "path": "src/+leotherm/importExternalTask.m",
+      "sha256": "08f8c9f3caab6420c939567b23d3791e9ee80bee210b3f919061f42a987b0ef2"
+    },
+    {
+      "path": "src/+leotherm/initializePeriodicState.m",
+      "sha256": "f30cd4767be069c50e03c226a9ae6879ff123401c0fea6e8a6e9bcf76cae5caf"
+    },
+    {
+      "path": "src/+leotherm/installRoot.m",
+      "sha256": "8ff071e956a59fc0c7230464e65af7d231459b9fab1ed6277bdb2ceb487c9cb6"
+    },
+    {
+      "path": "src/+leotherm/launchApp.m",
+      "sha256": "d47c7e69af6cbf58d0f0d3beaace993f48750da452b2da6f3e9b9c53259dec3a"
+    },
+    {
+      "path": "src/+leotherm/listSimulationTemplates.m",
+      "sha256": "ecb54cb27ba8c0585022ff92ab03e59251e66ee1551790598fb79999bba55a2c"
+    },
+    {
+      "path": "src/+leotherm/materialLibrary.m",
+      "sha256": "a0aba6f9baab1118491124102a5083ed216e5c4f4f37ca9a5f607101c9777621"
+    },
+    {
+      "path": "src/+leotherm/mergeReportPdfPages.m",
+      "sha256": "0a119caced8dc3e6a92cddb535f5a394b2db43ce0d1585ea5176671a3232389b"
+    },
+    {
+      "path": "src/+leotherm/meshSolarVisibility.m",
+      "sha256": "131887a6f16b9ac6ccdf756588b1f6eab16d75745f18d4d1f2a901eba1612d9b"
+    },
+    {
+      "path": "src/+leotherm/nodeDisplayNames.m",
+      "sha256": "ab6470554077024b8a2795eed8accc406f2f1f3b593ef7e7db00e09942665702"
+    },
+    {
+      "path": "src/+leotherm/normalizeCouplingOptions.m",
+      "sha256": "1fcf553e0fbad62a0353eb723b120d92e6ec9b61165329325ed1a1b51e5b819b"
+    },
+    {
+      "path": "src/+leotherm/normalizeLanguage.m",
+      "sha256": "2871d6128919b047b69e41f059c53a6d100191b2f2d786d2ace8270b0fe167a7"
+    },
+    {
+      "path": "src/+leotherm/orbitalHarmonicResponse.m",
+      "sha256": "fc29d03b1b2b3bc4abc30df2c4c01d43f31488f4a2cd1d76b0aa4821c5e9af0c"
+    },
+    {
+      "path": "src/+leotherm/orbitalPeakLagMetrics.m",
+      "sha256": "1b65088bdd4917384da6d23853780e3cff3d2fe39421905a5ca30042262d6a70"
+    },
+    {
+      "path": "src/+leotherm/parseCouplingOptions.m",
+      "sha256": "faebbe51f9251b57fab28652ffbb5c9cc31d470b1dc1c3d74dbe149e26ac6152"
+    },
+    {
+      "path": "src/+leotherm/parseDateList.m",
+      "sha256": "bcd157fb05b909559ef14886759e05e746f526599c824ee0ef405b9f1fa75c0b"
+    },
+    {
+      "path": "src/+leotherm/parseNumericList.m",
+      "sha256": "25866d6872c6050aea77e96ca8d642ca0263d263d82d6ba48241a86868b970d9"
+    },
+    {
+      "path": "src/+leotherm/parseStartEpoch.m",
+      "sha256": "9af37eedf1bfa8de0899296824a1272130f8c73c47009fbef799c4dc51a56f1a"
+    },
+    {
+      "path": "src/+leotherm/plotDeviceCalibration.m",
+      "sha256": "3e13f3bba778bebc68a6b50ee9f608005734ad9e90f6078450ed033610564819"
+    },
+    {
+      "path": "src/+leotherm/plotPaperStudyFigure.m",
+      "sha256": "0c7eb1e5264bf2ce1b3fbc50dce958654a99e1594f40bf8eab82a59052d19e8a"
+    },
+    {
+      "path": "src/+leotherm/plotScenario.m",
+      "sha256": "bebc2953dcd6828f6723faa329ca6bbf2b036addd368067fc476e9a0949cf8ed"
+    },
+    {
+      "path": "src/+leotherm/plotSurfaceMesh.m",
+      "sha256": "8a6b96c922a2da75b454ea3b42ec60e82fd49a8f17cefa2d53cdffb9b09c82d3"
+    },
+    {
+      "path": "src/+leotherm/plotSweep.m",
+      "sha256": "ac4c9123b4443566b420d06e5214124efed5d26867d97ef5c035aba58a3dc654"
+    },
+    {
+      "path": "src/+leotherm/plotTelemetry.m",
+      "sha256": "11c0455c1aa2512f18d6180b0810f05fe00413b4689308952d5514e10c24cd4f"
+    },
+    {
+      "path": "src/+leotherm/plotThermalReportDetail.m",
+      "sha256": "0982b6de801147c551841e18848c2ed0e3a9d28f6509d1f7c50d212a749feaa7"
+    },
+    {
+      "path": "src/+leotherm/plotThermalReportStage.m",
+      "sha256": "871c54acca063229f89ed547695cb18346aae06e6bfe95f786e29a50cf7da2f3"
+    },
+    {
+      "path": "src/+leotherm/plotVolumeMesh.m",
+      "sha256": "d61bbf420bb503d47f70922620901e6b98bc7d2151b9a528c6d5bc42d288c588"
+    },
+    {
+      "path": "src/+leotherm/positivePhaseLag.m",
+      "sha256": "001633bd0ba7d44e10410e4a3a863a9c542712dbc1e131d64b9aa1d53233484f"
+    },
+    {
+      "path": "src/+leotherm/preflightText.m",
+      "sha256": "bc0eb67dfe21c02c0d00c353b5de76820e8d63b5dc7e1e23de8e7bdbc08cffaa"
+    },
+    {
+      "path": "src/+leotherm/preflightThermalPipeline.m",
+      "sha256": "e5e9c54b45d8552d6ebd5a039a53db67f54a104de5627c847ec3c0ead9b09815"
+    },
+    {
+      "path": "src/+leotherm/propagateCircularOrbit.m",
+      "sha256": "f8f694a0c6915377f27eb5a82f41f0d07b7567de6c8aa6bf796da52201ab31ea"
+    },
+    {
+      "path": "src/+leotherm/quaternionToBodyAxes.m",
+      "sha256": "de92b678dee46afa330320ab3cfb82234c5a29b5877b2581859d18b8a952705c"
+    },
+    {
+      "path": "src/+leotherm/readGracefoIhk.m",
+      "sha256": "fc73a7ac03c68d898fb8b1042f5e43f324c35ba7133ec8eecb8e4f269e58f22e"
+    },
+    {
+      "path": "src/+leotherm/readSimulationTemplate.m",
+      "sha256": "9224e07cdd483866172dce2d78e740dcd7d4e31bc852d25167bc5dd505dd5ea8"
+    },
+    {
+      "path": "src/+leotherm/readSurfaceMesh.m",
+      "sha256": "d4cad5efbc776e1a2dd014202f92a5d7bae7997aab9c7e5ce583e743c138db88"
+    },
+    {
+      "path": "src/+leotherm/readTelemetry.m",
+      "sha256": "c031703c64ab4a5efda42ac318ad383d7cb6e6b44a9c412b0f20e09f51133648"
+    },
+    {
+      "path": "src/+leotherm/readTelemetryTable.m",
+      "sha256": "789aa451b2e28f3a9ad0aa26749497edf1392b87367c300e6b4ebb9d65a9b592"
+    },
+    {
+      "path": "src/+leotherm/readVolumeMesh.m",
+      "sha256": "6a2b380de54d7e5e73e4f5577216594aaff9ed92bf0fbfd22341b0eeb8820f23"
+    },
+    {
+      "path": "src/+leotherm/readWorkspaceProject.m",
+      "sha256": "b8c9d3fa1ea054e28043524809e3700b8b6b8f95ebc0e96d2c70d1b402c42e0f"
+    },
+    {
+      "path": "src/+leotherm/reportHarmonicResponse.m",
+      "sha256": "c5bd6972064e8f64c20a25d0578f7d2c8fa67f5d01c8c6bf940fea25d4c0dd46"
+    },
+    {
+      "path": "src/+leotherm/reportLagExplanation.m",
+      "sha256": "aba529bf797668d95af8d2068a2457e2fc2cd8ba10548d2aa63168fcc55319d5"
+    },
+    {
+      "path": "src/+leotherm/reportMetadataText.m",
+      "sha256": "cb6c5bbda47192347dc5153baa402066cc473a18e947d4130d6514fd6d7c4727"
+    },
+    {
+      "path": "src/+leotherm/reportPeakLag.m",
+      "sha256": "fc6c8c33c1f911c1c452ecd9ea0ed415a99385beebab73ea16720be6de53c9c4"
+    },
+    {
+      "path": "src/+leotherm/requireCalibrationConvergence.m",
+      "sha256": "47d2b4d1605c7c9e510be9d0d05c4dc957849a7da473d7fe9a231e28476cbd28"
+    },
+    {
+      "path": "src/+leotherm/runBetaAltitudeSweep.m",
+      "sha256": "ac3138da7ece8dc717051ee049c58c67a5ad62408549a2618a1cc58d433db179"
+    },
+    {
+      "path": "src/+leotherm/runPaperStudy.m",
+      "sha256": "65c739ac5ddf5d72bfe46522cbe22595ec758f3b2b3c77910f420347c21e5a72"
+    },
+    {
+      "path": "src/+leotherm/runPhysicalSweep.m",
+      "sha256": "5050794246e7134c241e00e50b3ae190bca70287f316961138b3e646c59fd6a8"
+    },
+    {
+      "path": "src/+leotherm/runSimulationTask.m",
+      "sha256": "b9f5d5d7d048e401d996b3d90df537f0bc1024f16d306411b1d74545bef9e960"
+    },
+    {
+      "path": "src/+leotherm/runThermalPipeline.m",
+      "sha256": "b4ea854afd78f75a29a88fbc15983c23c4cbdc919431f1ac60e8d43f8085c9df"
+    },
+    {
+      "path": "src/+leotherm/runUncertaintyEnsemble.m",
+      "sha256": "0e1b60bc83ec033fc372b7e0c52cb6db6d4e0ba7170c5d8246d3980ba5bd0629"
+    },
+    {
+      "path": "src/+leotherm/sameSimulationInputs.m",
+      "sha256": "12127574a511b35f12a0983c501a59fa5f62c4a7f0a4bf264f05fdcd2e2616eb"
+    },
+    {
+      "path": "src/+leotherm/satmoStyleNetwork.m",
+      "sha256": "bc9f52607460db786acd4325675ed3e80f0cdd28dde1cf081653ce4fa9099949"
+    },
+    {
+      "path": "src/+leotherm/selfTest.m",
+      "sha256": "62c52576cb21e0934cd4c50d13b325e5fb81c8429e98404d9d93f62623b57051"
+    },
+    {
+      "path": "src/+leotherm/simulateScenario.m",
+      "sha256": "b35a46ed49a3da7af90ffe164e78e78ddb75709772bbafb21f19b8fe6c0712af"
+    },
+    {
+      "path": "src/+leotherm/simulateSurfaceMeshScenario.m",
+      "sha256": "5a9ed22b141d0e677d0425d35b011d1990881f8fc9a54be1452c07b4b0e26c5b"
+    },
+    {
+      "path": "src/+leotherm/simulateSurfaceVolumeScenario.m",
+      "sha256": "861e18505133c04235f06d5a3c0c9830b2f96a93521b639e0f9de9ae5666ad02"
+    },
+    {
+      "path": "src/+leotherm/simulateTelemetry.m",
+      "sha256": "959727436d9afd19642e13bb2661f32c16220444ef786595de5bd5b7903de254"
+    },
+    {
+      "path": "src/+leotherm/simulateTrajectory.m",
+      "sha256": "9dc24f1b59a499e06c33067a2edea887f5e594311db0599eb01aedffffcdb278"
+    },
+    {
+      "path": "src/+leotherm/simulationTaskFingerprint.m",
+      "sha256": "909077e3558c285036aed34f810b31ec2f01a9e3fa21c9ab90db9ed045d57143"
+    },
+    {
+      "path": "src/+leotherm/solarVectorECI.m",
+      "sha256": "85ea775981a8916037f1a633a9ed4ce9cd47fefc14429eb456b22d7e99659949"
+    },
+    {
+      "path": "src/+leotherm/solveRaanForBeta.m",
+      "sha256": "5db8246949671331528a0b8d7a34c594da4af923b5009e886663a234dede811b"
+    },
+    {
+      "path": "src/+leotherm/solveSurfaceMeshThermal.m",
+      "sha256": "5ef28da044bbc2d1bddf62f3a449570fe9b69a88c14c2b240085337c9d814f23"
+    },
+    {
+      "path": "src/+leotherm/solveThermalNetwork.m",
+      "sha256": "f8b50f8ba17b92864f32470304cb450d61436a30092eb335319c0e5b31ac8bb7"
+    },
+    {
+      "path": "src/+leotherm/solveVolumeThermal.m",
+      "sha256": "d3c06fdd89b89cbc13c2b62845014b079965fc13ec316d18d7b46971a482bf73"
+    },
+    {
+      "path": "src/+leotherm/styleThermalFigure.m",
+      "sha256": "2bc5ed8d5b125cf39372cbdfa39462559670c511f83fe93cf568fe58b455b424"
+    },
+    {
+      "path": "src/+leotherm/surfaceMeshLoads.m",
+      "sha256": "5317a0505dcb9c0016a3b4a88c7380d5a5c868d3f7d75ce1494ce0e8c0389360"
+    },
+    {
+      "path": "src/+leotherm/symmetricReceiverNetwork.m",
+      "sha256": "4609f4beee6863ec00e535c5ec83ec5ae0c640dc46577e76030ef885a1547e4f"
+    },
+    {
+      "path": "src/+leotherm/telemetryDemo.m",
+      "sha256": "86356e0bb2631c7956ef536ed581aedbd9459a0421db580d82fe69d4cf2bb438"
+    },
+    {
+      "path": "src/+leotherm/telemetryMapping.m",
+      "sha256": "82fdd891167ee5d9dc79543d6b02942524d00990d43cad680e4bd83b9dd8f02d"
+    },
+    {
+      "path": "src/+leotherm/telemetryOptions.m",
+      "sha256": "6696d0bbb2eb432f59ebed79d42a26e67d28c9fbe2d42803013ba6575fa4a0c1"
+    },
+    {
+      "path": "src/+leotherm/telemetryPreflight.m",
+      "sha256": "e4a77e0d8912662b89532ecc083325d2ca66852de444b2c99ffc1057ce84812e"
+    },
+    {
+      "path": "src/+leotherm/temperatureCodeBias.m",
+      "sha256": "f89d0de33f3fa5af3c2c2e4a169d8513619a5fdc164c7bd0dcde1aba0278e4da"
+    },
+    {
+      "path": "src/+leotherm/thermalFigureLabels.m",
+      "sha256": "22850e8ae2c4311f1fc92cc27a264964a571f7ba871899908af4ae309f10fd35"
+    },
+    {
+      "path": "src/+leotherm/thermalFigureStyle.m",
+      "sha256": "45cab0dca7292936d45f7c82545204dd20dff9ad09eda80400d12f13d2b53351"
+    },
+    {
+      "path": "src/+leotherm/thermalMetricLabel.m",
+      "sha256": "fcaf5af5281ad3ff297209799cead75f4027732984a2e730e11ea105b1b258d3"
+    },
+    {
+      "path": "src/+leotherm/validateComponentModel.m",
+      "sha256": "eb27a654256321ed916cfa8e72783721e625bd272a4d4177462ceddb60bfbdba"
+    },
+    {
+      "path": "src/+leotherm/validateCouplingOptions.m",
+      "sha256": "7a7dda0d5090bcbdfd14fdc03331adfbb21fcd490466c32a43bd9c65d7fa7c25"
+    },
+    {
+      "path": "src/+leotherm/validateDeviceCalibrationProfile.m",
+      "sha256": "03997fe253952127cde5ca16ea4d8bb0af6608dd20e7698ba9ab5ce6a92efceb"
+    },
+    {
+      "path": "src/+leotherm/validateNetwork.m",
+      "sha256": "edd3f590651b4b94d3d057fae6f34ab64ce1b28e0a2c0ee32687151a70593492"
+    },
+    {
+      "path": "src/+leotherm/validateScenario.m",
+      "sha256": "4b428746fcc607ab8095a069106d3a05141ac1ec99396b0f68af1972764e9b01"
+    },
+    {
+      "path": "src/+leotherm/validateSimulationTask.m",
+      "sha256": "bb21db7e04bb44a05accc85acea7c1b30349e1269a9de8e7495ee323794e1ac7"
+    },
+    {
+      "path": "src/+leotherm/validateSimulationTemplate.m",
+      "sha256": "79422c80184a0fb5569c557882c0751952b28e1e58a94d4b7efef3e2e28ea765"
+    },
+    {
+      "path": "src/+leotherm/validateSurfaceMesh.m",
+      "sha256": "ff950aef1bcbec29aa1ab11051ce437c03a71f87da0af6916a207c6e071eea13"
+    },
+    {
+      "path": "src/+leotherm/validateTelemetry.m",
+      "sha256": "9985e5d11d3a64700a653ec3f66f4025450d55bc1fd82df0ae52ecd72f2358f1"
+    },
+    {
+      "path": "src/+leotherm/validateTrajectory.m",
+      "sha256": "d3665fcab3839f1f1f898af4f9247270ffc3534664c84ec4196e7f992d9fc712"
+    },
+    {
+      "path": "src/+leotherm/validateVolumeMesh.m",
+      "sha256": "f240bef69396c226b4160094cbd9cc305bcebf60442cf6e83b3376fc9ce0abe5"
+    },
+    {
+      "path": "src/+leotherm/version.m",
+      "sha256": "9d8ec335e9eeb8851e6f904f21b64b95d0ee56a1436e03f151c599ffc0255c5e"
+    },
+    {
+      "path": "src/+leotherm/writeDeviceCalibrationResults.m",
+      "sha256": "9e93c28417789df288b43a4923a71c8b42fa98bf3dbf12c7b9341107dfc0a601"
+    },
+    {
+      "path": "src/+leotherm/writeScenario.m",
+      "sha256": "0dce9f2ffb082fd5f52cb0a51cd4fd809970b3495b2c516c4ebbd80cb227d67b"
+    },
+    {
+      "path": "src/+leotherm/writeSurfaceMeshResult.m",
+      "sha256": "7848ced44038d40a5ce29cad6eebfaf008deb39dbbdf53859af513293d953722"
+    },
+    {
+      "path": "src/+leotherm/writeSurfaceVolumeCouplingResult.m",
+      "sha256": "516a399926724bb299828c8fb9d7404982d2bcba7a118c9ee7fb66f8716c09d9"
+    },
+    {
+      "path": "src/+leotherm/writeSurfaceVolumeScenarioResult.m",
+      "sha256": "37f16c73272400a8d1e2e4b2c4991e5312e340c97008a0dfe274544b5923d12f"
+    },
+    {
+      "path": "src/+leotherm/writeTelemetryResults.m",
+      "sha256": "f3b90da97bed0b37bee4685f467ee533f091ce8aadc60f343a9860458adadd52"
+    },
+    {
+      "path": "src/+leotherm/writeTelemetrySummary.m",
+      "sha256": "c5c3b53b989f629307a4c32c92c84c9fc809c7d5fec2bd815e7ce9ecb45a51ae"
+    },
+    {
+      "path": "src/+leotherm/writeTelemetryTemplate.m",
+      "sha256": "9671860efbbb894665824076746bb04c2d791323ad469324066ce3aed5837bab"
+    },
+    {
+      "path": "src/+leotherm/writeThermalPdfReport.m",
+      "sha256": "2841e2a0c542f888557fd67cdf1be547eb5716d898fef45eda149554a5a8407c"
+    },
+    {
+      "path": "src/+leotherm/writeThermalPublicationFigures.m",
+      "sha256": "4441fbdae06e8e33bc7dff13e1acad59944c50da7fcd1f5c4f2be72d1a039663"
+    },
+    {
+      "path": "src/+leotherm/writeThermalReport.m",
+      "sha256": "808c8dc0dece58feb7e9c22cb67c2d485cf12dc5a8f451000da846eeb9d7857e"
+    },
+    {
+      "path": "src/+leotherm/writeVolumeThermalResult.m",
+      "sha256": "e5009c077f195360e08d79754c95b7302afb7f07920766ab423f2204ebeacebf"
+    },
+    {
+      "path": "src/+leotherm/writeWorkspaceProject.m",
+      "sha256": "45bb68df5213dd78950767e15a12d858087ce78ffa05fa1f4f04812061f608ab"
+    },
+    {
+      "path": "tests/deviceCalibrationFixture.m",
+      "sha256": "a35def5e66e4007e7a9d2f8a84671e7e4797785be04940f5a01aecbc658e591e"
+    },
+    {
+      "path": "tests/test_adapter_examples.m",
+      "sha256": "21c40011a23be75f8d1091307ea55a2ed438a39b89d8f1b7a75c6ae91c84c10a"
+    },
+    {
+      "path": "tests/test_adapter_sdk.m",
+      "sha256": "381de5aa569dd4e09964de1544f0be1546eef08047e9d0eafc64ebcbe7d241d8"
+    },
+    {
+      "path": "tests/test_calibration.m",
+      "sha256": "f10bcb32e3e06a239d518cfccd210bda23432ba18860d0a073b77e7c063de618"
+    },
+    {
+      "path": "tests/test_contact_interfaces.m",
+      "sha256": "bf7a962ed47b7557026dd4c8312061652649d2eb8ad2a64fdc1c262ae2f855a7"
+    },
+    {
+      "path": "tests/test_coupling_options.m",
+      "sha256": "a6850b23b3dbbab5e2598f9d539d0ce3267f118266d1fafa59ad4df82e5651e8"
+    },
+    {
+      "path": "tests/test_device_calibration.m",
+      "sha256": "45f804de8931d7bfd34f25bbcd0f9f726771dc424401974d2856d2abddcbe7bc"
+    },
+    {
+      "path": "tests/test_device_calibration_exports.m",
+      "sha256": "0b7ef4781b8a9e2e8991907ce085941ff661b3073a16d379eec821a4c00c2bef"
+    },
+    {
+      "path": "tests/test_device_calibration_guards.m",
+      "sha256": "a75497f7a5123fb28ba8ff6b7820f9c22311349f2b0cb99d49bbecb4a43f923f"
+    },
+    {
+      "path": "tests/test_device_calibration_optional_solver.m",
+      "sha256": "a8c4b0bb0e2e18ddd5ceb129c167638012aeb647157240ee144abbdc776d4932"
+    },
+    {
+      "path": "tests/test_device_profile.m",
+      "sha256": "680c5af4d12df65511c7af4f7ad84f160116b05b99868e76bf8706509047cc64"
+    },
+    {
+      "path": "tests/test_eclipse.m",
+      "sha256": "992ef65626f293731142e29f365ce01377d423f6822e711bfee1eafdc369ca09"
+    },
+    {
+      "path": "tests/test_end_to_end.m",
+      "sha256": "d455a20ac0ca540d4cd995c40c644a7b860d6efe6b9795f9013c5d935558c8ee"
+    },
+    {
+      "path": "tests/test_example_projects.m",
+      "sha256": "c422892f8563faa6b45139ca92b22c17c43821d4ee2063617b7c2d94ddf295e2"
+    },
+    {
+      "path": "tests/test_extensibility_audit.m",
+      "sha256": "b8ac241b8469e8f0c983983778a22e72a3a5b911cc2143d1919717d6ed3f80d4"
+    },
+    {
+      "path": "tests/test_external_solver_report.m",
+      "sha256": "9361846435fcc16982014aab74e846bca870a10bf0aaddf2aba0365914d62c74"
+    },
+    {
+      "path": "tests/test_external_task.m",
+      "sha256": "e02c4278ead7db30ef2328f5bfc7c19f36bfeb6416b657a701d8b6dd3d29bbaf"
+    },
+    {
+      "path": "tests/test_gracefo_import.m",
+      "sha256": "73fcde005d6a23cc0d4cfce8455d01cf776417f3b70ce00e31df617e1ef437c3"
+    },
+    {
+      "path": "tests/test_gui_support.m",
+      "sha256": "34f63699424b6ec536322a3d1296b9126ecc5dd8292c427f6ad9d004bd555c18"
+    },
+    {
+      "path": "tests/test_gui_surface_volume_workflow.m",
+      "sha256": "9f7124e67c8424344640ef2148be913c14a6e988658e51d628981113dff4719d"
+    },
+    {
+      "path": "tests/test_gui_thermal_model.m",
+      "sha256": "f19a0e3e87d18db9a0e7ea06ed9e7d99c18ce37c08a95a816722f63abc116f38"
+    },
+    {
+      "path": "tests/test_hardening.m",
+      "sha256": "ffc398123628d8dea3c2c3df58d7fc46b4ed9daeb0fc8a39b532a31dca620430"
+    },
+    {
+      "path": "tests/test_material_component_library.m",
+      "sha256": "01f95892c5876f4270472a42fd6a7f8269cf171eb7efc880a0f60a794d0057b3"
+    },
+    {
+      "path": "tests/test_mesh_radiation.m",
+      "sha256": "c219d3653b356d64daedca94b73c47581294e97c01f708ce1a49362effa87e34"
+    },
+    {
+      "path": "tests/test_mesh_self_shadow.m",
+      "sha256": "6e182b1b65d21181c5a0ec5d1ccbc3b7a523ba790bcc88806babe786f29d1add"
+    },
+    {
+      "path": "tests/test_mesh_thermal_config.m",
+      "sha256": "379b6c62ec496f8914fcc70bc8852402173356fc4ea6293089488bf1183f957e"
+    },
+    {
+      "path": "tests/test_minxss_validation.m",
+      "sha256": "23cd4088b8d1c00bd231d6087407418365a5cd29e60e52849c5e4974ab2006c0"
+    },
+    {
+      "path": "tests/test_model_extensions.m",
+      "sha256": "599953813c5723a59157dbd68eb5e79fee0b996447f1c34823c9a53b9079a2d7"
+    },
+    {
+      "path": "tests/test_orbit_geometry.m",
+      "sha256": "42072e4b2ea3e4d6df4ad50406bcd57d4687396b4393cd102bd4da910945f400"
+    },
+    {
+      "path": "tests/test_orbital_harmonic_response.m",
+      "sha256": "3ab2d1b7dd8ec8ebbc00d429f9d07cfc8b6dbb892bc742817bdc8ef05f31d325"
+    },
+    {
+      "path": "tests/test_paper_study_report.m",
+      "sha256": "678c6b012b62822a6e8f8f8a43f1586dffb5864e76ce07fe6a8f790cba1273c1"
+    },
+    {
+      "path": "tests/test_report_body_layout.m",
+      "sha256": "a8f4b7306c802a4078ee705242ed681d4155c637b76591473bb77d06de0a4ccf"
+    },
+    {
+      "path": "tests/test_report_closure.m",
+      "sha256": "0d67777bf5ca9bc4926de20f0538528cd787f27700f7496ea0f3f28e2af3c082"
+    },
+    {
+      "path": "tests/test_report_details.m",
+      "sha256": "bbf9b13aeefea9facbb0538ed23e6eae96ef6ffa349a93b62a974ed6b6ba1807"
+    },
+    {
+      "path": "tests/test_report_figure_style.m",
+      "sha256": "f41b7a1e4ff285994e2543689e34b5f2a9cdd72ffc4e5934978294799881d106"
+    },
+    {
+      "path": "tests/test_report_metadata.m",
+      "sha256": "9829368b038d0bf10f30544fea0ddf88f9bad5889c3ebc32c1456d247e3978f0"
+    },
+    {
+      "path": "tests/test_report_pdf_merge.m",
+      "sha256": "e09cf77882168f45b76dbf517b3fbc3a17c425f59548f3d760bfa2c61c748aec"
+    },
+    {
+      "path": "tests/test_report_result_audit.m",
+      "sha256": "15a1ed1a67124669a663f3ffd2a66ff2c68423d49e339ec34f60880945f346e4"
+    },
+    {
+      "path": "tests/test_report_scalar_lag.m",
+      "sha256": "7e712a3be8e3e1377e070fc6600a6fe5460ab259001e7632febce520be285072"
+    },
+    {
+      "path": "tests/test_report_synthesis.m",
+      "sha256": "dab0ef19564408c59512fe394804ccbd09afa282770c8d7390f3355440e82740"
+    },
+    {
+      "path": "tests/test_simulation_task.m",
+      "sha256": "02b088240702b3c2a3cf5ebe5a54f20517155e167405ba4a603feed2b43c7f34"
+    },
+    {
+      "path": "tests/test_simulation_templates.m",
+      "sha256": "b76e967cea4ff36ece39116e65ae812978face043d2ba561c27578c2967c3de6"
+    },
+    {
+      "path": "tests/test_standalone_entry.m",
+      "sha256": "d204c480240ced42c3d3c027a48c492996b8552ee806cd8e6f11e49d1a77f454"
+    },
+    {
+      "path": "tests/test_surface_mesh.m",
+      "sha256": "7ecae6b58dd896110c6bb398889b26560cf469babf164bc6ca8133135bfc216b"
+    },
+    {
+      "path": "tests/test_surface_volume_coupling.m",
+      "sha256": "9e77e53f8b8226b12706d0ef3d1f785faff2acd0e9c3f4f6a5c70f85de93b5ee"
+    },
+    {
+      "path": "tests/test_surface_volume_export.m",
+      "sha256": "0181d046c59a9807c17d4ca542d652264d9e4685270610006960c17564dc9afe"
+    },
+    {
+      "path": "tests/test_surface_volume_scenario.m",
+      "sha256": "fa3bf04bc3a67e7dfe981874075975aaf9e1dfc1262f8aaa7060b8a2d00f2d7a"
+    },
+    {
+      "path": "tests/test_telemetry.m",
+      "sha256": "bf2ff5dc3a57eaab0a1e59df672ecdccac587af0763040813d6efb2676b07d30"
+    },
+    {
+      "path": "tests/test_thermal_boundaries.m",
+      "sha256": "927ef2e850b55ee47f21833ace73ca0abe3a28a8121501a317a891a4de9b08cd"
+    },
+    {
+      "path": "tests/test_thermal_model_contract.m",
+      "sha256": "5d263639290a500d7af84a2dd37fcbf4d26c3dc48ad94cd416cf609038b12e1f"
+    },
+    {
+      "path": "tests/test_thermal_model_io.m",
+      "sha256": "f7ee7e7fadd57abf97dcac62fd843ace4a96d2d92ccfdecee7dc68ca803a45f3"
+    },
+    {
+      "path": "tests/test_thermal_model_network_mapping.m",
+      "sha256": "86492fbd9d1be06a503f81286e797225215751a2e2ae31d601e1119a4a328067"
+    },
+    {
+      "path": "tests/test_thermal_network.m",
+      "sha256": "50950047f1c6473d4b79df57b9540b5138a29137b0e8ac2083f53c5cf0dd1141"
+    },
+    {
+      "path": "tests/test_thermal_pipeline.m",
+      "sha256": "f4754326555b173cd650962b8deb440420dee696bb57962778c5071627587fb2"
+    },
+    {
+      "path": "tests/test_thermal_result_io.m",
+      "sha256": "449e75f1f2a6c70ceba30adf955536e6416afa2726cee594b8b3ef30e9aa977f"
+    },
+    {
+      "path": "tests/test_thermal_terminology.m",
+      "sha256": "a9b23e7b949b0c85523492397186c0ebb41e6fac01a68961577f7c69d16d1e8e"
+    },
+    {
+      "path": "tests/test_unified_report.m",
+      "sha256": "eb23d6f2c96ca09ee624e50ebc53695d35c7232e37b5aa8475c0211b1da1efbc"
+    },
+    {
+      "path": "tests/test_usability.m",
+      "sha256": "417a8b6e6c7264b344134c3d53e45c9754b6858d366ff8fe3a346db2c5dcd29b"
+    },
+    {
+      "path": "tests/test_v014_release_regression.m",
+      "sha256": "bc0435a4dc839aca63f07fa76af31636a3a00984e2f846e2a1618fd8f9b9567c"
+    },
+    {
+      "path": "tests/test_validation_and_usability.m",
+      "sha256": "b2540972b67f4e2cfc8abf7dd101901476e6659c910713864fc0a320d01b91ad"
+    },
+    {
+      "path": "tests/test_volume_fem.m",
+      "sha256": "a3eb8dd57ae9ca7caf3f7a327590aa5725ba17bf7ecbe0599334fd022a690cfc"
+    }
+  ]
+}

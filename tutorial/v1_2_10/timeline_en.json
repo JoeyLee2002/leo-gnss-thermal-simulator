@@ -1,0 +1,75 @@
+[
+  {
+    "chapter": "Launch the software",
+    "start": 0,
+    "duration": 12.44748299319728,
+    "source": "01_start.png",
+    "control": []
+  },
+  {
+    "chapter": "Select the paper study",
+    "start": 12.44748299319728,
+    "duration": 16.591428571428573,
+    "source": "02_paper.png",
+    "control": [
+      216,
+      269,
+      360,
+      44
+    ]
+  },
+  {
+    "chapter": "Run and select the output location",
+    "start": 29.038911564625852,
+    "duration": 19.660997732426306,
+    "source": "03_run.png",
+    "control": [
+      36,
+      325,
+      220,
+      116
+    ]
+  },
+  {
+    "chapter": "Review the fixed experiment protocol",
+    "start": 48.69990929705216,
+    "duration": 21.88498866213152,
+    "source": "protocol.png",
+    "control": []
+  },
+  {
+    "chapter": "Inspect the 11-node thermal network",
+    "start": 70.58489795918368,
+    "duration": 16.705986394557822,
+    "source": "05_network.png",
+    "control": []
+  },
+  {
+    "chapter": "Open the study report",
+    "start": 87.2908843537415,
+    "duration": 17.516009070294785,
+    "source": "report.png",
+    "control": []
+  },
+  {
+    "chapter": "Check the 36-case results",
+    "start": 104.80689342403629,
+    "duration": 24.504580498866215,
+    "source": "study.png",
+    "control": []
+  },
+  {
+    "chapter": "Check completeness and time refinement",
+    "start": 129.3114739229025,
+    "duration": 20.57002267573696,
+    "source": "checks.png",
+    "control": []
+  },
+  {
+    "chapter": "Source and Runtime entry points",
+    "start": 149.88149659863947,
+    "duration": 19.615646258503403,
+    "source": "commands.png",
+    "control": []
+  }
+]

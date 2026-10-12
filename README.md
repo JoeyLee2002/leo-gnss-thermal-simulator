@@ -1,20 +1,30 @@
 # LEO GNSS Thermal Simulator
 
-**New in v1.2.9:** native MATLAB publication graphics, annotated conductance matrices and shared report/paper exports. Single-orbit peak timing uses text instead of a standalone plot. See the [updated guide](docs/quickstart_v1.2.9.md).
+**Published paper version: v1.2.10.** Standardized bilingual metric names and a one-action paper reproduction task connect the reference simulation, 36 conditions, refinement checks and combined analysis report. Start with the [current guide](docs/quickstart_v1.2.10.md), [paper reproduction](docs/reproduce_paper_v1.2.10.md), and [bilingual video tutorial](tutorial/v1_2_10/README.md). The [v1.2.10 tag](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/tree/v1.2.10) fixes the source used in the paper. The original 36-case dataset remains at v1.2.9-sweep36.1.
 
-**Latest release: [v1.2.9](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.9).**
+## Use the Current Version
+
+From MATLAB at the repository root, run `addpath('src')`, then `leotherm.runPaperStudy(fullfile(pwd,'results','my_paper_run'),'both')`.
+In the GUI, select **Paper: reference task and 36 cases** on Quick start, click **Reproduce paper and report**, and choose the output location.
+The Windows executable requires free MATLAB Runtime R2021b, not a MATLAB license.
+
+[English sample report](examples/reports/thermal_report_v1.2.10_en.pdf) · [中文报告](examples/reports/thermal_report_v1.2.10_zh.pdf) · [Patch notes](patches/PATCH_v1.2.10.md) · [Verification record](docs/verification_v1.2.10.md)
+
+## Public Release and Historical Material
+
+**Latest release: [v1.2.10](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.10).**
 Download the Windows application package from Assets and use the free MATLAB Runtime R2021b.
 A MATLAB license is not required. Existing compatible Runtime installations can be reused.
 The older no-installer bundle contains application 1.2.1, not this release;
 its [portable guide](docs/portable_en.md) is retained for existing users.
 
-**Start here:** [v1.2.9 user guide](docs/quickstart_v1.2.9.md) ·
-[中文版教程](docs/使用教程_v1.2.9.md) ·
-[Windows standalone package v1.2.9](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/download/v1.2.9/LEOTherm_1.2.9_windows.zip).
+**Start here:** [v1.2.10 user guide](docs/quickstart_v1.2.10.md) ·
+[中文版教程](docs/使用教程_v1.2.10.md) ·
+[Windows standalone package v1.2.10](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/download/v1.2.10/LEOTherm_1.2.10_windows.zip).
 The standalone build requires the free MATLAB Runtime R2021b, not a MATLAB license.
 See the [installation guide](docs/standalone_en.md).
 
-Current release: **1.2.9**. Reports retain chapter analysis and closing conclusions, omit the opening synthesis, justify body paragraphs and center page numbers without a footer disclaimer. Thermal calculations are unchanged. See the [English sample](examples/reports/thermal_report_v1.2.9_en.pdf) and [patch notes](patches/PATCH_v1.2.9.md). New sessions and built-in examples start in English.
+Historical release: **1.2.9**. Reports retain chapter analysis and closing conclusions, omit the opening synthesis, justify body paragraphs and center page numbers without a footer disclaimer. Thermal calculations are unchanged. See the [English sample](examples/reports/thermal_report_v1.2.9_en.pdf) and [patch notes](patches/PATCH_v1.2.9.md). New sessions and built-in examples start in English.
 See the [English introduction (v1.2.1 recording)](tutorial/english_intro_v1_2_1/LEOTherm_English_Introduction.mp4)
 and [Chinese full tutorial (v1.2.0 recording)](tutorial/v1_2_0_full/README_CN.md).
 These videos explain the workflow; the v1.2.9 written guides describe the current report layout and export behavior.
@@ -29,7 +39,7 @@ Current targeted tests and independent Runtime checks are documented in
 The current manuscript's **36-case orbital and mounting study** includes
 [complete data, figures and reproducible MATLAB scripts](studies/softwarex/sweep36/README.md).
 See [the study package release](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.9-sweep36.1).
-The [earlier six-case report example](examples/paper_example_v1_2_9.m) is retained.
+The earlier duplicate six-case example is replaced by `leotherm.runPaperStudy`; the published v1.2.9 archive is retained unchanged.
 The GUI opens with a Quick start area, followed by
 Simulation and Results. Scenario, sweep, thermal network,
 telemetry and calibration are configuration sections of one simulation task.

@@ -48,7 +48,7 @@ function testPublicationKeepsEnergyWithoutSingletonPanel(testCase)
 r=history(1,10);
 d=leotherm.buildThermalReportDetails(struct('scenario',r));
 energy=d(strcmp({d.stage},'energy_balance'));
-folder=tempname; mkdir(folder); cleanup=onCleanup(@() rmdir(folder,'s')); %#ok<NASGU>
+folder=tempname; mkdir(folder); cleanup=onCleanup(@() rmdir(folder,'s'));
 manifest=leotherm.writeThermalPublicationFigures(energy,folder,'en');
 verifyEqual(testCase,numel(manifest),1);
 verifyEqual(testCase,manifest.stages,{'energy_balance'});
@@ -63,7 +63,7 @@ function testPublicationKeepsMultiCyclePanel(testCase)
 r=history(2,10);
 d=leotherm.buildThermalReportDetails(struct('scenario',r));
 d=d(ismember({d.stage},{'energy_balance','lag_detail'}));
-folder=tempname; mkdir(folder); cleanup=onCleanup(@() rmdir(folder,'s')); %#ok<NASGU>
+folder=tempname; mkdir(folder); cleanup=onCleanup(@() rmdir(folder,'s'));
 manifest=leotherm.writeThermalPublicationFigures(d,folder,'zh');
 verifyEqual(testCase,manifest.stages,{'lag_detail','energy_balance'});
 verifyEqual(testCase,manifest.sourceCharts,2);

@@ -1,4 +1,11 @@
-# 中文视频教程
+# 视频教程 / Video Tutorials
+
+## v1.2.10：复现论文 / Reproduce the Paper
+
+- [中文教程：参考任务、36工况及报告](v1_2_10/LEOTherm_v1.2.10_paper_tutorial_zh.mp4)，3分16秒；[字幕](v1_2_10/LEOTherm_v1.2.10_paper_tutorial_zh.srt)。
+- [English tutorial: reference task, 36 cases and report](v1_2_10/LEOTherm_v1.2.10_paper_tutorial_en.mp4), 2 min 49 s; [captions](v1_2_10/LEOTherm_v1.2.10_paper_tutorial_en.srt).
+
+新版使用当前软件界面和本次计算报告，配有控件位置高亮、逐步讲解与九章导航。详见[复现教程说明](v1_2_10/README.md)。下面的历史全功能导览保留作参考，不替代新版论文复现步骤。
 
 ## v1.1.0：统一任务流水线
 

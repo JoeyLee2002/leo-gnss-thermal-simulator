@@ -7,7 +7,7 @@ protocol.conductanceWK=[0.31 0.62 1.24];
 protocol.samplesPerOrbit=360;
 protocol.analysisOrbits=6;
 protocol.referenceConductanceWK=0.62;
-protocol.parameterMeaning='Symmetric structure-to-RF conductance; other parameters fixed';
+protocol.parameterMeaning='Effective thermal conductance between structure and RF front end (W/K); other parameters fixed';
 protocol.designBasis='Half, nominal and twice the reference value; not measured hardware';
 protocol.scenario=leotherm.defaultScenario;
 protocol.scenario.warmupOrbits=0;
@@ -19,5 +19,5 @@ protocol.scenario.convergence.maximumCycles=80;
 protocol.scenario.convergence.requiredStableCycles=2;
 protocol.scenario.convergence.failOnNonConvergence=true;
 protocol.network=leotherm.defaultReceiverNetwork;
-protocol.id='v129_frozen_sun_6orbits_grid360_tol1e-3_G7_9';
+protocol.id=['v' strrep(leotherm.version,'.','') '_frozen_sun_6orbits_grid360_tol1e-3_G7_9'];
 end

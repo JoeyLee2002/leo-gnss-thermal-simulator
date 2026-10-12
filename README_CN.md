@@ -1,19 +1,29 @@
 # 低轨卫星热仿真工作台
 
-**v1.2.9 更新：** 原生 MATLAB 科研图形、带数值的导热矩阵及论文同源导出；单周期峰值时间差改为文字，不再单独占图。见[图形使用说明](docs/科研图形导出_v1.2.9.md)和[使用教程](docs/使用教程_v1.2.9.md)。
+**论文公开版本 v1.2.10：** 中英文指标名称统一；论文参考任务、36工况、步长加密和分析报告可一次运行。见[最新使用教程](docs/使用教程_v1.2.10.md)、[论文复现步骤](docs/论文结果复现_v1.2.10.md)和[中英文视频教程](tutorial/v1_2_10/README.md)。[v1.2.10 标签](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/tree/v1.2.10)固定论文使用的源码；原始36工况数据保留在 v1.2.9-sweep36.1。
 
-**最新发布：[v1.2.9](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.9)。**
+## 当前版本怎么用
+
+源码：在仓库根目录的MATLAB中执行 `addpath('src')`，再执行 `leotherm.runPaperStudy(fullfile(pwd,'results','my_paper_run'),'both')`。
+图形界面：快速开始选择“复现论文：参考任务与36工况”，点击“复现论文并生成报告”，选择保存位置即可。
+Windows程序需免费的MATLAB Runtime R2021b，不需要MATLAB许可证。
+
+[中文示例报告](examples/reports/thermal_report_v1.2.10_zh.pdf) · [English report](examples/reports/thermal_report_v1.2.10_en.pdf) · [术语和指标定义](docs/术语与指标.md) · [本版补丁](patches/PATCH_v1.2.10.md) · [本版测试记录](docs/verification_v1.2.10.md)
+
+## 公开发布与历史资料
+
+**最新发布：[v1.2.10](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.10)。**
 在发布页 Assets 中下载 Windows 应用包，配合免费的 MATLAB Runtime R2021b 使用。
 不需要购买 MATLAB；已有兼容 Runtime 无需重装。
 旧免安装整包仍为 1.2.1，不是本次新版；其[使用说明](docs/免安装版使用.md)保留供旧版用户参考。
 
-**第一次使用：**[v1.2.9 中文使用教程](docs/使用教程_v1.2.9.md) ·
-[English guide](docs/quickstart_v1.2.9.md) ·
-[下载 Windows 独立版 v1.2.9](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/download/v1.2.9/LEOTherm_1.2.9_windows.zip)。
+**第一次使用：**[v1.2.10 中文使用教程](docs/使用教程_v1.2.10.md) ·
+[English guide](docs/quickstart_v1.2.10.md) ·
+[下载 Windows 独立版 v1.2.10](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/download/v1.2.10/LEOTherm_1.2.10_windows.zip)。
 独立版不需要购买 MATLAB，但必须安装免费的 MATLAB Runtime R2021b；
 安装步骤见[英文独立版使用说明](docs/standalone_en.md)，启动后可切换中文。
 
-当前版本为 **1.2.9**：删除开头的“关键发现与解读”，保留章节分析与末尾总结；正文两端对齐，删除说明性页脚，页码居中。热仿真计算不变。见[本版更新说明](patches/PATCH_v1.2.9.md)。
+历史 **1.2.9**：删除开头的“关键发现与解读”，保留章节分析与末尾总结；正文两端对齐，删除说明性页脚，页码居中。热仿真计算不变。见[历史更新说明](patches/PATCH_v1.2.9.md)。
 见[新版报告使用说明](docs/详细分析报告_v1.2.2.md)。启动界面和内置示例默认使用英文，可切换中文。
 [英文介绍视频（v1.2.1 录制）](tutorial/english_intro_v1_2_1/LEOTherm_English_Introduction.mp4)和[中文完整教程（v1.2.0 录制）](tutorial/v1_2_0_full/README_CN.md)保留供学习流程；当前报告样式及导出步骤以 v1.2.9 文字教程为准。
 基础仿真始终运行，扫描、三维耦合、遥测对比和设备标定均可按需勾选或跳过；完成的阶段会进入[分析报告](docs/任务分析报告_v1.2.0.md)。
@@ -21,9 +31,9 @@
 没有 MATLAB 的 Windows 用户可使用[独立版安装说明](docs/独立版使用_v1.2.0.md)；
 需要另装免费的 MATLAB Runtime R2021b。
 本版专项测试与独立 Runtime 检查见[验收记录](docs/verification_v1.2.9.md)。
-当前论文的**36工况轨道与安装热导研究**提供[完整数据、图形及复现教程](studies/softwarex/sweep36/README_CN.md)，
+论文的**36工况轨道与等效热导研究**提供[完整数据、图形及复现教程](studies/softwarex/sweep36/README_CN.md)，
 见[研究材料发布页](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.9-sweep36.1)。
-[原六工况报告示例](examples/paper_example_v1_2_9.m)保留供学习。
+重复的旧六工况示例已由 `leotherm.runPaperStudy` 替代；已发表的 v1.2.9 归档原样保留。
 第一次使用请看[统一任务流水线指南](docs/统一任务流水线_v1.1.0.md)。
 发布测试与适用边界见[软件验收记录](docs/软件验收_v1.0.0.md)。
 场景、扫描、热网络、

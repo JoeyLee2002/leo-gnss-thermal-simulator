@@ -1,4 +1,4 @@
-function report = run_release_verification_isolated
+function report = run_release_verification_isolated(resumeDirectory, originalLog)
 %RUN_RELEASE_VERIFICATION_ISOLATED Verify a release in fresh MATLAB batches.
 % MATLAB R2021b can terminate after long mixed GUI/graphics/numerical suites
 % with a native heap error. Each bounded batch therefore runs in a clean
@@ -27,12 +27,39 @@ stamp = char(datetime('now', 'Format', 'yyyyMMdd_HHmmss'));
 batchRoot = fullfile(root, 'results', ...
     sprintf('verification_batches_v%s_%s', versionTag, stamp));
 mkdir(batchRoot);
+priorLog='';
+if nargin>0 && ~isempty(resumeDirectory)
+    candidate=char(java.io.File(resumeDirectory).getCanonicalPath());
+    expected=char(java.io.File(fullfile(root,'results')).getCanonicalPath());
+    assert(startsWith(candidate,[expected filesep]) && isfolder(candidate), ...
+        'leotherm:IsolatedVerification','Resume directory must be inside this repository results.');
+    assert(nargin==2,'Original parent verification logs are required.');
+    originalLogs=cellstr(string(originalLog));
+    assert(~isempty(originalLogs) && all(cellfun(@isfile,originalLogs)), ...
+        'Original parent verification logs are required.');
+    priorLog=strjoin(cellfun(@fileread,originalLogs,'UniformOutput',false),newline);
+    batchRoot=candidate;
+end
 batchRows = table;
 testRows = table;
 for k = 1:numel(batches)
     specPath = fullfile(batchRoot, sprintf('batch_%02d_spec.mat', k));
     resultPath = fullfile(batchRoot, sprintf('batch_%02d_result.mat', k));
     currentTestFiles = batches{k};
+    previousSucceeded=~isempty(regexp(priorLog,sprintf('BATCH_%02d_[^\n]*STATUS=0(?:\r?\n|$)',k),'once'));
+    if previousSucceeded
+        priorSpec=load(specPath,'root','currentTestFiles');
+        priorResult=load(resultPath,'summary'); prior=priorResult.summary;
+        assert(strcmp(priorSpec.root,root) && isequal(priorSpec.currentTestFiles,currentTestFiles) && ...
+            prior.failed==0 && prior.incomplete==0 && isempty(prior.error), ...
+            'leotherm:IsolatedVerification','Resume batch inputs or results differ.');
+        batchRows=[batchRows;table(k,numel(testFiles),prior.total,prior.passed,prior.failed, ...
+            prior.incomplete,NaN,0,string(fullfile(batchRoot,sprintf('batch_%02d.log',k))), ...
+            'VariableNames',{'batch','test_file_count','test_count','passed','failed','incomplete','wall_time_s','exit_status','log'})]; %#ok<AGROW>
+        testRows=[testRows;prior.rows]; %#ok<AGROW>
+        fprintf('RESUMED_BATCH_%02d_PASSED=%d\n',k,prior.passed);
+        continue
+    end
     save(specPath, 'root', 'currentTestFiles');
     oldSpec = getenv('LEOTHERM_BATCH_SPEC');
     oldResult = getenv('LEOTHERM_BATCH_RESULT');
@@ -47,6 +74,9 @@ for k = 1:numel(batches)
     elapsed = toc(timer);
     clear restore
     logPath = fullfile(batchRoot, sprintf('batch_%02d.log', k));
+    if isfile(logPath)
+        copyfile(logPath,[logPath '.previous_attempt_' stamp]);
+    end
     writeText(logPath, output);
     if ~isfile(resultPath)
         error('leotherm:IsolatedVerification', ...

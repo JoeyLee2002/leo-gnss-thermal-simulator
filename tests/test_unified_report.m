@@ -46,13 +46,16 @@ verifyFalse(testCase, manifest.telemetryValidation);
 verifyEqual(testCase, numel(manifest.pdfReports), 2);
 verifyGreaterThanOrEqual(testCase,manifest.pdfPageCounts.zh,14);
 verifyGreaterThanOrEqual(testCase,manifest.pdfPageCounts.en,14);
-verifyEqual(testCase,numel(manifest.detailedAnalyses),10);
+verifyEqual(testCase,numel(manifest.detailedAnalyses),9);
+verifyFalse(testCase,isfile(fullfile(outDir,'detail_lag_zh.png')));
 verifyFalse(testCase,isfile(fullfile(outDir,'detail_coverage_zh.png')));
 verifyTrue(testCase,isfile(fullfile(outDir,'thermal_conductive_links.csv')));
 verifyTrue(testCase,isfile(fullfile(outDir,'thermal_node_statistics.csv')));
 verifyEqual(testCase, report.softwareVersion, leotherm.version);
+warmupRow=sections(strcmp(sections.field,'warmup_orbits'),:);
+verifyEqual(testCase,str2double(warmupRow.value),0);
 verifyTrue(testCase, contains(fileread(fullfile(outDir, ...
-    'thermal_report_zh.md')), '未做预热'));
+    'thermal_report_zh.md')), '固定预热 0 圈'));
 end
 
 function testImportedTelemetryAloneIsNotValidation(testCase)

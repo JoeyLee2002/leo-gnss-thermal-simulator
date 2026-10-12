@@ -46,6 +46,9 @@ if ismember('orbital_phase_delay_s',data.Properties.VariableNames)
     else, labels{3}='Orbital-frequency phase delay (s)'; end
 end
 available=cellfun(@(name) any(isfinite(data.(name))),variables);
+for metricIndex=2:4
+    labels{metricIndex}=leotherm.thermalMetricLabel(variables{metricIndex},language);
+end
 variables=variables(available); labels=labels(available);
 panels=numel(variables);
 if panels==0, error('leotherm:NoCompleteCases','No finite sweep metrics to plot.'); end

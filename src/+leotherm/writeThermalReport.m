@@ -35,6 +35,7 @@ report.analysis = leotherm.buildThermalReportAnalysis(bundle);
 [report.details, report.nodeStatistics] = leotherm.buildThermalReportDetails(bundle);
 [gridItem, report.gridComparison] = leotherm.buildThermalGridReport(bundle);
 report.details = [report.details, gridItem];
+report.details = [report.details, leotherm.buildPaperStudyReport(bundle)];
 report.phaseDiagnostics = leotherm.reportPeakLag(bundle.scenario);
 report.harmonicResponse = leotherm.reportHarmonicResponse(bundle.scenario);
 report.pdfPageCounts = struct;
@@ -58,6 +59,18 @@ writeSectionCsv(report, outputDirectory);
 writeEnergyCsv(report, outputDirectory);
 writeDiagnosticsCsv(report, outputDirectory);
 writeTelemetryCsv(report, outputDirectory);
+if isstruct(bundle.scenario) && isfield(bundle.scenario,'metrics')
+    metricKeys=fieldnames(bundle.scenario.metrics);
+    labelsZh=cell(size(metricKeys)); labelsEn=labelsZh;
+    definitionsZh=labelsZh; definitionsEn=labelsZh;
+    for metricIndex=1:numel(metricKeys)
+        [labelsZh{metricIndex},definitionsZh{metricIndex}]=leotherm.thermalMetricLabel(metricKeys{metricIndex},'zh');
+        [labelsEn{metricIndex},definitionsEn{metricIndex}]=leotherm.thermalMetricLabel(metricKeys{metricIndex},'en');
+    end
+    descriptions=table(metricKeys,labelsZh,labelsEn,definitionsZh,definitionsEn, ...
+        'VariableNames',{'metric_key','label_zh','label_en','definition_zh','definition_en'});
+    writetable(descriptions,fullfile(outputDirectory,'thermal_metric_definitions.csv'));
+end
 if ~isempty(report.nodeStatistics)
     writetable(report.nodeStatistics, fullfile(outputDirectory, 'thermal_node_statistics.csv'));
     n=bundle.scenario.network;

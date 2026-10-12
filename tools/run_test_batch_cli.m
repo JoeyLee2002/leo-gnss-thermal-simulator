@@ -30,6 +30,9 @@ try
         error('leotherm:IsolatedBatchFailed', ...
             'The isolated batch contains %d failed test(s).', summary.failed);
     end
+    clear results summary spec timer
+    close all force
+    drawnow;
     return;
 catch exception
     summary.error = getReport(exception, 'extended');

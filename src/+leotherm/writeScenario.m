@@ -24,7 +24,13 @@ metricValues = cell(numel(metricNames), 1);
 for k = 1:numel(metricNames)
     metricValues{k} = result.metrics.(metricNames{k});
 end
-metrics = table(metricNames, metricValues, 'VariableNames', {'metric', 'value'});
+labelsZh=cell(size(metricNames)); labelsEn=labelsZh; definitionsZh=labelsZh; definitionsEn=labelsZh;
+for k=1:numel(metricNames)
+    [labelsZh{k},definitionsZh{k}]=leotherm.thermalMetricLabel(metricNames{k},'zh');
+    [labelsEn{k},definitionsEn{k}]=leotherm.thermalMetricLabel(metricNames{k},'en');
+end
+metrics = table(metricNames, metricValues, labelsZh, labelsEn, definitionsZh, definitionsEn, ...
+    'VariableNames', {'metric', 'value','label_zh','label_en','definition_zh','definition_en'});
 writetable(metrics, fullfile(outDir, 'metrics.csv'));
 
 networkTable = table(string(result.network.nodeNames(:)), ...
