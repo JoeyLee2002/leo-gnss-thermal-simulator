@@ -4,5 +4,6 @@
   "solveJobs": 40,
   "checkedLocalLinks": 113,
   "brokenLinks": [],
-  "credentialPatternsFound": 0
+  "credentialPatternsFound": 0,
+  "committedSourceFilesMatched": 185
 }
