@@ -54,8 +54,11 @@ panels=numel(variables);
 if panels==0, error('leotherm:NoCompleteCases','No finite sweep metrics to plot.'); end
 cols=1; if panels>=4, cols=2; end
 rows=ceil(panels/cols);
-figureHandle = figure('Color', 'w', 'Units','centimeters', ...
-    'Position', [2, 2, s.widthCm, max(12,rows*5.5)]);
+windowCleanup=[];
+if nargout==0, windowCleanup=leotherm.preserveAppWindows; end
+figureHandle = figure('Visible','off','Color', 'w', 'Units','centimeters', ...
+    'Position', [2, 2, s.widthCm, max(12,rows*5.5)],'Tag','SweepExportFigure');
+try
 tiledlayout(rows, cols, 'TileSpacing', 'compact', 'Padding', 'loose');
 for panel = 1:panels
     nexttile; hold on
@@ -73,9 +76,15 @@ for panel = 1:panels
     legend('Location', 'southoutside','Orientation','horizontal','NumColumns',2);
 end
 leotherm.exportThermalFigure(figureHandle, outputPath, language);
+catch exception
+    delete(figureHandle); rethrow(exception);
+end
 if nargout == 0
     close(figureHandle);
+else
+    figureHandle.Visible='on';
 end
+if ~isempty(windowCleanup), delete(windowCleanup); end
 end
 
 function value = altitudeLabel(language, altitudeKm)

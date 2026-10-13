@@ -1,0 +1,623 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEOTherm 1.5 — User Manual (Windows standalone)</title><style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:#172831;background:#f3f6f7;font:16px/1.7 Arial,"Microsoft YaHei",sans-serif}
+nav,main{max-width:1120px;margin:auto;padding:24px 36px}nav{display:flex;gap:24px;flex-wrap:wrap;background:white;border-bottom:1px solid #cbd6da}
+main{background:white}h1{font-size:30px;color:#111;line-height:1.3;margin:16px 0 28px}h2{font-size:24px;color:#111;margin:42px 0 16px}h3{font-size:20px;color:#111;margin:30px 0 12px}
+p,li{overflow-wrap:anywhere}li{margin:8px 0}a{color:#005e85}figure{margin:24px 0 30px;border:1px solid #d4dfe3;padding:12px;break-inside:avoid}
+figure img{display:block;max-width:100%;max-height:1000px;height:auto;margin:auto}figcaption{font-size:14px;color:#465963;margin-top:12px;text-align:center}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:22px 0}th,td{border-bottom:1px solid #cbd6da;padding:10px 12px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eef3f5;color:#182a33}
+code{font:0.91em Consolas,"Microsoft YaHei",monospace;background:#eef3f5;padding:2px 4px;overflow-wrap:anywhere}pre{background:#eef3f5;border:1px solid #d4dfe3;padding:16px;white-space:pre-wrap;overflow-wrap:anywhere;break-inside:avoid}pre code{padding:0;background:none}
+hr{border:0;border-top:1px solid #cbd6da;margin:30px 0}.toc{padding:16px 24px;background:#f2f6f8}.toc ul{columns:2;padding-left:20px}.toc li{margin:4px 0;font-size:14px}
+@media(max-width:700px){main,nav{padding:18px}h1{font-size:26px}.toc ul{columns:1}table{font-size:12px}td,th{padding:6px}}
+@page{size:A4;margin:16mm 14mm 18mm}
+@media print{body{background:white;font-size:10.5pt;line-height:1.5}main{padding:0;max-width:none}nav,hr{display:none}h1{font-size:24pt}h2{font-size:18pt;margin-top:24pt;break-after:avoid}h3{font-size:13pt;break-after:avoid}p,li{orphans:3;widows:3}figure{padding:5mm;margin:5mm 0;border:1px solid #d4dfe3}figure img{max-height:170mm;max-width:100%;object-fit:contain}figcaption{font-size:9pt}table{font-size:8.8pt}thead{display:table-header-group}tr{break-inside:avoid}pre{font-size:8.5pt}.toc{background:white}.toc li{font-size:9pt}a{text-decoration:none}}
+</style></head><body><nav><a href="usage_v1.5_zh.html">中文用户手册</a><a href="quickstart_v1.5.html">English User Manual</a><a href="reproduce_paper_v1.5_zh.html">中文论文复现</a><a href="reproduce_paper_v1.5.html">English Paper Reproduction</a></nav><main><h1>LEOTherm 1.5 — User Manual (Windows standalone)</h1><div class="toc"><strong>Contents</strong><ul><li><a href="#section-1">1. Install and start</a></li><li><a href="#section-2">2. Interface overview</a></li><li><a href="#section-3">3. Running a single module</a></li><li><a href="#section-4">4. Running a complete task</a></li><li><a href="#section-5">5. Command-line interface</a></li><li><a href="#section-6">6. Output files</a></li><li><a href="#section-7">7. Metric definitions</a></li><li><a href="#section-8">8. Reproducing the published results</a></li><li><a href="#section-9">9. Progress, stop and cancellation</a></li><li><a href="#section-10">10. Templates and tutorials</a></li><li><a href="#section-11">11. Notes on filenames, language and windows</a></li><li><a href="#section-12">12. Troubleshooting</a></li><li><a href="#section-13">13. Related documents</a></li></ul></div>
+<p>LEOTherm simulates the thermal behaviour of a low-Earth-orbit (LEO) satellite and of the GNSS
+receiver it carries. It solves an 11-node lumped-parameter thermal network driven by orbital and
+attitude histories, reports component temperatures and response metrics, and compares the result
+against telemetry. The Windows package runs under the free <strong>MATLAB Runtime R2021b</strong>; MATLAB itself
+and a MATLAB licence are <strong>not</strong> required.</p>
+<p>A MATLAB licence is needed only if you run the simulator from source (<code>src/</code>).</p>
+<p>This manual covers installation, the interface, the command line, the output files, the metric
+definitions, and how to reproduce the results published with the software. The step-by-step
+reproduction of the companion paper is in <code>reproduce_paper_v1.5.md</code>.</p>
+<hr>
+<h2 id="section-1">1. Install and start</h2>
+<ol>
+<li>Install <strong>MATLAB Runtime R2021b</strong> from the MathWorks MATLAB Runtime download page if it is not
+already present. The Runtime is free; no licence is required.</li>
+<li>Extract the release archive (<code>LEOTherm_1.5_windows*.zip</code>) to a writable directory. Do not run it
+from inside the compressed archive.</li>
+<li>Open <code>LEOTherm.exe</code>. The interface opens in English; the language selector also offers Chinese.</li>
+</ol>
+<p>The <strong>first</strong> launch extracts and caches the Runtime component, so it takes noticeably longer than
+later launches. Subsequent launches reuse that cache.</p>
+<p>Version 1.5 defers the advanced pages until they are first opened. This changes <strong>startup behaviour
+only</strong> — task parameters, the solver and all reported results are unchanged from the previous
+release.</p>
+<hr>
+<h2 id="section-2">2. Interface overview</h2>
+<h3>Illustrated Walkthrough: Choose the Right Entry Point</h3>
+<p>These are real v1.5 UI captures. Orange outlines identify controls; blue numbers refer to the
+instructions below each image. Open the offline HTML and click an image to inspect it at full size.
+The documentation-only illustrated package uses the same tested executable as the release.</p>
+<figure><a href="manual_images/v1_5/start_en.png" target="_blank"><img src="manual_images/v1_5/start_en.png" alt="Figure 1. Quick-start task selection and entry points"></a><figcaption>Figure 1. Quick-start task selection and entry points</figcaption></figure>
+<p>For a first report, select <strong>First simulation</strong> at ①, then click <strong>Use template and run</strong> at ②.
+Choose a writable <strong>parent folder</strong>, such as <code>C:\LEOThermResults</code>, in the subsequent Windows folder
+picker. The software creates a new task subdirectory. This shortcut runs a complete task and
+produces a report; it is not the single-scenario local button. Save an edited project first, because
+applying a template replaces unsaved scenario/network settings.</p>
+<p>For a local calculation without automatic PDF generation, use <strong>Advanced simulation</strong> at ③, then
+follow the single-scenario instructions below. <strong>Task wizard</strong> at ④ is the JSON-template entry point.
+Use the separate <a href="reproduce_paper_v1.5.html">paper reproduction guide</a> for the published 36-case study.</p>
+<h3>Illustrated Walkthrough: One Scenario Only</h3>
+<figure><a href="manual_images/v1_5/scenario_en.png" target="_blank"><img src="manual_images/v1_5/scenario_en.png" alt="Figure 2. Scenario inputs and the local run button"></a><figcaption>Figure 2. Scenario inputs and the local run button</figcaption></figure>
+<ol>
+<li>Open <strong>Simulation &gt; Single scenario</strong>. Scroll the input area if needed; its local run button
+remains at the bottom of the sidebar.</li>
+<li>For the illustrated tutorial, enter the values below. These are a quick practice configuration,
+<strong>not</strong> the 36-case paper protocol.</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Tutorial value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Analysis date (UTC) / Start time (UTC)</td>
+<td><code>2024-03-20</code> / <code>12:00:00</code></td>
+</tr>
+<tr>
+<td>Analysis duration (h) / Time step (s)</td>
+<td><code>2</code> / <code>60</code></td>
+</tr>
+<tr>
+<td>Fixed warm-up orbits</td>
+<td><code>1</code></td>
+</tr>
+<tr>
+<td>Orbit altitude (km) / Orbit inclination (deg)</td>
+<td><code>600</code> / <code>97.6</code></td>
+</tr>
+<tr>
+<td>RAAN (deg) / Initial argument of latitude (deg)</td>
+<td><code>20</code> / <code>0</code></td>
+</tr>
+<tr>
+<td>Attitude mode / Roll, Pitch, Yaw</td>
+<td><code>Nadir pointing</code> / <code>0, 0, 0</code></td>
+</tr>
+<tr>
+<td>Automatic periodic thermal convergence</td>
+<td>Unchecked</td>
+</tr>
+</tbody></table>
+<ol start="3">
+<li>Leave direct solar, albedo and Earth infrared enabled, with <strong>Finite Earth disk</strong> infrared.</li>
+<li>Click <strong>Run single scenario</strong> at ④. It runs only the current scenario, leaves the complete-task
+stage selections alone, and does not open a report folder picker or produce a PDF automatically.</li>
+<li>Inspect the page plots, then open <strong>Results and export</strong>. The time-step field is the output
+sampling interval; internal integration steps are controlled by the solver.</li>
+</ol>
+<h3>Illustrated Walkthrough: Inspect and Export Existing Results</h3>
+<figure><a href="manual_images/v1_5/results_en.png" target="_blank"><img src="manual_images/v1_5/results_en.png" alt="Figure 3. Result state and deliberate PDF export"></a><figcaption>Figure 3. Result state and deliberate PDF export</figcaption></figure>
+<ol>
+<li>Confirm the top result state and the right-hand session summary describe your current inputs.
+If inputs changed, recompute before exporting their report.</li>
+<li>Read the metrics table, then click <strong>Generate analysis PDF</strong> at ②.</li>
+<li>Choose a writable parent folder. Open the newly created directory and its <code>report</code> subdirectory.</li>
+<li>Open <code>thermal_report_en.pdf</code> or <code>thermal_report_zh.pdf</code>, according to the run language. The same
+folder contains figures, CSV evidence and <code>thermal_report_data.mat</code>.</li>
+<li>Start with <code>thermal_node_statistics.csv</code>, <code>thermal_diagnostics.csv</code>,
+<code>thermal_conductive_links.csv</code> and <code>thermal_metric_definitions.csv</code> when checking the numbers.</li>
+</ol>
+<h3>Illustrated Walkthrough: A Complete Task and Report</h3>
+<figure><a href="manual_images/v1_5/complete_task_en.png" target="_blank"><img src="manual_images/v1_5/complete_task_en.png" alt="Figure 4. Optional stages and the complete-task controls"></a><figcaption>Figure 4. Optional stages and the complete-task controls</figcaption></figure>
+<ol>
+<li>Configure inputs on the relevant pages first. At ①, select only the required <strong>Parameter sweep</strong>,
+<strong>3-D coupling</strong>, <strong>Telemetry comparison</strong> or <strong>Device calibration</strong> stages. All four may be
+unchecked for a basic thermal task and report.</li>
+<li>Click <strong>Check complete task</strong> at ②. Supply missing inputs or uncheck a stage you do not need.</li>
+<li>Click <strong>Run complete task and generate report</strong> at ③, then select the output parent folder.</li>
+<li>Inspect <code>pipeline_status.json</code>, the saved input/model snapshots, calculation data and report PDF.</li>
+</ol>
+<p>This area is available above the Simulation pages, not only on Quick start. It differs from the
+page-local buttons: it deliberately runs the selected pipeline and generates its report.</p>
+<h3>Illustrated Walkthrough: Start With a Two-Case Sweep</h3>
+<figure><a href="manual_images/v1_5/sweep_en.png" target="_blank"><img src="manual_images/v1_5/sweep_en.png" alt="Figure 5. Sweep mode, factor lists and local run"></a><figcaption>Figure 5. Sweep mode, factor lists and local run</figcaption></figure>
+<ol>
+<li>Set duration, output sampling, attitude and environment on the Single scenario page; a sweep uses
+these settings and the current network.</li>
+<li>Open <strong>Parameter sweep</strong>. Select the altitude / target-beta mode, set altitude to <code>600</code>, target
+beta to <code>0,30</code> and RAAN solution branch to <code>1</code>.</li>
+<li>Click <strong>Run parameter sweep</strong> at ④. This practice run has <strong>two</strong> cases. The illustrated UI
+comes from an actual two-case tutorial calculation, not a cached 36-case paper run.</li>
+<li>Inspect the page table and plots; use comma-separated values to expand the study later.</li>
+</ol>
+<p>An ordinary page sweep does not automatically add the paper&#39;s three conductance levels, periodic
+initialization or time refinements. Use the paper-reproduction entry point for that protocol.</p>
+<h3>Illustrated Walkthrough: Configure the Thermal Network</h3>
+<figure><a href="manual_images/v1_5/network_en.png" target="_blank"><img src="manual_images/v1_5/network_en.png" alt="Figure 6. Node inputs, conductance matrix and response roles"></a><figcaption>Figure 6. Node inputs, conductance matrix and response roles</figcaption></figure>
+<ol>
+<li>Open <strong>Thermal network</strong>. Keep the default 11-node reference preset for the first exercise.</li>
+<li>Edit the node table for heat capacity (J/K), initial temperature (K), dissipation (W), area (m²),
+normals and optical properties. Scroll horizontally to see later columns.</li>
+<li>Use row/column node names to edit the conductance matrix (W/K); edits preserve symmetry.</li>
+<li>If response roles or bias settings change, click <strong>Apply roles and bias settings</strong> at ②.</li>
+<li>Re-run the scenario afterwards. Changing a table alone does not compute new temperatures.</li>
+</ol>
+<h3>Illustrated Walkthrough: Surface, Volume or Coupled Geometry</h3>
+<figure><a href="manual_images/v1_5/geometry_en.png" target="_blank"><img src="manual_images/v1_5/geometry_en.png" alt="Figure 7. Mesh imports and three distinct run controls"></a><figcaption>Figure 7. Mesh imports and three distinct run controls</figcaption></figure>
+<ol>
+<li>Select the file length unit, use <strong>Import STL/OBJ</strong>, then <strong>Preview mesh</strong> to inspect size and
+orientation.</li>
+<li>For a surface-only calculation, click <strong>Run face thermal simulation</strong>.</li>
+<li>For volume conduction, use <strong>Import Gmsh volume mesh</strong>, set conductivity (W/(m·K)), density
+(kg/m³) and specific heat (J/(kg·K)), then <strong>Run volume conduction</strong>.</li>
+<li>For coupled analysis, provide both meshes, configure <strong>Coupling boundaries</strong>, and use
+<strong>Run surface-volume coupling</strong>.</li>
+<li>To include coupling in a complete-task report, select <strong>3-D coupling</strong> and check the task first.</li>
+</ol>
+<p>The screenshot imports <code>examples/assets/example_coupled_surface.obj</code> and
+<code>example_two_tetrahedra.msh</code>, included in the illustrated package. These tiny meshes teach import
+and setup, rather than validating a satellite. Replace them with your own research geometry.</p>
+<h3>Illustrated Walkthrough: Import and Apply an Engineering Model</h3>
+<figure><a href="manual_images/v1_5/model_en.png" target="_blank"><img src="manual_images/v1_5/model_en.png" alt="Figure 8. Canonical model import and explicit mapping"></a><figcaption>Figure 8. Canonical model import and explicit mapping</figcaption></figure>
+<ol>
+<li><strong>Import thermal model...</strong> accepts the <code>leotherm.thermal_model.v1</code> MAT/JSON schema, not arbitrary
+files renamed to these extensions.
+For practice, choose the bundled <code>examples/projects/06_engineering_model_exchange.json</code>.</li>
+<li>Check model, units, nodes, materials and provenance in the summary.</li>
+<li>Generate or load an explicit node mapping; <strong>Preview mapping</strong> before <strong>Confirm and apply</strong>.</li>
+<li>Re-run the single scenario after applying the mapped network. <strong>Export MAT</strong>, <strong>Export JSON</strong> and
+<strong>Rollback network</strong> manage the model rather than invoking a separate solver.</li>
+</ol>
+<h3>Illustrated Walkthrough: Telemetry Import and Comparison</h3>
+<figure><a href="manual_images/v1_5/telemetry_en.png" target="_blank"><img src="manual_images/v1_5/telemetry_en.png" alt="Figure 9. CSV import, workflow, preflight and local comparison"></a><figcaption>Figure 9. CSV import, workflow, preflight and local comparison</figcaption></figure>
+<ol>
+<li><strong>More actions &gt; CSV template</strong> exports a blank template. <strong>Import CSV</strong> loads your data.</li>
+<li>Assign source columns, quantities, thermal nodes and units in the mapping table.</li>
+<li>Select <strong>Orbit telemetry</strong>, <strong>Measured heat loads</strong> or <strong>Validate current scenario</strong> under
+Workflow. The third mode needs a previously computed matching scenario.</li>
+<li>Set allowed adjacent intervals and segment-start exclusion. For orbit driving, confirm common
+geocentric J2000 ECI coordinates only when your data actually use them.</li>
+<li>Click <strong>Preflight</strong>, resolve data/mapping issues, then <strong>Run simulation or comparison</strong>.</li>
+<li>Choose a node, inspect curves, residuals, valid scoring samples and statistics; <strong>Export telemetry</strong>
+saves this page&#39;s results. <strong>Synthetic demo data</strong> teaches the workflow but is not flight data.</li>
+</ol>
+<h3>Illustrated Walkthrough: Bounded Device Calibration</h3>
+<figure><a href="manual_images/v1_5/calibration_en.png" target="_blank"><img src="manual_images/v1_5/calibration_en.png" alt="Figure 10. Parameter bounds, whole-day roles and calibration"></a><figcaption>Figure 10. Parameter bounds, whole-day roles and calibration</figcaption></figure>
+<ol>
+<li>Import usable telemetry before opening <strong>Device calibration</strong>. Use <strong>Prepare calibration</strong>;
+<strong>More actions</strong> can load the current device, import a device profile or load telemetry days.</li>
+<li>Check the read-only nominal values (edit them on Thermal network), then set prior standard
+deviations, estimation switches and justified bounds in the device table.</li>
+<li>Assign complete UTC days to training and holdout roles; holdout days do not enter fitting.</li>
+<li>Enter sensor-error evidence and required declarations truthfully.</li>
+<li>Click <strong>Calibrate to new run</strong>, choose a new destination, inspect parameter changes and save the
+project. This screenshot only shows configuration positions; it does not claim calibration success.</li>
+</ol>
+<p>Telemetry and calibration can be skipped when the required data are not available.</p>
+<h3>Illustrated Walkthrough: Templates, Projects and Stopping</h3>
+<figure><a href="manual_images/v1_5/wizard_inputs_en.png" target="_blank"><img src="manual_images/v1_5/wizard_inputs_en.png" alt="Figure 11. Actual template input dialog"></a><figcaption>Figure 11. Actual template input dialog</figcaption></figure>
+<p>From <strong>Task wizard</strong> in Figure 1, select a built-in template or <strong>Choose another JSON template...</strong>.
+Enter task name, <strong>Duration (hours)</strong> and <strong>Time step (s)</strong>, for example <code>my_first_run</code>, <code>2</code>, <code>60</code>.
+Choose <strong>Load only</strong> to inspect the configuration, or <strong>Run now</strong> for a complete task. For a local
+scenario only, use Load only and then the page-local button. JSON <code>scenario.durationS</code> is in seconds
+(<code>7200</code>), whereas the wizard duration is in hours (<code>2</code>).</p>
+<p>The header <strong>Save project</strong> / <strong>Open project</strong> controls save and restore the workspace; opening a
+project restores its recorded language too.</p>
+<figure><a href="manual_images/v1_5/projects_en.png" target="_blank"><img src="manual_images/v1_5/projects_en.png" alt="Figure 12. Project save and open controls"></a><figcaption>Figure 12. Project save and open controls</figcaption></figure>
+<figure><a href="manual_images/v1_5/progress_en.png" target="_blank"><img src="manual_images/v1_5/progress_en.png" alt="Figure 13. Actual paper-study progress and the stop control"></a><figcaption>Figure 13. Actual paper-study progress and the stop control</figcaption></figure>
+<p>The screenshot comes from a real tutorial paper task stopped after capture. The panel reports the
+actual stage and elapsed time. <strong>Stop computation</strong> requests a checkpoint stop, retains saved cases,
+and does not pause or automatically resume. An in-progress figure/PDF export finishes before its
+next checkpoint. A stopped task is <code>cancelled</code>, not <code>complete</code>; use a new destination for a new run.</p>
+<h3>Interface Reference</h3>
+<p>The window has three top-level areas:</p>
+<table>
+<thead>
+<tr>
+<th>Area</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Quick start</strong></td>
+<td>Template shortcuts, project opening, and the paper-reproduction entry point.</td>
+</tr>
+<tr>
+<td><strong>Simulation</strong></td>
+<td>The individual module pages.</td>
+</tr>
+<tr>
+<td><strong>Results and export</strong></td>
+<td>Inspecting and exporting results of completed work.</td>
+</tr>
+</tbody></table>
+<p>The <strong>Simulation</strong> area contains these pages, each with its own run control:</p>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it computes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Single scenario</td>
+<td>One orbital scenario with the current thermal network.</td>
+</tr>
+<tr>
+<td>Parameter sweep</td>
+<td>A matrix of scenarios across altitude, beta angle and conductance.</td>
+</tr>
+<tr>
+<td>Thermal network</td>
+<td>The node capacitances, internal dissipation and the conductive links.</td>
+</tr>
+<tr>
+<td>3-D geometry</td>
+<td>Surface/volume mesh view and coupled mesh–thermal runs.</td>
+</tr>
+<tr>
+<td>Engineering thermal model</td>
+<td>Import/export of the engineering thermal model (MAT or JSON).</td>
+</tr>
+<tr>
+<td>Telemetry and validation</td>
+<td>Comparison of simulated temperatures against measured telemetry.</td>
+</tr>
+<tr>
+<td>Device calibration</td>
+<td>Estimation of device parameters against a data set.</td>
+</tr>
+</tbody></table>
+<p>Above the Simulation pages sits the separate <strong>Complete task and report</strong> area, which drives the
+full pipeline rather than a single module.</p>
+<hr>
+<h2 id="section-3">3. Running a single module</h2>
+<ol>
+<li>Open the page you need, for example <strong>Simulation &gt; Single scenario</strong>.</li>
+<li>Set the scenario and thermal network on the page.</li>
+<li>Click that page&#39;s own run button — for example <strong>Run single scenario</strong>.</li>
+</ol>
+<p>Only that scenario runs. Results appear on the same page; no directory chooser opens and no task PDF
+is generated automatically.</p>
+<p>The same pattern holds for the other pages: <strong>Run parameter sweep</strong> on the sweep page, and separate
+surface, volume and coupling run buttons on <strong>3-D geometry</strong>. <strong>Telemetry and validation</strong> and
+<strong>Device calibration</strong> have their own run buttons. The network and model pages configure inputs
+rather than launching an unrelated solver.</p>
+<p>Local runs neither read nor modify the four complete-task stage checkboxes. Modules still consume
+their required inputs: a sweep uses the current scenario and network, a telemetry comparison may
+require a previously computed scenario, and calibration requires its declared data and run
+directory.</p>
+<hr>
+<h2 id="section-4">4. Running a complete task</h2>
+<p>The <strong>Complete task and report</strong> area runs the whole pipeline and writes a self-contained output
+directory.</p>
+<ol>
+<li>Select whichever optional stages you need: <strong>Parameter sweep</strong>, <strong>3-D coupling</strong>,
+<strong>Telemetry comparison</strong>, <strong>Device calibration</strong>.</li>
+<li>Click <strong>Check complete task</strong>. This reports whether the selected stages have everything they
+need.</li>
+<li>Click <strong>Run complete task and generate report</strong>.</li>
+</ol>
+<p>The pipeline writes the PDF report, the numerical data, the model snapshots and the status records
+into a new directory. A selected stage that is not ready blocks the global button but does not
+prevent a local module run.</p>
+<p><strong>Quick start</strong> remains a template shortcut. <strong>Current configuration and report</strong> uses the current
+settings and selected stages instead of replacing them. <strong>Paper: reference task and 36 cases</strong>
+reproduces the published reference task, the 36 conditions and the three refinement runs — see
+<code>reproduce_paper_v1.5.md</code>.</p>
+<p>The <strong>Results and export</strong> page also keeps a deliberate manual PDF export for existing results.
+Running a local module never invokes that export automatically.</p>
+<hr>
+<h2 id="section-5">5. Command-line interface</h2>
+<p>Every mode below is a first argument to <code>LEOTherm.exe</code>, run from a console. The console prints
+progress; the GUI progress dialog is not shown.</p>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(no argument)</em></td>
+<td>Opens the graphical interface.</td>
+</tr>
+<tr>
+<td><code>--paper-study DIR [zh|en|both]</code></td>
+<td>Reference task + 36-case study + refinements + report. Language defaults to <code>both</code>.</td>
+</tr>
+<tr>
+<td><code>--smoke DIR</code></td>
+<td>One complete pipeline, ending in a report PDF.</td>
+</tr>
+<tr>
+<td><code>--sample-reports DIR</code></td>
+<td>Generates the bundled sample reports.</td>
+</tr>
+<tr>
+<td><code>--gui-startup-smoke DIR</code></td>
+<td>Startup-timing and page-creation check.</td>
+</tr>
+<tr>
+<td><code>--gui-module-smoke DIR</code></td>
+<td>Module run-button check.</td>
+</tr>
+<tr>
+<td><code>--gui-figure-smoke DIR</code></td>
+<td>Background figure-export check.</td>
+</tr>
+<tr>
+<td><code>--gui-window-smoke DIR</code></td>
+<td>Window-state restoration check.</td>
+</tr>
+<tr>
+<td><code>--gui-progress-smoke DIR</code></td>
+<td>Progress-reporting check.</td>
+</tr>
+<tr>
+<td><code>--gui-smoke DIR</code></td>
+<td>General GUI smoke test.</td>
+</tr>
+<tr>
+<td><code>--gui-report-window-smoke DIR</code></td>
+<td>GUI smoke test that also captures the window.</td>
+</tr>
+</tbody></table>
+<p><code>DIR</code> is the output directory. Every mode creates it and refuses to start if the path already
+exists, so a new run can never silently overwrite an earlier one. Choose a path that does not exist
+yet.</p>
+<p>Example — reproduce the paper with both language reports:</p>
+<pre><code class="language-powershell">.\LEOTherm.exe --paper-study &quot;C:\LEOThermResults\paper_run_01&quot; both
+</code></pre>
+<p>The <code>--gui-*</code> modes are diagnostic entry points used by the release checks. They are safe to run,
+but they create windows and are not needed in normal use.</p>
+<hr>
+<h2 id="section-6">6. Output files</h2>
+<p>A complete task writes one directory per run. The reference pipeline produces:</p>
+<table>
+<thead>
+<tr>
+<th>File or directory</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>input_snapshot.mat</code></td>
+<td>The exact inputs the run started from.</td>
+</tr>
+<tr>
+<td><code>frozen_model.mat</code></td>
+<td>The thermal model as frozen at run time.</td>
+</tr>
+<tr>
+<td><code>pipeline_run.mat</code></td>
+<td>The full run record.</td>
+</tr>
+<tr>
+<td><code>pipeline_status.json</code></td>
+<td>Status, stage and heartbeat while running.</td>
+</tr>
+<tr>
+<td><code>report/</code></td>
+<td>The analysis PDF, plus data and figures (below).</td>
+</tr>
+</tbody></table>
+<p>The report directory contains:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>thermal_report_en.pdf</code>, <code>thermal_report_zh.pdf</code></td>
+<td>The complete bilingual analysis reports.</td>
+</tr>
+<tr>
+<td><code>scenario_summary_*.pdf/.png</code></td>
+<td>Scenario summary page and figure.</td>
+</tr>
+<tr>
+<td><code>detail_*.pdf/.png</code></td>
+<td>One figure per detail section (capacity, conductance, gradients, heat inputs, illumination, initial state, optics, energy balance, …).</td>
+</tr>
+<tr>
+<td><code>publication_*.pdf/.png</code></td>
+<td>Publication-ready figure groups, with companion MAT files.</td>
+</tr>
+<tr>
+<td><code>thermal_metric_definitions.csv</code></td>
+<td>Definition of every reported metric.</td>
+</tr>
+<tr>
+<td><code>thermal_node_statistics.csv</code>, <code>thermal_diagnostics.csv</code></td>
+<td>Per-node temperatures and diagnostics.</td>
+</tr>
+<tr>
+<td><code>thermal_energy.csv</code>, <code>thermal_conductive_links.csv</code></td>
+<td>Energy balance and the conductive-link table.</td>
+</tr>
+<tr>
+<td><code>thermal_sections.csv</code>, <code>thermal_interpretation_evidence.csv</code></td>
+<td>Report sections and the evidence behind each conclusion.</td>
+</tr>
+<tr>
+<td><code>thermal_manifest.json</code></td>
+<td>Manifest of the report bundle.</td>
+</tr>
+<tr>
+<td><code>thermal_report_data.mat</code></td>
+<td>Everything needed to re-plot without re-solving.</td>
+</tr>
+</tbody></table>
+<p>The <strong>paper study</strong> writes a different, larger bundle; its files are listed in
+<code>reproduce_paper_v1.5.md</code>.</p>
+<hr>
+<h2 id="section-7">7. Metric definitions</h2>
+<p>The report computes its conclusions from the run it just performed, never from cached values.</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>P95−P5</strong></td>
+<td>The 95th percentile minus the 5th percentile of the RF-node temperature history. This is a percentile spread, <strong>not</strong> the max-minus-min range.</td>
+</tr>
+<tr>
+<td><strong>Orbital-frequency phase delay</strong></td>
+<td>The delay of the temperature response relative to the <strong>total external absorbed power</strong>, derived from a harmonic least-squares fit at the orbital frequency. It is not an intrinsic thermal time constant.</td>
+</tr>
+<tr>
+<td><strong>Eclipse fraction</strong></td>
+<td>The fraction of the analysed window spent in Earth shadow.</td>
+</tr>
+<tr>
+<td><strong>Normalized hysteresis</strong></td>
+<td>Hysteresis loop area of the temperature–forcing cycle, normalised by the forcing span.</td>
+</tr>
+<tr>
+<td><strong>Warmup cycles</strong></td>
+<td>Number of orbits needed to reach periodic steady state under the same-phase criterion.</td>
+</tr>
+<tr>
+<td><strong>Periodic error</strong></td>
+<td>Maximum same-phase temperature difference between consecutive orbits at convergence.</td>
+</tr>
+</tbody></table>
+<p>Full definitions, including units, are written to <code>thermal_metric_definitions.csv</code> in every report
+directory.</p>
+<hr>
+<h2 id="section-8">8. Reproducing the published results</h2>
+<p>The paper&#39;s reference task, its 36-case parameter study, its three time-refinement cases and its
+verification figures are all produced by one command:</p>
+<pre><code class="language-powershell">.\LEOTherm.exe --paper-study &quot;C:\LEOThermResults\paper_run_01&quot; both
+</code></pre>
+<p>The same study can be started from the GUI: <strong>Quick start &gt; Paper: reference task and 36 cases &gt;
+Reproduce paper and report</strong>. Choose a writable parent directory; the inputs in your current
+workspace are preserved.</p>
+<p>From MATLAB source, the equivalent call is:</p>
+<pre><code class="language-matlab">addpath(&#39;src&#39;);
+study = leotherm.runPaperStudy(fullfile(pwd,&#39;results&#39;,&#39;paper_run_01&#39;),&#39;both&#39;);
+</code></pre>
+<p><strong><code>reproduce_paper_v1.5.md</code> documents the frozen inputs, the output files and the numerical checks
+that must be satisfied, so that a reader can confirm the published numbers independently.</strong></p>
+<hr>
+<h2 id="section-9">9. Progress, stop and cancellation</h2>
+<p>During a paper reproduction the progress dialog shows the current case, the integration or
+initialization stage, and elapsed time. Completed thermal-solution jobs are counted out of <strong>40</strong>
+(one reference task, 36 cases and three refinements); this is a job count, not a time-based
+percentage. Figure and PDF generation uses an indeterminate indicator with the actual section or
+page count.</p>
+<p>Clicking <strong>Stop computation</strong> — the English stop text is <em>Stop computation</em>, then <em>Stopping…</em> —
+requests a checkpoint stop. Closing the main window also stops the task before closing, and prompts
+for unsaved project changes where applicable. A native figure or PDF export already in progress
+finishes before the next checkpoint.</p>
+<p>A stopped run is <strong>retained on disk for inspection</strong> and is marked <code>cancelled</code>, never <code>complete</code>.
+It is not resumed automatically. Saved cases remain valid and can be examined individually.</p>
+<hr>
+<h2 id="section-10">10. Templates and tutorials</h2>
+<p>The package ships task templates that teach the workflow end to end:</p>
+<table>
+<thead>
+<tr>
+<th>Template</th>
+<th>Demonstrates</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>01_first_simulation.json</code></td>
+<td>A minimal first run.</td>
+</tr>
+<tr>
+<td><code>02_thermal_lag.json</code></td>
+<td>Thermal lag and response delay.</td>
+</tr>
+<tr>
+<td><code>03_satmo_benchmark.json</code></td>
+<td>Comparison against an external reference case.</td>
+</tr>
+<tr>
+<td><code>04_telemetry_validation.json</code></td>
+<td>Comparison of simulation against telemetry.</td>
+</tr>
+</tbody></table>
+<p>Reference models and synthetic examples exist to teach the workflow. Replace them with
+mission-specific inputs before using the results for satellite validation.</p>
+<p>The bundled videos carry their v1.2.10 labels. They demonstrate parameter setup and the report
+workflow; use this manual for the current local and global run buttons.</p>
+<hr>
+<h2 id="section-11">11. Notes on filenames, language and windows</h2>
+<ul>
+<li>New filenames and generated child-directory names use <strong>ASCII</strong> in either language. A parent
+directory you select yourself is used as-is and is never renamed.</li>
+<li>The interface and report language follow the selected English/Chinese setting. A saved project
+restores the language recorded in it.</li>
+<li>Report figures are generated in <strong>hidden</strong> windows, and window states affected by native chooser
+or graphics operations are restored afterwards. The packaged window-state check verifies this
+behaviour.</li>
+<li>Native Windows file pickers follow the operating system language, not the application language.</li>
+</ul>
+<hr>
+<h2 id="section-12">12. Troubleshooting</h2>
+<p><strong>The first launch is slow.</strong> Expected: the Runtime cache is being extracted. Later launches reuse
+it. Keep an existing compatible Runtime installation rather than reinstalling each time.</p>
+<p><strong><code>LEOTherm.exe</code> does not start.</strong> MATLAB Runtime R2021b must be installed. The executable does not
+contain the Runtime.</p>
+<p><strong>A run stops unexpectedly.</strong> Read <code>paper_study_status.json</code> (paper study) or <code>pipeline_status.json</code>
+(pipeline) in the output directory. They record the stage reached, the last heartbeat and the error.
+A stopped run is marked <code>cancelled</code> and is kept for inspection.</p>
+<p><strong>Numbers differ slightly from the paper.</strong> Compare against the ranges rather than exact digits:
+floating-point summation order and MATLAB release build can move the last few digits. The checks in
+<code>reproduce_paper_v1.5.md</code> are stated as tolerances for this reason.</p>
+<p><strong>A GUI diagnostic mode reports a window-state failure on a remote or headless session.</strong> The
+<code>--gui-*</code> modes need a real interactive desktop; a session where Windows cannot maximise a window
+cannot run them meaningfully.</p>
+<hr>
+<h2 id="section-13">13. Related documents</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>reproduce_paper_v1.5.md</code></td>
+<td>Step-by-step reproduction of the published results.</td>
+</tr>
+<tr>
+<td><code>tutorials_v1.5.md</code></td>
+<td>Guided walkthroughs.</td>
+</tr>
+<tr>
+<td><code>report_v1.5_zh.md</code></td>
+<td>Report structure (Chinese).</td>
+</tr>
+<tr>
+<td><code>plotting_v1.5_zh.md</code></td>
+<td>Figure and plotting guide (Chinese).</td>
+</tr>
+<tr>
+<td><code>术语与指标.md</code></td>
+<td>Metric terminology (Chinese).</td>
+</tr>
+<tr>
+<td><code>patches/PATCH_v1.5.md</code></td>
+<td>Changes in this release.</td>
+</tr>
+<tr>
+<td><code>usage_v1.5_zh.md</code></td>
+<td>This manual in Chinese.</td>
+</tr>
+</tbody></table>
+<p>The software is distributed under the MIT License; see <code>LICENSE</code> and <code>NOTICE.md</code>.</p>
+</main></body></html>

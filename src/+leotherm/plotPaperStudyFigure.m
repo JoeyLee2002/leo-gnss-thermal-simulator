@@ -1,6 +1,7 @@
 function fig=plotPaperStudyFigure(item,path,language)
 %PLOTPAPERSTUDYFIGURE One shared legend for the six controlled-study panels.
 language=leotherm.normalizeLanguage(language); zh=strcmp(language,'zh');
+windowCleanup=leotherm.preserveAppWindows;
 s=leotherm.thermalFigureStyle(language);
 fig=figure('Visible','off','Color','w','Units','centimeters','Position',[2 2 18.3 15.5]);
 try
@@ -35,4 +36,5 @@ try
 catch exception
     close(fig); rethrow(exception);
 end
+delete(windowCleanup);
 end

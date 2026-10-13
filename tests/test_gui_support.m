@@ -71,6 +71,7 @@ if ~usejava('jvm')
 end
 app = leotherm.ThermalSimulatorApp('off', 'zh');
 cleanup = onCleanup(@() delete(app));
+app.prepareWorkspace('geometry');
 button = findobj(app.Figure, 'Tag', 'CoupledRunButton');
 verifyEqual(testCase, numel(button), 1);
 verifyEqual(testCase, button.Text, '运行表面—体耦合');

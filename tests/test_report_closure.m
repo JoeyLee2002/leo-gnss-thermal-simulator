@@ -99,7 +99,7 @@ cleanupProject = onCleanup(@() removeFile(projectPath));
 leotherm.writeWorkspaceProject(projectPath, state, false);
 app.loadProject(projectPath);
 button = findobj(app.Figure, 'Tag', 'TaskRunButton');
-verifyEqual(testCase, button.Text, 'Run task');
+verifyEqual(testCase, button.Text, 'Run complete task and generate report');
 verifyEqual(testCase, char(button.Enable), 'off');
 telemetryCheck = findobj(app.Figure, 'Tag', 'PipelineTelemetryCheck');
 verifyTrue(testCase, telemetryCheck.Value);

@@ -1,6 +1,7 @@
-function checks = audit_sweep36_v129(dataDirectory, auditFile)
+function checks = audit_sweep36_v129(dataDirectory, auditFile, progress)
 %AUDIT_SWEEP36_V129 Independently check saved cases and their summary metrics.
 [~,~,defaultOutput]=sweep36_paths;
+if nargin<3, progress=[]; end
 if nargin<1 || isempty(dataDirectory), dataDirectory=defaultOutput; end
 folder=char(dataDirectory);
 if nargin<2 || isempty(auditFile), auditFile=fullfile(defaultOutput,'audit.csv'); end
@@ -14,6 +15,9 @@ assert(height(t)==36 && height(unique(t(:,{'altitude_km','target_beta_deg','cond
 maximumClosure=0; maximumEndpoint=0;
 forcing=[];
 for i=1:36
+    leotherm.notifyProgress(progress,'audit',i-1,36, ...
+        sprintf('检查工况 %d / 36 的输入、温度和数值记录。',i), ...
+        sprintf('Auditing case %d / 36: inputs, temperatures and numerical records.',i));
     file=sprintf('case_%02d_h%d_b%02d_g%.2f.mat',i,t.altitude_km(i),t.target_beta_deg(i),t.conductance_wk(i));
     s=load(fullfile(folder,file),'result'); r=s.result;
     [scenario,expectedNetwork]=sweep36_case(expectedProtocol,t.altitude_km(i),t.target_beta_deg(i),t.conductance_wk(i),360);

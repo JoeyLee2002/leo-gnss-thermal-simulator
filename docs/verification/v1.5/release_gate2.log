@@ -1,0 +1,364 @@
+MLINT_TOTAL=0
+正在运行 test_adapter_examples
+..Generic exchange adapter wrote C:\Users\30698\AppData\Local\Temp\tpddaa9c04_e360_444e_bbd5_7420f241046e\generic_exchange_model.json (leotherm.thermal_model.v1).
+.
+已完成 test_adapter_examples
+__________
+
+正在运行 test_adapter_sdk
+.....
+已完成 test_adapter_sdk
+__________
+
+正在运行 test_artifact_filenames
+.....
+已完成 test_artifact_filenames
+__________
+
+正在运行 test_atomic_json
+.....
+已完成 test_atomic_json
+__________
+
+正在运行 test_background_figures
+...
+已完成 test_background_figures
+__________
+
+正在运行 test_calibration
+.......
+已完成 test_calibration
+__________
+
+正在运行 test_contact_interfaces
+...
+已完成 test_contact_interfaces
+__________
+
+正在运行 test_coupling_options
+....
+已完成 test_coupling_options
+__________
+
+正在运行 test_device_calibration
+.......... ......
+已完成 test_device_calibration
+__________
+
+正在运行 test_device_calibration_exports
+.
+已完成 test_device_calibration_exports
+__________
+
+正在运行 test_device_calibration_guards
+.....
+已完成 test_device_calibration_guards
+__________
+
+正在运行 test_device_calibration_optional_solver
+..
+已完成 test_device_calibration_optional_solver
+__________
+
+正在运行 test_device_profile
+.......... .......... ....
+已完成 test_device_profile
+__________
+
+正在运行 test_dialog_language
+......
+已完成 test_dialog_language
+__________
+
+正在运行 test_eclipse
+..
+已完成 test_eclipse
+__________
+
+正在运行 test_end_to_end
+...
+已完成 test_end_to_end
+__________
+
+正在运行 test_example_projects
+..
+已完成 test_example_projects
+__________
+
+正在运行 test_extensibility_audit
+.....
+已完成 test_extensibility_audit
+__________
+
+正在运行 test_external_solver_report
+...
+已完成 test_external_solver_report
+__________
+
+正在运行 test_external_task
+....
+已完成 test_external_task
+__________
+
+正在运行 test_file_dialog_window
+.....
+已完成 test_file_dialog_window
+__________
+
+正在运行 test_gracefo_import
+.......
+已完成 test_gracefo_import
+__________
+
+正在运行 test_gui_startup
+STARTUP_READY constructor_s=1.514 rendered_s=15.155
+STARTUP_CHECK_OK constructor_s=1.514 rendered_s=15.155
+......
+已完成 test_gui_startup
+__________
+
+正在运行 test_gui_support
+.......... .
+已完成 test_gui_support
+__________
+
+正在运行 test_gui_surface_volume_workflow
+.
+已完成 test_gui_surface_volume_workflow
+__________
+
+正在运行 test_gui_thermal_model
+....
+已完成 test_gui_thermal_model
+__________
+
+正在运行 test_hardening
+.......... ....
+已完成 test_hardening
+__________
+
+正在运行 test_lazy_panels
+........
+已完成 test_lazy_panels
+__________
+
+正在运行 test_material_component_library
+.....
+已完成 test_material_component_library
+__________
+
+正在运行 test_mesh_radiation
+...
+已完成 test_mesh_radiation
+__________
+
+正在运行 test_mesh_self_shadow
+......
+已完成 test_mesh_self_shadow
+__________
+
+正在运行 test_mesh_thermal_config
+...
+已完成 test_mesh_thermal_config
+__________
+
+正在运行 test_minxss_validation
+.......... .....
+已完成 test_minxss_validation
+__________
+
+正在运行 test_model_extensions
+..........
+已完成 test_model_extensions
+__________
+
+正在运行 test_module_run_buttons
+....
+已完成 test_module_run_buttons
+__________
+
+正在运行 test_operation_progress
+.........
+已完成 test_operation_progress
+__________
+
+正在运行 test_orbit_geometry
+...
+已完成 test_orbit_geometry
+__________
+
+正在运行 test_orbital_harmonic_response
+.......
+已完成 test_orbital_harmonic_response
+__________
+
+正在运行 test_paper_study_report
+....
+已完成 test_paper_study_report
+__________
+
+正在运行 test_report_body_layout
+...
+已完成 test_report_body_layout
+__________
+
+正在运行 test_report_closure
+.......
+已完成 test_report_closure
+__________
+
+正在运行 test_report_details
+.......
+已完成 test_report_details
+__________
+
+正在运行 test_report_figure_style
+......
+已完成 test_report_figure_style
+__________
+
+正在运行 test_report_metadata
+......
+已完成 test_report_metadata
+__________
+
+正在运行 test_report_pdf_merge
+..
+已完成 test_report_pdf_merge
+__________
+
+正在运行 test_report_result_audit
+.......
+已完成 test_report_result_audit
+__________
+
+正在运行 test_report_scalar_lag
+......
+已完成 test_report_scalar_lag
+__________
+
+正在运行 test_report_synthesis
+..........
+已完成 test_report_synthesis
+__________
+
+正在运行 test_simulation_task
+......
+已完成 test_simulation_task
+__________
+
+正在运行 test_simulation_templates
+.......
+已完成 test_simulation_templates
+__________
+
+正在运行 test_standalone_entry
+..
+已完成 test_standalone_entry
+__________
+
+正在运行 test_standalone_resources
+.......
+已完成 test_standalone_resources
+__________
+
+正在运行 test_study_data_progress
+....
+已完成 test_study_data_progress
+__________
+
+正在运行 test_surface_mesh
+......
+已完成 test_surface_mesh
+__________
+
+正在运行 test_surface_volume_coupling
+.....
+已完成 test_surface_volume_coupling
+__________
+
+正在运行 test_surface_volume_export
+.
+已完成 test_surface_volume_export
+__________
+
+正在运行 test_surface_volume_scenario
+...
+已完成 test_surface_volume_scenario
+__________
+
+正在运行 test_telemetry
+.......... .......... ...
+已完成 test_telemetry
+__________
+
+正在运行 test_thermal_boundaries
+..........
+已完成 test_thermal_boundaries
+__________
+
+正在运行 test_thermal_model_contract
+.....
+已完成 test_thermal_model_contract
+__________
+
+正在运行 test_thermal_model_io
+....
+已完成 test_thermal_model_io
+__________
+
+正在运行 test_thermal_model_network_mapping
+......
+已完成 test_thermal_model_network_mapping
+__________
+
+正在运行 test_thermal_network
+...
+已完成 test_thermal_network
+__________
+
+正在运行 test_thermal_pipeline
+.........
+已完成 test_thermal_pipeline
+__________
+
+正在运行 test_thermal_result_io
+.....
+已完成 test_thermal_result_io
+__________
+
+正在运行 test_thermal_terminology
+.......
+已完成 test_thermal_terminology
+__________
+
+正在运行 test_unified_report
+.......
+已完成 test_unified_report
+__________
+
+正在运行 test_usability
+.........
+已完成 test_usability
+__________
+
+正在运行 test_v014_release_regression
+......
+已完成 test_v014_release_regression
+__________
+
+正在运行 test_validation_and_usability
+.......... ..
+已完成 test_validation_and_usability
+__________
+
+正在运行 test_volume_fem
+..........
+已完成 test_volume_fem
+__________
+
+TEST_FAILED=0 TEST_INCOMPLETE=0
+TEST_TOTAL=444 TEST_PASSED=444
+BENCHMARK_ROWS=6
+FINAL_VERIFICATION_OK
+ERROR: MATLAB error Exit Status: 0xc0000374, Heap corruption

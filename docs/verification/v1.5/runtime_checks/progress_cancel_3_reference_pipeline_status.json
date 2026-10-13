@@ -1,0 +1,41 @@
+{
+  "schema": "leotherm.pipeline_run.v1",
+  "taskId": "2b3129a1-e693-4175-ac9e-85a0a17e4f4c",
+  "inputFingerprint": "6166cd714cfbb609410b293b3d1fd3d88449f10cc47b9971948b97c32ebcb194",
+  "mode": "pipeline",
+  "status": "cancelled",
+  "stages": [
+    {
+      "name": "snapshot",
+      "status": "complete",
+      "startedUTC": "2026-10-12 17:07:26",
+      "completedUTC": "2026-10-12 17:07:26",
+      "message": "Input frozen before computation."
+    },
+    {
+      "name": "calibration",
+      "status": "skipped",
+      "startedUTC": "2026-10-12 17:07:26",
+      "completedUTC": "2026-10-12 17:07:26",
+      "message": "Calibration was not selected."
+    },
+    {
+      "name": "freeze_model",
+      "status": "complete",
+      "startedUTC": "2026-10-12 17:07:26",
+      "completedUTC": "2026-10-12 17:07:26",
+      "message": "Model parameters frozen after optional calibration."
+    },
+    {
+      "name": "nodal_simulation",
+      "status": "cancelled",
+      "startedUTC": "2026-10-12 17:07:26",
+      "completedUTC": "2026-10-12 17:07:27",
+      "message": "Operation stopped at a progress checkpoint."
+    }
+  ],
+  "failure": {
+    "identifier": "leotherm:OperationCancelled",
+    "message": "Operation stopped at a progress checkpoint."
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "leotherm.paper_study.v1",
+  "version": "1.5",
+  "status": "cancelled",
+  "stage": "reference",
+  "caseCount": 0,
+  "refinementCount": 0,
+  "solveJobsCompleted": 0,
+  "solveJobsTotal": 40,
+  "messageZh": "参考任务：热求解与报告。",
+  "messageEn": "Reference task: thermal solution and report.",
+  "heartbeatUTC": "2026-10-12T17:07:12Z",
+  "error": "Operation stopped at a progress checkpoint."
+}

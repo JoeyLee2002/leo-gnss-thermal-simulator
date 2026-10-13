@@ -1,0 +1,457 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reproducing the LEOTherm Paper</title><style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:#172831;background:#f3f6f7;font:16px/1.7 Arial,"Microsoft YaHei",sans-serif}
+nav,main{max-width:1120px;margin:auto;padding:24px 36px}nav{display:flex;gap:24px;flex-wrap:wrap;background:white;border-bottom:1px solid #cbd6da}
+main{background:white}h1{font-size:30px;color:#111;line-height:1.3;margin:16px 0 28px}h2{font-size:24px;color:#111;margin:42px 0 16px}h3{font-size:20px;color:#111;margin:30px 0 12px}
+p,li{overflow-wrap:anywhere}li{margin:8px 0}a{color:#005e85}figure{margin:24px 0 30px;border:1px solid #d4dfe3;padding:12px;break-inside:avoid}
+figure img{display:block;max-width:100%;max-height:1000px;height:auto;margin:auto}figcaption{font-size:14px;color:#465963;margin-top:12px;text-align:center}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:22px 0}th,td{border-bottom:1px solid #cbd6da;padding:10px 12px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eef3f5;color:#182a33}
+code{font:0.91em Consolas,"Microsoft YaHei",monospace;background:#eef3f5;padding:2px 4px;overflow-wrap:anywhere}pre{background:#eef3f5;border:1px solid #d4dfe3;padding:16px;white-space:pre-wrap;overflow-wrap:anywhere;break-inside:avoid}pre code{padding:0;background:none}
+hr{border:0;border-top:1px solid #cbd6da;margin:30px 0}.toc{padding:16px 24px;background:#f2f6f8}.toc ul{columns:2;padding-left:20px}.toc li{margin:4px 0;font-size:14px}
+@media(max-width:700px){main,nav{padding:18px}h1{font-size:26px}.toc ul{columns:1}table{font-size:12px}td,th{padding:6px}}
+@page{size:A4;margin:16mm 14mm 18mm}
+@media print{body{background:white;font-size:10.5pt;line-height:1.5}main{padding:0;max-width:none}nav,hr{display:none}h1{font-size:24pt}h2{font-size:18pt;margin-top:24pt;break-after:avoid}h3{font-size:13pt;break-after:avoid}p,li{orphans:3;widows:3}figure{padding:5mm;margin:5mm 0;border:1px solid #d4dfe3}figure img{max-height:170mm;max-width:100%;object-fit:contain}figcaption{font-size:9pt}table{font-size:8.8pt}thead{display:table-header-group}tr{break-inside:avoid}pre{font-size:8.5pt}.toc{background:white}.toc li{font-size:9pt}a{text-decoration:none}}
+</style></head><body><nav><a href="usage_v1.5_zh.html">中文用户手册</a><a href="quickstart_v1.5.html">English User Manual</a><a href="reproduce_paper_v1.5_zh.html">中文论文复现</a><a href="reproduce_paper_v1.5.html">English Paper Reproduction</a></nav><main><h1>Reproducing the LEOTherm Paper</h1><div class="toc"><strong>Contents</strong><ul><li><a href="#section-1">1. Prerequisites</a></li><li><a href="#section-2">2. The single command</a></li><li><a href="#section-3">3. Frozen study inputs</a></li><li><a href="#section-4">4. Output files</a></li><li><a href="#section-5">5. Design and closure checks</a></li><li><a href="#section-6">6. Expected numbers</a></li><li><a href="#section-7">7. Reproducing the figures</a></li><li><a href="#section-8">8. Additional module examples</a></li><li><a href="#section-9">9. Tolerances</a></li><li><a href="#section-10">10. What counts as a successful reproduction</a></li><li><a href="#section-11">11. If something does not match</a></li></ul></div>
+<p>This document lists the exact inputs and the numerical checks needed to reproduce the results
+published with LEOTherm, independently of the authors. Every number below was obtained by running
+the released software on a clean output directory.</p>
+<p>If you only want to <em>use</em> the software, read <code>quickstart_v1.5.md</code> first. This document assumes you are
+reproducing a published result and want to confirm it.</p>
+<hr>
+<h2 id="section-1">1. Prerequisites</h2>
+<ul>
+<li><strong>MATLAB Runtime R2021b</strong> installed (free — no MATLAB licence is required).</li>
+<li>The LEOTherm release archive extracted to a writable directory.</li>
+<li>Roughly <strong>2 GB</strong> of free disk space and <strong>one to two hours</strong> of wall-clock time for a full study
+on a typical desktop. Individual cases are fast; the 36-case study is the long part.</li>
+</ul>
+<hr>
+<h2 id="section-2">2. The single command</h2>
+<h3>Illustrated GUI Route: Select the Published Study</h3>
+<figure><a href="manual_images/v1_5/paper_en.png" target="_blank"><img src="manual_images/v1_5/paper_en.png" alt="Figure 1. Paper-study selection and the reproduction button"></a><figcaption>Figure 1. Paper-study selection and the reproduction button</figcaption></figure>
+<ol>
+<li>Open <code>LEOTherm.exe</code> and stay on <strong>Quick start</strong>. GUI reproduction follows the selected language.</li>
+<li>At ① choose <strong>Paper: reference task and 36 cases</strong>, not First simulation or an ordinary page sweep.</li>
+<li>Click <strong>Reproduce paper and report</strong> at ②.</li>
+<li>In the Windows folder picker, select an existing writable <strong>parent directory</strong>, such as
+<code>C:\LEOThermResults</code>. The app creates <code>paper_&lt;timestamp&gt;_&lt;id&gt;</code> beneath it. Record the child path.</li>
+<li>The dedicated study constructs its fixed protocol and preserves current workspace inputs;
+there is no need to fill 36 parameter sets on other pages.</li>
+</ol>
+<p>For both report languages, use the command below with <code>both</code>. Its path is a <strong>new task destination</strong>,
+not the parent selected in the GUI, and must not already exist. Windows picker labels follow the OS.</p>
+<h3>Illustrated GUI Route: Monitor the Study</h3>
+<figure><a href="manual_images/v1_5/progress_en.png" target="_blank"><img src="manual_images/v1_5/progress_en.png" alt="Figure 2. Real paper-study progress and checkpoint stopping"></a><figcaption>Figure 2. Real paper-study progress and checkpoint stopping</figcaption></figure>
+<p>This tutorial screenshot is from an actual task stopped after capture; it demonstrates controls,
+not successful completion. A full reproduction has <strong>40 thermal-solution jobs</strong>: one reference,
+36 cases and three refinements. Initialization/integration can continue while the completed count
+stays unchanged. Figure/PDF generation continues after the solves: wait for final <code>complete</code>
+status, not merely 40/40. <strong>Stop computation</strong> cancels rather than pauses; saved cases remain, but
+the run is <code>cancelled</code> and is not automatically resumed. Use a new destination to start again.</p>
+<h3>Illustrated GUI Route: Find and Check Your Results</h3>
+<figure><a href="manual_images/v1_5/output_map_en.png" target="_blank"><img src="manual_images/v1_5/output_map_en.png" alt="Figure 3. Output file guide from the verified Runtime run"></a><figcaption>Figure 3. Output file guide from the verified Runtime run</figcaption></figure>
+<p>This is a file guide, not an Explorer screenshot. Its file names come from the completed v1.5 Runtime
+run. In <strong>your own</strong> newly created directory:</p>
+<ol>
+<li>Open <code>paper_study_status.json</code>: require <code>status=&quot;complete&quot;</code>, <code>stage=&quot;complete&quot;</code>, completed/total
+jobs <code>40/40</code>, <code>caseCount=36</code> and <code>refinementCount=3</code>.</li>
+<li>Open <code>paper_results.csv</code>: <strong>36 data rows plus a header</strong>, not 40 rows. Reference/refinement
+results are stored separately.</li>
+<li>Open <code>audit.csv</code>: require <code>case_count=36</code> and all <strong>four protocol flags</strong> equal to <code>1</code>.</li>
+<li>Open <code>sweep36/time_refinement.csv</code>: require case IDs <strong>2, 20, 36</strong>. Each row compares 360 and 720
+output intervals for the same case, rather than adding a new factorial condition.</li>
+<li>Open the PDF under <code>report</code>; consult <code>open_data</code> for histories and the report definition CSV
+for the metric meanings and units.</li>
+</ol>
+<figure><a href="manual_images/v1_5/paper_checks_en.png" target="_blank"><img src="manual_images/v1_5/paper_checks_en.png" alt="Figure 4. Reading the actual case table and protocol checks"></a><figcaption>Figure 4. Reading the actual case table and protocol checks</figcaption></figure>
+<p>This data guide is rendered from verified CSV/JSON records, not a desktop screenshot. Check your
+own files against the field meanings in Sections 5–6. To inspect without Excel, replace <code>$run</code>
+with your own directory and run in PowerShell:</p>
+<pre><code class="language-powershell">$run = &#39;C:\LEOThermResults\paper_run_01&#39;
+Get-Content (Join-Path $run &#39;paper_study_status.json&#39;)
+$cases = Import-Csv (Join-Path $run &#39;paper_results.csv&#39;)
+$cases.Count
+$cases | Select-Object case_id,altitude_km,target_beta_deg,effective_thermal_conductance_w_per_k,rf_temperature_p95_p5_k
+Import-Csv (Join-Path $run &#39;audit.csv&#39;) | Format-List
+Import-Csv (Join-Path $run &#39;sweep36/time_refinement.csv&#39;) | Format-Table
+Get-ChildItem (Join-Path $run &#39;report&#39;) -Filter &#39;*.pdf&#39;
+</code></pre>
+<h3>Command-Line and MATLAB Routes</h3>
+<p>A full reproduction is one command. The destination directory <strong>must not already exist</strong> — this is
+enforced so a new run can never overwrite an earlier one.</p>
+<pre><code class="language-powershell">.\LEOTherm.exe --paper-study &quot;C:\LEOThermResults\paper_run_01&quot; both
+</code></pre>
+<p>The third argument selects the report language: <code>zh</code>, <code>en</code> or <code>both</code>. Omitting it defaults to
+<code>both</code>.</p>
+<p>From the graphical interface, use <strong>Quick start &gt; Paper: reference task and 36 cases &gt; Reproduce
+paper and report</strong> and choose a writable parent directory. Your current workspace inputs are
+preserved.</p>
+<p>From MATLAB source:</p>
+<pre><code class="language-matlab">addpath(&#39;src&#39;);
+study = leotherm.runPaperStudy(fullfile(pwd,&#39;results&#39;,&#39;paper_run_01&#39;),&#39;both&#39;);
+</code></pre>
+<p>While the study runs, <code>paper_study_status.json</code> in the output directory records the current stage,
+a heartbeat, and the completed job count out of <strong>40</strong> (one reference task, 36 cases, three
+refinements). Stopping the run leaves a <code>cancelled</code> record and keeps every completed case on disk.</p>
+<hr>
+<h2 id="section-3">3. Frozen study inputs</h2>
+<p>The study is a controlled factorial design. Nothing below is chosen at run time; these values are
+fixed in the released protocol.</p>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Values</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Orbital altitude</td>
+<td>400, 600, 800 km</td>
+</tr>
+<tr>
+<td>Target beta angle</td>
+<td>0°, 30°, 60°, 75°</td>
+</tr>
+<tr>
+<td>Effective structure-to-RF conductance</td>
+<td>0.31, 0.62, 1.24 W/K</td>
+</tr>
+<tr>
+<td>Total cases</td>
+<td>3 × 4 × 3 = <strong>36</strong></td>
+</tr>
+<tr>
+<td>Orbits analysed per case</td>
+<td>6</td>
+</tr>
+<tr>
+<td>Output intervals per orbit</td>
+<td>360 (≈ 15.4 s at 400 km)</td>
+</tr>
+<tr>
+<td>Periodic initialization criterion</td>
+<td>0.001 K, same-phase, orbit-to-orbit</td>
+</tr>
+<tr>
+<td>Time-refinement cases</td>
+<td>2, 20 and 36, recomputed at 720 intervals per orbit</td>
+</tr>
+</tbody></table>
+<p>The <strong>reference task</strong> is separate from the 36-case study. It uses the default 11-node model with a
+7200 s duration, a 60 s output interval and no warmup. It is the case behind the component-response
+figure.</p>
+<p>Only the target conductance link is varied between the three conductance levels: the audit confirms
+that the forcing is invariant across conductance and that no other link changes.</p>
+<hr>
+<h2 id="section-4">4. Output files</h2>
+<p>The study writes this tree:</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>paper_study_status.json</code></td>
+<td>Stage, heartbeat, completed cases, final status.</td>
+</tr>
+<tr>
+<td><code>paper_results.csv</code></td>
+<td>One standardised row per case: 25 metrics, including all columns used below.</td>
+</tr>
+<tr>
+<td><code>audit.csv</code></td>
+<td>The design and closure checks (section 5).</td>
+</tr>
+<tr>
+<td><code>paper_study.mat</code></td>
+<td>The complete study object.</td>
+</tr>
+<tr>
+<td><code>reference/</code></td>
+<td>The reference task: input snapshot, frozen model, pipeline run, status, report.</td>
+</tr>
+<tr>
+<td><code>sweep36/</code></td>
+<td>Per-case MAT files, <code>sweep36_complete.mat</code>, <code>protocol.json</code>, <code>time_refinement.csv</code>, and the three <code>*_refined.mat</code> cases.</td>
+</tr>
+<tr>
+<td><code>open_data/</code></td>
+<td>39 temperature-history CSVs, e.g. <code>case_01_h400_b00_g0.31.csv</code>.</td>
+</tr>
+<tr>
+<td><code>report/</code></td>
+<td><code>thermal_report_en.pdf</code>, <code>thermal_report_zh.pdf</code>, figures, and the definition CSVs.</td>
+</tr>
+</tbody></table>
+<p>Column names in <code>paper_results.csv</code> are self-describing. The ones used for the checks below are
+<code>rf_temperature_p95_p5_k</code>, <code>orbital_phase_delay_s</code>, <code>eclipse_fraction</code>, <code>warmup_cycles</code> and
+<code>periodic_error_k</code>.</p>
+<hr>
+<h2 id="section-5">5. Design and closure checks</h2>
+<p><code>audit.csv</code> contains a single row that must read as follows:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Required value</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>case_count</code></td>
+<td>36</td>
+<td>All cases completed.</td>
+</tr>
+<tr>
+<td><code>unique_factorial_design</code></td>
+<td>1</td>
+<td>The 36 cases are distinct combinations.</td>
+</tr>
+<tr>
+<td><code>periodic_initialization_passed</code></td>
+<td>1</td>
+<td>Every case reached periodic steady state.</td>
+</tr>
+<tr>
+<td><code>only_target_link_changed</code></td>
+<td>1</td>
+<td>No unintended model change.</td>
+</tr>
+<tr>
+<td><code>forcing_invariant_across_conductance</code></td>
+<td>1</td>
+<td>The conductance comparison is controlled.</td>
+</tr>
+<tr>
+<td><code>max_energy_closure_j</code></td>
+<td>≈ 6.5 × 10⁻⁸ J</td>
+<td>Worst-case energy closure across the sweep.</td>
+</tr>
+<tr>
+<td><code>max_endpoint_difference_k</code></td>
+<td>≈ 5.3 × 10⁻⁴ K</td>
+<td>Worst-case orbit start-to-end temperature difference.</td>
+</tr>
+</tbody></table>
+<p>If any of the five flag columns reads <code>0</code>, the study is not a valid controlled experiment and the
+comparisons below do not apply.</p>
+<p>Note that <code>max_energy_closure_j</code> here is the <strong>cumulative</strong> closure over a whole run. It is not the
+same quantity as the reference task&#39;s interval residual, which the report gives as
+≈ 2.0 × 10⁻⁹ J per step. Do not compare the two directly.</p>
+<hr>
+<h2 id="section-6">6. Expected numbers</h2>
+<p>These are the published results, with the file each one comes from.</p>
+<h3>6.1 Temperature spread (<code>paper_results.csv</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Published value</th>
+<th>Where to look</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RF-node P95−P5 across all 36 cases</td>
+<td><strong>0.995 – 6.048 K</strong></td>
+<td>min/max of <code>rf_temperature_p95_p5_k</code></td>
+</tr>
+<tr>
+<td>Minimum case</td>
+<td>400 km, 75°, 1.24 W/K</td>
+<td>the row holding the minimum</td>
+</tr>
+<tr>
+<td>Maximum case</td>
+<td>800 km, 30°, 1.24 W/K</td>
+<td>the row holding the maximum</td>
+</tr>
+</tbody></table>
+<p>P95−P5 is the 95th minus 5th percentile of the temperature history — <strong>not</strong> the max-minus-min
+range. The definitions are written to <code>report/thermal_metric_definitions.csv</code>.</p>
+<h3>6.2 Orbital-frequency phase delay (<code>paper_results.csv</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Published value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Phase delay across all 36 records</td>
+<td><strong>37.18 – 43.43 min</strong></td>
+</tr>
+<tr>
+<td>Harmonic fit available for all cases</td>
+<td><code>harmonic_available = 1</code></td>
+</tr>
+</tbody></table>
+<p>The phase delay is measured relative to the total external absorbed power, not against an intrinsic
+thermal time constant.</p>
+<h3>6.3 Effect of raising the effective thermal conductance from 0.31 to 1.24 W/K</h3>
+<p>This is the comparison the paper&#39;s orbital-conditions figure is built from. Twelve
+(altitude, beta) pairs are compared; nine are eclipsing and three are in continuous sunlight.</p>
+<table>
+<thead>
+<tr>
+<th>Regime</th>
+<th>Pairs</th>
+<th>Published change in P95−P5</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Eclipsing</td>
+<td>9</td>
+<td><strong>+8.4 % to +39.7 %</strong></td>
+</tr>
+<tr>
+<td>Continuous sunlight</td>
+<td>3</td>
+<td><strong>−10.5 % to −12.1 %</strong></td>
+</tr>
+<tr>
+<td>Phase-delay reduction</td>
+<td>12</td>
+<td><strong>36.8 s to 131.0 s</strong></td>
+</tr>
+</tbody></table>
+<p>A pair counts as continuous sunlight when <code>eclipse_fraction = 0</code> (beta = 75° at every altitude).</p>
+<h3>6.4 Numerical convergence</h3>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Published value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Warmup orbits to periodic steady state</td>
+<td><strong>16 – 19</strong></td>
+</tr>
+<tr>
+<td>Worst same-phase periodic error across cases</td>
+<td>≈ 5.1 × 10⁻⁴ K</td>
+</tr>
+</tbody></table>
+<h3>6.5 Time refinement (<code>sweep36/time_refinement.csv</code>)</h3>
+<p>Cases 2, 20 and 36 are solved again at half the output step. The differences must stay small:</p>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Published value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Largest temperature difference</td>
+<td><strong>0.219 K</strong> (case 2)</td>
+</tr>
+<tr>
+<td>RF-span difference</td>
+<td><strong>&lt; 0.0006 K</strong></td>
+</tr>
+<tr>
+<td>Harmonic-delay difference</td>
+<td><strong>&lt; 0.13 s</strong></td>
+</tr>
+</tbody></table>
+<h3>6.6 Reference task energy balance</h3>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Published value</th>
+<th>Where to look</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Stored-energy change vs integrated net heat</td>
+<td><strong>−1765.6 kJ</strong></td>
+<td><code>reference/report/thermal_energy.csv</code></td>
+</tr>
+<tr>
+<td>Largest absolute interval residual</td>
+<td>≈ 2.0 × 10⁻⁹ J</td>
+<td><code>reference/report/thermal_diagnostics.csv</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="section-7">7. Reproducing the figures</h2>
+<table>
+<thead>
+<tr>
+<th>Paper figure</th>
+<th>How to obtain it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Fig. 3</strong> Reference thermal conductance matrix</td>
+<td>Read the conductive-link table in <code>reference/report/thermal_conductive_links.csv</code>. The default network has 15 symmetric links; the same table is printed by the Thermal network page.</td>
+</tr>
+<tr>
+<td><strong>Fig. 4</strong> Component temperature response</td>
+<td><code>reference/report/</code> — the scenario summary figure and the node statistics in <code>thermal_node_statistics.csv</code>.</td>
+</tr>
+<tr>
+<td><strong>Fig. 5</strong> Orbital and mounting conditions</td>
+<td><code>report/publication_*.png</code> (and the vector PDFs). Each group has a companion MAT file for re-plotting.</td>
+</tr>
+<tr>
+<td>Supplementary figures S1–S5</td>
+<td>The synthesis and energy-balance groups in <code>report/</code>, produced in both languages.</td>
+</tr>
+</tbody></table>
+<p>Publication figures are exported as PNG and as vector PDF, so they can be placed in a manuscript
+directly. Temperature samples and physical parameters are identical to the interactive run.</p>
+<hr>
+<h2 id="section-8">8. Additional module examples</h2>
+<p>The paper&#39;s final example section uses modules that are not part of the 36-case study. They run
+independently and are much faster.</p>
+<p><strong>Device calibration.</strong> The bundled synthetic demo has a known ground truth: the device heat
+capacity used to generate the data is 110 J/K, while the starting model uses 100 J/K. Calibration
+recovers 109.99 J/K, and the calibration residual falls from ≈ 0.6–0.8 K before fitting to
+≈ 0.0023 K after. The demo excludes the first 20 s of each day to avoid the initial transient. The
+per-split values are listed in the supplementary table of the paper.</p>
+<p><strong>3-D geometry and coupling.</strong> The 3-D page has separate surface, volume and coupling run buttons.
+Its outputs are written beside the scenario results.</p>
+<p><strong>Telemetry comparison.</strong> Requires a previously computed scenario; it reports agreement metrics and
+an assessment per temperature node in <code>thermal_node_status</code>-style outputs.</p>
+<hr>
+<h2 id="section-9">9. Tolerances</h2>
+<p>Compare against the <strong>ranges</strong> in section 6, not against exact digits. The last two or three digits
+of an individual metric can move with:</p>
+<ul>
+<li>the MATLAB release and BLAS build used by the Runtime,</li>
+<li>floating-point summation order in the energy accounting,</li>
+<li>the operating system&#39;s thread scheduling in the parallel job pool.</li>
+</ul>
+<p>The published ranges are wide enough to absorb all of these. A P95−P5 that lands outside
+0.995–6.048 K, or a phase delay outside 37.18–43.43 min, indicates a genuinely different run
+rather than rounding.</p>
+<hr>
+<h2 id="section-10">10. What counts as a successful reproduction</h2>
+<p>A reproduction is successful when all of the following hold:</p>
+<ol>
+<li><code>paper_study_status.json</code> ends with status <code>complete</code> and 40 of 40 jobs completed.</li>
+<li>All five flag columns in <code>audit.csv</code> read <code>1</code>.</li>
+<li><code>paper_results.csv</code> has exactly 36 rows and its P95−P5 and phase-delay ranges match section 6.</li>
+<li>The eclipsing and continuous-sunlight conductance effects match section 6.3.</li>
+<li><code>sweep36/time_refinement.csv</code> matches section 6.5.</li>
+<li>Both <code>report/thermal_report_en.pdf</code> and <code>report/thermal_report_zh.pdf</code> exist.</li>
+</ol>
+<p><code>open_data/</code> contains the temperature histories behind every case, so each of these checks can be
+recomputed from the raw samples rather than taken on trust.</p>
+<hr>
+<h2 id="section-11">11. If something does not match</h2>
+<p><strong>The run stopped part-way.</strong> Read <code>paper_study_status.json</code>: it records the stage reached and the
+last heartbeat. Completed cases remain on disk and are individually valid. The directory is marked
+<code>cancelled</code>, not <code>complete</code>, and is not resumed automatically.</p>
+<p><strong>A metric is empty or <code>NaN</code>.</strong> Check <code>harmonic_available</code> for that row. The harmonic phase metric
+requires a resolvable orbital-frequency component; a row where the fit is unavailable is reported as
+such rather than filled with a substitute value.</p>
+<p><strong>The destination directory error appears immediately.</strong> <code>--paper-study</code> refuses to write into an
+existing directory. Choose a new path.</p>
+<p><strong>Numerical results are close but not identical.</strong> See section 9. Reproducibility here means
+agreement within the published ranges and satisfaction of the audit checks, which is the standard
+the software is tested against.</p>
+</main></body></html>

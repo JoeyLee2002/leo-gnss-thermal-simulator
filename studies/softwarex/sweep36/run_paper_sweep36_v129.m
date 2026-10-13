@@ -1,7 +1,8 @@
-function summary = run_paper_sweep36_v129(outputDirectory, maxCases)
+function summary = run_paper_sweep36_v129(outputDirectory, maxCases, progress)
 %RUN_PAPER_SWEEP36_V129 Controlled orbital and mounting-conductance study.
 if nargin < 1, outputDirectory = []; end
 if nargin < 2, maxCases = 36; end
+if nargin < 3, progress=[]; end
 validateattributes(maxCases, {'numeric'}, {'scalar','integer','>=',1,'<=',36});
 [~, ~, out] = sweep36_paths(outputDirectory);
 protocol = sweep36_protocol;
@@ -24,6 +25,9 @@ for h = protocol.altitudeKm
         for g = protocol.conductanceWK
             count = count + 1;
             if count > maxCases, break; end
+            leotherm.notifyProgress(progress,'case_start',count-1,36, ...
+                sprintf('工况 %d / 36：%d km，beta %d 度，等效热导 %.2f W/K。',count,h,b,g), ...
+                sprintf('Case %d / 36: %d km, beta %d deg, conductance %.2f W/K.',count,h,b,g));
             name = sprintf('case_%02d_h%d_b%02d_g%.2f',count,h,b,g);
             file = fullfile(out,[name '.mat']);
             timer = tic;
@@ -40,7 +44,7 @@ for h = protocol.altitudeKm
                 rows{count} = recomputed;
             else
                 [scenario,network] = sweep36_case(protocol,h,b,g,protocol.samplesPerOrbit);
-                result = leotherm.simulateScenario(scenario,network);
+                result = leotherm.simulateScenario(scenario,network,progress);
                 sweep36_validate_case(result,scenario,network);
                 row = makeRow(result,count,h,b,g,toc(timer));
                 assert(result.convergence.converged && all(isfinite(result.temperatureK(:))));
@@ -51,6 +55,8 @@ for h = protocol.altitudeKm
             end
             summary = struct2table(vertcat(rows{1:count}));
             writetable(summary,fullfile(out,'sweep36_summary.csv'));
+            leotherm.notifyProgress(progress,'case_complete',count,36, ...
+                sprintf('已保存 %d / 36 个工况。',count),sprintf('Saved %d / 36 cases.',count));
             fprintf('CASE %02d/36 h=%d beta=%d G=%.2f span=%.6f K lag=%.2f s cycles=%d elapsed=%.1f s\n', ...
                 count,h,b,g,rows{count}.rf_span_k,rows{count}.harmonic_delay_s, ...
                 rows{count}.warmup_cycles,toc(timer));
@@ -65,6 +71,8 @@ assert(height(summary)==36);
 selected = [2 20 36]; refinement = cell(numel(selected),1);
 for k = 1:numel(selected)
     i = selected(k); r = rows{i};
+    leotherm.notifyProgress(progress,'refinement_start',k-1,3, ...
+        sprintf('步长加密 %d / 3：工况 %d。',k,i),sprintf('Time refinement %d / 3: case %d.',k,i));
     name = sprintf('case_%02d_h%d_b%02d_g%.2f',i,r.altitude_km,r.target_beta_deg,r.conductance_wk);
     coarse = load(fullfile(out,[name '.mat']),'result');
     file = fullfile(out,[name '_refined.mat']);
@@ -75,7 +83,7 @@ for k = 1:numel(selected)
         result = saved.result;
     else
         [scenario,network] = sweep36_case(protocol,r.altitude_km,r.target_beta_deg,r.conductance_wk,720);
-        result = leotherm.simulateScenario(scenario,network);
+        result = leotherm.simulateScenario(scenario,network,progress);
         save(file,'result','sourceFingerprint','-v7.3');
     end
     [scenario,network] = sweep36_case(protocol,r.altitude_km,r.target_beta_deg,r.conductance_wk,720);
@@ -90,6 +98,8 @@ for k = 1:numel(selected)
     q.coarse_step_s = r.time_step_s;
     q.refined_step_s = result.scenario.timeStepS;
     refinement{k} = q;
+    leotherm.notifyProgress(progress,'refinement_complete',k,3, ...
+        sprintf('已完成 %d / 3 个步长加密算例。',k),sprintf('Completed %d / 3 refinement cases.',k));
     fprintf('REFINEMENT case=%d maxT=%.6f K spanDiff=%.6f K delayDiff=%.4f s\n', ...
         i,q.max_temperature_difference_k,q.rf_span_difference_k,q.harmonic_delay_difference_s);
 end

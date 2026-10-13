@@ -2,6 +2,7 @@ classdef TelemetryPanel < handle
     %TELEMETRYPANEL CSV mapping, telemetry driving, and independent-data comparison.
     properties (SetAccess = private)
         Tab
+        UIReady = false
     end
     properties (Access = private)
         Language
@@ -25,9 +26,11 @@ classdef TelemetryPanel < handle
         StatusLabel
         Axes
         Buttons = {}
+        Enabled = true
     end
     methods
-        function panel = TelemetryPanel(parent, language, provider, busyHandler)
+        function panel = TelemetryPanel(parent, language, provider, busyHandler, deferUI)
+            if nargin < 5, deferUI = false; end
             panel.Language = language;
             panel.ModelProvider = provider;
             panel.BusyHandler = busyHandler;
@@ -37,32 +40,35 @@ classdef TelemetryPanel < handle
             panel.State.nodeNames = {};
             panel.State.resultInputs = [];
             panel.State.resultStale = false;
-            panel.build(parent);
+            panel.Tab = uitab(parent, 'Title', panel.t('遥测与验证', 'Telemetry and validation'));
+            if ~deferUI, panel.ensureUI; end
+        end
+
+        function ensureUI(panel)
+            if panel.UIReady, return; end
+            panel.build;
+            panel.UIReady = true;
+            panel.syncState;
+            panel.setEnabled(panel.Enabled);
         end
 
         function state = getState(panel)
             panel.refreshContext;
             state = panel.State;
-            state.mode = panel.Mode.Value;
+            state.mode = panel.currentMode;
             state.options = panel.collectOptions;
-            state.selectedNode = panel.NodePicker.Value;
+            if panel.UIReady, state.selectedNode = panel.NodePicker.Value; end
         end
 
         function restoreState(panel, state)
             if ~isfield(state,'resultInputs'), state.resultInputs=[]; end
             if ~isfield(state,'resultStale'), state.resultStale=~isempty(state.result); end
             panel.State = state;
-            panel.Mode.Value = state.mode;
-            panel.syncOptions(state.options);
-            panel.syncMapping;
-            if ~isempty(state.result)
-                panel.syncNodes(state.result.network, state.selectedNode);
-                panel.draw;
-            end
-            panel.updateStatus;
+            panel.syncState;
         end
 
         function importSource(panel, source, mapping)
+            panel.ensureUI;
             raw = leotherm.readTelemetryTable(source);
             model = panel.ModelProvider();
             if nargin < 3 || isempty(mapping)
@@ -93,6 +99,7 @@ classdef TelemetryPanel < handle
         end
 
         function [result, report] = run(panel, options)
+            panel.ensureUI;
             model = panel.ModelProvider();
             panel.invalidateResults;
             if nargin < 2, options = panel.collectOptions; end
@@ -133,6 +140,7 @@ classdef TelemetryPanel < handle
         end
 
         function setWorkflow(panel, mode)
+            panel.ensureUI;
             panel.Mode.Value = mode;
             panel.invalidateResults;
         end
@@ -150,6 +158,8 @@ classdef TelemetryPanel < handle
         end
 
         function setEnabled(panel, enabled)
+            panel.Enabled = logical(enabled);
+            if ~panel.UIReady, return; end
             value = 'off'; if enabled, value = 'on'; end
             for k = 1:numel(panel.Buttons)
                 if isvalid(panel.Buttons{k}), panel.Buttons{k}.Enable = value; end
@@ -164,13 +174,14 @@ classdef TelemetryPanel < handle
             catch
                 panel.State.resultStale = true;
             end
-            if panel.State.resultStale
+            if panel.UIReady && panel.State.resultStale
                 panel.StatusLabel.Text=panel.t('输入已改变，图表为旧结果；请重新运行。', ...
                     'Inputs changed; the plots show older results. Rerun required.');
             end
         end
 
         function audit = preflight(panel)
+            panel.ensureUI;
             model=panel.ModelProvider();
             data=leotherm.readTelemetry(panel.State.source,panel.State.mapping,model.network);
             audit=leotherm.telemetryPreflight(data,panel.collectOptions,panel.Mode.Value);
@@ -178,6 +189,35 @@ classdef TelemetryPanel < handle
     end
 
     methods (Access = private)
+        function mode = currentMode(panel)
+            mode = panel.State.mode;
+            if panel.UIReady, mode = panel.Mode.Value; end
+        end
+
+        function syncState(panel)
+            if ~panel.UIReady, return; end
+            panel.Mode.Value = panel.State.mode;
+            panel.syncOptions(panel.State.options);
+            panel.Mode.Value = panel.State.mode;
+            panel.syncMapping;
+            if ~isempty(panel.State.result)
+                panel.syncNodes(panel.State.result.network, panel.State.selectedNode);
+                panel.draw;
+            elseif ~isempty(panel.State.nodeNames)
+                panel.syncNodes(struct('nodeNames', {panel.State.nodeNames}), panel.State.selectedNode);
+            else
+                panel.NodePicker.Items = {panel.t('未选择节点', 'No node selected')};
+                panel.NodePicker.ItemsData = {''};
+                panel.NodePicker.Value = '';
+            end
+            if isempty(panel.State.result)
+                for ax = panel.Axes(:)', cla(ax); end
+                panel.MetricsTable.Data = table; panel.AuditTable.Data = table;
+            end
+            panel.updateStatus;
+            panel.refreshContext;
+        end
+
         function inputs = currentInputs(panel)
             model=panel.ModelProvider();
             stamp=[];
@@ -187,8 +227,8 @@ classdef TelemetryPanel < handle
             end
             inputs=struct('scenario',model.scenario,'network',model.network, ...
                 'source',panel.State.source,'mapping',panel.State.mapping,'fileStamp',stamp, ...
-                'mode',panel.Mode.Value,'options',panel.collectOptions,'reference',[]);
-            if strcmp(panel.Mode.Value,'validation'), inputs.reference=model.reference; end
+                'mode',panel.currentMode,'options',panel.collectOptions,'reference',[]);
+            if strcmp(panel.currentMode,'validation'), inputs.reference=model.reference; end
         end
 
         function preflightUI(panel)
@@ -203,10 +243,9 @@ classdef TelemetryPanel < handle
                     strjoin(cellstr(leotherm.preflightText(a.codes,'en')),newline));
             end
             icon='info'; if ~a.ready, icon='warning'; end
-            uialert(ancestor(panel.Tab,'figure'),text,panel.t('数据预检','Data preflight'),'Icon',icon);
+            leotherm.uiAlert(ancestor(panel.Tab,'figure'),panel.Language,text,panel.t('数据预检','Data preflight'),'Icon',icon);
         end
-        function build(panel, parent)
-            panel.Tab = uitab(parent, 'Title', panel.t('遥测与验证', 'Telemetry and validation'));
+        function build(panel)
             layout = uigridlayout(panel.Tab, [3,1]);
             layout.RowHeight = {38, '1x', 30}; layout.Padding = [12 10 12 5];
             toolbar = uigridlayout(layout, [1,5]);
@@ -268,7 +307,8 @@ classdef TelemetryPanel < handle
             runButton = panel.button(controls, panel.t('执行仿真或验证', 'Run simulation or comparison'), ...
                 @() panel.runUI);
             runButton.Layout.Row = 8; runButton.Layout.Column = [1 2];
-            runButton.Visible = 'off';
+            runButton.Visible = 'on';
+            runButton.Tag='RunTelemetryButton';
             panel.MappingTable = uitable(left, 'Data', cell(0,4), ...
                 'ColumnName', panel.t({'源数据列','物理量','热节点','单位'}, ...
                 {'Source column','Quantity','Thermal node','Unit'}), ...
@@ -304,6 +344,7 @@ classdef TelemetryPanel < handle
 
         function invalidateResults(panel)
             panel.State.result = []; panel.State.report = []; panel.State.data = [];
+            if ~panel.UIReady, return; end
             for ax = panel.Axes(:)', cla(ax); end
             panel.MetricsTable.Data = table; panel.AuditTable.Data = table;
             panel.updateStatus;
@@ -327,12 +368,12 @@ classdef TelemetryPanel < handle
                     message = exception.message;
                 end
                 panel.StatusLabel.Text = message;
-                uialert(ancestor(panel.Tab, 'figure'), message, panel.t('遥测操作失败', 'Telemetry operation failed'));
+                leotherm.uiAlert(ancestor(panel.Tab, 'figure'),panel.Language, message, panel.t('遥测操作失败', 'Telemetry operation failed'));
             end
         end
 
         function importUI(panel)
-            [file, folder] = uigetfile('*.csv', panel.t('选择遥测数据', 'Select telemetry data'));
+            [file, folder] = leotherm.uiFileDialog(ancestor(panel.Tab,'figure'),@uigetfile,'*.csv', panel.t('选择遥测数据', 'Select telemetry data'));
             if isequal(file, 0), return; end
             panel.importSource(fullfile(folder, file));
         end
@@ -361,9 +402,10 @@ classdef TelemetryPanel < handle
                 if isempty(choice) || strcmp(choice, cancel), return; end
                 includeBoundary = strcmp(choice, yes);
             end
-            [file, folder] = uiputfile('*.csv', panel.t('保存遥测模板', 'Save telemetry template'), 'telemetry_template.csv');
+            [file, folder] = leotherm.uiFileDialog(ancestor(panel.Tab,'figure'),@uiputfile,'*.csv', panel.t('保存遥测模板', 'Save telemetry template'), 'telemetry_template.csv');
             if isequal(file, 0), return; end
             model = panel.ModelProvider();
+            file=leotherm.englishArtifactFilename(file,'telemetry_template.csv');
             leotherm.writeTelemetryTemplate(fullfile(folder,file), model.network, panel.Mode.Value, includeBoundary);
             panel.StatusLabel.Text = panel.t('空模板已导出', 'Empty template exported');
         end
@@ -381,7 +423,7 @@ classdef TelemetryPanel < handle
         end
 
         function exportUI(panel)
-            folder = uigetdir(pwd, panel.t('选择导出目录', 'Select export directory'));
+            folder = leotherm.uiFileDialog(ancestor(panel.Tab,'figure'),@uigetdir,pwd, panel.t('选择导出目录', 'Select export directory'));
             if isequal(folder, 0), return; end
             target = fullfile(folder, ['telemetry_' datestr(now, 'yyyymmdd_HHMMSS')]);
             panel.exportResults(target);
@@ -389,13 +431,14 @@ classdef TelemetryPanel < handle
         end
 
         function saveMappingUI(panel)
-            [file,folder] = uiputfile('*.csv', panel.t('保存列映射', 'Save column mapping'), 'telemetry_mapping.csv');
+            [file,folder] = leotherm.uiFileDialog(ancestor(panel.Tab,'figure'),@uiputfile,'*.csv', panel.t('保存列映射', 'Save column mapping'), 'telemetry_mapping.csv');
             if isequal(file,0), return; end
+            file=leotherm.englishArtifactFilename(file,'telemetry_mapping.csv');
             writetable(panel.State.mapping, fullfile(folder,file));
         end
 
         function loadMappingUI(panel)
-            [file,folder] = uigetfile('*.csv', panel.t('读取列映射', 'Load column mapping'));
+            [file,folder] = leotherm.uiFileDialog(ancestor(panel.Tab,'figure'),@uigetfile,'*.csv', panel.t('读取列映射', 'Load column mapping'));
             if isequal(file,0), return; end
             mapping = readtable(fullfile(folder,file), 'TextType','string');
             mapping = panel.normalizeMapping(mapping);
@@ -410,7 +453,12 @@ classdef TelemetryPanel < handle
         end
 
         function syncMapping(panel)
-            if isempty(panel.State.source), return; end
+            if ~panel.UIReady, return; end
+            if isempty(panel.State.source)
+                panel.MappingTable.Data = cell(0,4);
+                panel.FileLabel.Text = panel.t('尚未载入遥测', 'No telemetry loaded');
+                return
+            end
             [targets, targetLabels, units, unitLabels] = panel.mappingVocabulary;
             nodeNames = panel.State.nodeNames;
             nodes = [{panel.t('无', 'None')}, leotherm.nodeDisplayNames(nodeNames, panel.Language)];
@@ -484,6 +532,7 @@ classdef TelemetryPanel < handle
         end
 
         function options = collectOptions(panel)
+            if ~panel.UIReady, options = panel.State.options; return; end
             options = leotherm.telemetryOptions;
             options.mode = panel.Mode.Value;
             if strcmp(options.mode,'validation'), options.mode = 'orbit'; end
@@ -495,6 +544,7 @@ classdef TelemetryPanel < handle
         end
 
         function syncOptions(panel, options)
+            if ~panel.UIReady, return; end
             if ~strcmp(panel.Mode.Value, 'validation'), panel.Mode.Value = options.mode; end
             panel.FrameConfirmed.Value = strcmp(options.frame, 'J2000_ECI');
             panel.MaxGap.Value = options.maxGapS; panel.MaxStep.Value = options.maxStepS;
@@ -505,13 +555,14 @@ classdef TelemetryPanel < handle
         end
 
         function syncNodes(panel, network, selected)
+            if ~panel.UIReady, return; end
             panel.NodePicker.Items = leotherm.nodeDisplayNames(network.nodeNames, panel.Language);
             panel.NodePicker.ItemsData = network.nodeNames;
             if any(strcmp(network.nodeNames, selected)), panel.NodePicker.Value = selected; end
         end
 
         function draw(panel)
-            if isempty(panel.State.result), return; end
+            if ~panel.UIReady || isempty(panel.State.result), return; end
             leotherm.drawTelemetry(panel.Axes, panel.State.result, panel.State.report, ...
                 panel.NodePicker.Value, panel.Language);
             metrics = panel.State.report.metrics;
@@ -553,6 +604,7 @@ classdef TelemetryPanel < handle
         end
 
         function updateStatus(panel)
+            if ~panel.UIReady, return; end
             if isempty(panel.State.result)
                 panel.StatusLabel.Text = panel.t('尚未运行；请确认列映射与单位', ...
                     'Not run; column mapping and units await confirmation');

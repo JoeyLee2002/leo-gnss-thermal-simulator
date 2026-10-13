@@ -14,8 +14,11 @@ network = result.network;
 [temperatureNodes, temperatureLabels] = resolveTemperatureNodes(network, language);
 
 s = leotherm.thermalFigureStyle(language);
-figureHandle = figure('Color', 'w', 'Units','centimeters', ...
-    'Position', [2, 2, s.widthCm, 22]);
+windowCleanup=[];
+if nargout==0, windowCleanup=leotherm.preserveAppWindows; end
+figureHandle = figure('Visible','off','Color', 'w', 'Units','centimeters', ...
+    'Position', [2, 2, s.widthCm, 22],'Tag','ScenarioExportFigure');
+try
 tiledlayout(4, 1, 'TileSpacing', 'compact', 'Padding', 'compact');
 
 nexttile
@@ -70,9 +73,15 @@ legend('Location', 'eastoutside');
 plotAxes = findall(figureHandle, 'Type', 'axes');
 for k = 1:numel(plotAxes), plotAxes(k).Toolbar.Visible = 'off'; end
 leotherm.exportThermalFigure(figureHandle, outputPath, language);
+catch exception
+    delete(figureHandle); rethrow(exception);
+end
 if nargout == 0
     close(figureHandle);
+else
+    figureHandle.Visible='on';
 end
+if ~isempty(windowCleanup), delete(windowCleanup); end
 end
 
 function [indices, labels] = resolveTemperatureNodes(network, language)

@@ -1,6 +1,7 @@
-function manifest=writeThermalPublicationFigures(items, directory, language)
+function manifest=writeThermalPublicationFigures(items, directory, language, progress)
 %WRITETHERMALPUBLICATIONFIGURES Native chart groups shared by reports and papers.
 % Uses exactly the same chart arrays and renderer as individual report figures.
+if nargin<4, progress=[]; end
 groups={ 'model_inputs', {'capacity','optics'}; ...
     'environment', {'illumination','heat_inputs'}; ...
     'temperature_response', {'temperatures','initial_state'}; ...
@@ -28,6 +29,8 @@ for k=1:size(groups,1)
     end
     if numel(charts)==1, charts.panelLabel=''; end
     item=items(at(1)); item.charts=charts;
+    leotherm.notifyProgress(progress,'report_figures',k-1,size(groups,1), ...
+        ['导出论文图形：' groups{k,1}],['Exporting publication figure: ' groups{k,1}]);
     stem=['publication_' groups{k,1} '_' language];
     leotherm.plotThermalReportDetail(item,fullfile(directory,[stem '.png']),language);
     save(fullfile(directory,[stem '_source.mat']),'item');

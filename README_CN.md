@@ -1,6 +1,16 @@
 # 低轨卫星热仿真工作台
 
-**论文公开版本 v1.2.10：** 中英文指标名称统一；论文参考任务、36工况、步长加密和分析报告可一次运行。见[最新使用教程](docs/使用教程_v1.2.10.md)、[论文复现步骤](docs/论文结果复现_v1.2.10.md)和[中英文视频教程](tutorial/v1_2_10/README.md)。[v1.2.10 标签](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/tree/v1.2.10)固定论文使用的源码；原始36工况数据保留在 v1.2.9-sweep36.1。
+**当前发行版：[LEOTherm v1.5](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.5)。**
+
+下载[带图解手册的 Windows 发行包](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/download/v1.5/LEOTherm_1.5_windows_release_illustrated.zip)，完整解压，先打开 `START_HERE.html`，再运行 `LEOTherm.exe`。需要另行安装免费的 **MATLAB Runtime R2021b**，无需 MATLAB 许可证；发行包不包含 Runtime。
+
+[中文图解用户手册](docs/usage_v1.5_zh.md) · [English User Manual](docs/quickstart_v1.5.md) · [中文论文复现](docs/reproduce_paper_v1.5_zh.md) · [English Paper Reproduction](docs/reproduce_paper_v1.5.md)
+
+用户手册每种语言有13幅标注图，论文复现各有4幅；包内同时提供离线 HTML 和 PDF。页面自己的按钮只计算当前模块，上方完整任务区执行所选阶段并生成报告。见[发行验证记录](docs/verification_v1.5_release.md)与[图解手册补丁说明](patches/PATCH_v1.5_illustrated_manuals.md)。
+
+v1.5 提供中英文进度、协作式停止与关闭、英文生成文件名、文件选择框后的窗口恢复及隐藏报告绘图。发行记录包括444项完成的测试、7个直接 Runtime 检查模式和40个论文求解任务；MATLAB 开发环境的退出异常单独记录，不计作通过。
+
+高级页面与图表按需加载。图解包的可执行程序与实测版逐字节一致，没有删除或修改 Runtime 文件。
 
 ## 当前版本怎么用
 
@@ -8,16 +18,16 @@
 图形界面：快速开始选择“复现论文：参考任务与36工况”，点击“复现论文并生成报告”，选择保存位置即可。
 Windows程序需免费的MATLAB Runtime R2021b，不需要MATLAB许可证。
 
-[中文示例报告](examples/reports/thermal_report_v1.2.10_zh.pdf) · [English report](examples/reports/thermal_report_v1.2.10_en.pdf) · [术语和指标定义](docs/术语与指标.md) · [本版补丁](patches/PATCH_v1.2.10.md) · [本版测试记录](docs/verification_v1.2.10.md)
+[中文示例报告](examples/reports/thermal_report_v1.5_zh.pdf) · [English report](examples/reports/thermal_report_v1.5_en.pdf) · [术语和指标定义](docs/术语与指标.md) · [本版补丁](patches/PATCH_v1.5.md) · [本版测试记录](docs/verification_v1.5.md)
 
-## 公开发布与历史资料
+## 历史版本与资料
 
-**最新发布：[v1.2.10](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.10)。**
+[v1.2.10 标签](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/tree/v1.2.10)及381项测试记录继续原样保留。新运行使用 v1.5 及其图解说明；旧源码、研究数据和发行版均保留，便于追溯。
 在发布页 Assets 中下载 Windows 应用包，配合免费的 MATLAB Runtime R2021b 使用。
 不需要购买 MATLAB；已有兼容 Runtime 无需重装。
 旧免安装整包仍为 1.2.1，不是本次新版；其[使用说明](docs/免安装版使用.md)保留供旧版用户参考。
 
-**第一次使用：**[v1.2.10 中文使用教程](docs/使用教程_v1.2.10.md) ·
+**历史 v1.2.10 资料：**[中文使用教程](docs/使用教程_v1.2.10.md) ·
 [English guide](docs/quickstart_v1.2.10.md) ·
 [下载 Windows 独立版 v1.2.10](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/download/v1.2.10/LEOTherm_1.2.10_windows.zip)。
 独立版不需要购买 MATLAB，但必须安装免费的 MATLAB Runtime R2021b；

@@ -1,0 +1,6 @@
+outcome=complete
+version=1.5
+task_id=da81de4d-edad-4ab9-8966-53fae2006e5b
+pdf=C:\LEOTherm_Focus_Test_v1_5_release\completion\report\thermal_report_en.pdf
+window_requested=maximized
+window_observed=maximized

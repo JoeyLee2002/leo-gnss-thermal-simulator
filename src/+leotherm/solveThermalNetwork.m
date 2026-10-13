@@ -1,6 +1,7 @@
-function [temperatureK, diagnostics] = solveThermalNetwork(timeS, externalW, network, environment, limits, forcing)
+function [temperatureK, diagnostics] = solveThermalNetwork(timeS, externalW, network, environment, limits, forcing, progress)
 %SOLVETHERMALNETWORK Error-controlled RK4 with sampled forcing kept intact.
 
+if nargin<7, progress=[]; end
 leotherm.validateNetwork(network);
 timeS = timeS(:);
 if ~isnumeric(timeS) || numel(timeS) < 2 || any(~isfinite(timeS)) ...
@@ -96,6 +97,7 @@ diagnostics.integratedRadiatedHeatJ = zeros(nEpoch,1);
 diagnostics.integratedBoundaryHeatJ = zeros(nEpoch,1);
 diagnostics.energyClosureResidualJ = zeros(nEpoch,1);
 
+progressClock=tic;
 for k = 1:(nEpoch - 1)
     dt = timeS(k + 1) - timeS(k);
     q0 = externalW(k, :)';
@@ -121,6 +123,12 @@ for k = 1:(nEpoch - 1)
     rhs = @(y,u) derivative(y,(1-u/dt)*q0+(u/dt)*q1, ...
         (1-u/dt)*p0+(u/dt)*p1,laplacian,emission,capacity,spaceFourth,boundaryG,boundaryGT);
     while elapsed < dt
+        if ~isempty(progress) && (k==1 && elapsed==0 || toc(progressClock)>=0.25)
+            leotherm.notifyProgress(progress,'integrating',k-1,nEpoch-1, ...
+                sprintf('热求解：%d / %d 个输出区间；模拟时刻 %.1f s。',k-1,nEpoch-1,timeS(k)+elapsed), ...
+                sprintf('Thermal solution: %d / %d output intervals; model time %.1f s.',k-1,nEpoch-1,timeS(k)+elapsed));
+            progressClock=tic;
+        end
         h = min([h,dt-elapsed,effectiveStepS]);
         if h <= eps(max(1,abs(timeS(k)+elapsed))) ...
                 || diagnostics.acceptedSteps + diagnostics.rejectedSteps >= maximumSteps
@@ -165,6 +173,8 @@ for k = 1:(nEpoch - 1)
     closure = abs(closureResidual);
     diagnostics.maximumEnergyClosureJ = max(diagnostics.maximumEnergyClosureJ,closure);
 end
+leotherm.notifyProgress(progress,'integrating',nEpoch-1,nEpoch-1, ...
+    '本段热求解完成。','Thermal solution for this segment complete.');
 diagnostics.energyClosureNote = ['Independent RK-stage ledger: stored-energy change is compared with ' ...
     'external + internal - radiated + boundary heat. This checks accounting only; ' ...
     'forcing-grid convergence and physical parameter validation remain separate.'];

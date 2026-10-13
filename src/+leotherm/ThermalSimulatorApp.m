@@ -66,6 +66,7 @@ classdef ThermalSimulatorApp < handle
         UseConvergence
         RunScenarioButton
         ScenarioAxes
+        ScenarioPlotGrid
 
         ScanMode
         ScanAltitudeList
@@ -76,6 +77,7 @@ classdef ThermalSimulatorApp < handle
         ScanRaanList
         RunSweepButton
         SweepAxes
+        SweepPlotGrid
         SweepTable
 
         NetworkPreset
@@ -162,6 +164,10 @@ classdef ThermalSimulatorApp < handle
         Language = 'en'
         IsBusy = false
         ProgressDialog
+        CancelOperationRequested = false
+        CloseAfterOperation = false
+        OperationStarted = []
+        OperationProgress = []
     end
 
     methods
@@ -265,6 +271,38 @@ classdef ThermalSimulatorApp < handle
             state.task.template = app.ActiveTemplateSnapshot;
         end
 
+        function prepareWorkspace(app, name)
+            %PREPAREWORKSPACE Load one page without changing its task inputs.
+            windowCleanup = leotherm.preserveAppWindows;
+            switch lower(char(name))
+                case 'scenario'
+                    app.ensurePlotAxes('scenario');
+                case 'sweep'
+                    app.ensurePlotAxes('sweep');
+                case 'geometry'
+                    if isempty(app.MeshAxes) || ~isvalid(app.MeshAxes)
+                        app.createGeometryTab;
+                        if ~isempty(app.CurrentGeometry) && isfield(app.CurrentGeometry,'radiationSide')
+                            app.MeshRadiationSide.Value = app.CurrentGeometry.radiationSide;
+                        end
+                        app.updateMeshUI;
+                    end
+                case 'thermal_model'
+                    if isempty(app.ThermalModelStatusLabel) || ~isvalid(app.ThermalModelStatusLabel)
+                        app.createThermalModelTab;
+                        app.updateThermalModelUI;
+                    end
+                case 'telemetry'
+                    app.TelemetryWorkspace.ensureUI;
+                case 'calibration'
+                    app.CalibrationWorkspace.ensureUI;
+                otherwise
+                    error('leotherm:WorkspacePage','Unknown workspace page: %s',char(name));
+            end
+            drawnow;
+            delete(windowCleanup);
+        end
+
         function setLanguage(app, language)
             %SETLANGUAGE Rebuild all visible controls in one language.
             language = leotherm.normalizeLanguage(language);
@@ -286,7 +324,9 @@ classdef ThermalSimulatorApp < handle
             end
             leotherm.validateScenario(scenario);
             leotherm.validateNetwork(network);
-            result = leotherm.simulateScenario(scenario, network);
+            progress=[];
+            if app.IsBusy, progress=@(event)app.operationProgress(event); end
+            result = leotherm.simulateScenario(scenario, network,progress);
             result.geometry = app.CurrentGeometry;
             task = leotherm.createSimulationTask(scenario, network, ...
                 app.TelemetryWorkspace.getState, app.CalibrationWorkspace.getState, ...
@@ -294,6 +334,7 @@ classdef ThermalSimulatorApp < handle
             snapshot = leotherm.freezeSimulationTask(task);
             result.taskId = snapshot.taskId;
             result.taskInputFingerprint = snapshot.inputFingerprint;
+            windowCleanup = leotherm.preserveAppWindows;
                 app.CurrentScenario = scenario;
                 app.CurrentNetwork = network;
             app.CurrentResult = result;
@@ -304,6 +345,8 @@ classdef ThermalSimulatorApp < handle
             app.syncNetworkControls;
             app.updateScenarioPlots;
             app.updateResultSummary;
+            drawnow;
+            delete(windowCleanup);
         end
 
         function summary = runSweep(app, mode, scenario, network, varargin)
@@ -330,6 +373,7 @@ classdef ThermalSimulatorApp < handle
                     error('leotherm:InvalidSweepInput', ...
                         'Sweep mode must be beta_altitude or physical.');
             end
+            windowCleanup = leotherm.preserveAppWindows;
                 app.CurrentScenario = scenario;
                 app.CurrentNetwork = network;
             app.CurrentSweep = summary;
@@ -346,6 +390,8 @@ classdef ThermalSimulatorApp < handle
             app.recordTaskRun(snapshot, 'sweep', 'complete');
             app.updateSweepPlots;
             app.updateResultSummary;
+            drawnow;
+            delete(windowCleanup);
         end
 
         function mesh = loadSurfaceMesh(app, filePath, unitScale)
@@ -394,6 +440,7 @@ classdef ThermalSimulatorApp < handle
         end
 
         function result = runSurfaceVolume(app, scenario, material, options)
+            app.prepareWorkspace('geometry');
             %RUNSURFACEVOLUME Run and retain the public coupled 3-D workflow.
             if nargin < 2 || isempty(scenario), scenario = app.collectScenario; end
             if nargin < 3 || isempty(material)
@@ -809,7 +856,62 @@ classdef ThermalSimulatorApp < handle
             end
             task = app.buildPipelineTask;
             run = leotherm.runThermalPipeline(task, outputDirectory);
+            windowCleanup = leotherm.preserveAppWindows;
             app.adoptPipelineRun(run);
+            drawnow;
+            delete(windowCleanup);
+        end
+
+        function study = runPaperTask(app, outputDirectory, openReport)
+            %RUNPAPERTASK GUI and scripted callers share progress and stopping.
+            if nargin<3, openReport=true; end
+            if app.IsBusy, error('leotherm:ProjectBusy','Wait for the current operation.'); end
+            study=[];
+            app.setBusy(true,app.t('正在准备论文复现任务...','Preparing the paper study...'));
+            cleanup=onCleanup(@() app.finishOperation);
+            try
+                app.ProgressDialog=leotherm.OperationProgressDialog(app.Figure,app.Language,'CancelFcn',@()app.stopOperation(false), ...
+                    'Title',app.t('论文实验运行进度','Paper study progress'), ...
+                    'Message',app.t('参考任务、36 工况、3 个步长加密算例和报告。', ...
+                    'Reference task, 36 cases, three refinements and reports.'), ...
+                    'Cancelable','on','CancelText',app.t('停止计算','Stop computation'), ...
+                    'Indeterminate','on');
+                drawnow;
+                study=leotherm.runPaperStudy(outputDirectory,app.Language,@(event)app.operationProgress(event));
+                app.setStatus(sprintf(app.t('论文复现完成，报告：%s','Paper study complete; report: %s'), ...
+                    fullfile(outputDirectory,'report',['thermal_report_' app.Language '.pdf'])));
+            catch exception
+                if ~strcmp(exception.identifier,'leotherm:OperationCancelled'), rethrow(exception); end
+                app.setStatus(app.t('计算已停止；已保存的工况保留，任务未标记为完成。', ...
+                    'Computation stopped; saved cases retained, task not marked complete.'));
+            end
+            shouldOpen=~isempty(study) && openReport && ~app.CloseAfterOperation;
+            language=app.Language;
+            clear cleanup
+            if shouldOpen, winopen(fullfile(outputDirectory,'report',['thermal_report_' language '.pdf'])); end
+        end
+
+        function stopOperation(app, closeAfter)
+            %STOPOPERATION Request a checkpoint stop without killing MATLAB.
+            if nargin<2, closeAfter=false; end
+            if ~app.IsBusy, return; end
+            app.CancelOperationRequested=true;
+            app.CloseAfterOperation=app.CloseAfterOperation || closeAfter;
+            if ~isempty(app.ProgressDialog) && isvalid(app.ProgressDialog)
+                app.ProgressDialog.CancelRequested=true;
+                app.ProgressDialog.Message=app.t('正在停止并保存任务状态...','Stopping and recording task status...');
+            end
+            app.setStatus(app.t('正在停止计算...','Stopping computation...'));
+        end
+
+        function state = getOperationState(app)
+            %GETOPERATIONSTATE Read transient operation progress, not model data.
+            state=struct('busy',app.IsBusy,'cancelRequested',app.CancelOperationRequested, ...
+                'closeRequested',app.CloseAfterOperation,'progress',app.OperationProgress);
+            state.dialog=[];
+            if ~isempty(app.ProgressDialog) && isvalid(app.ProgressDialog)
+                state.dialog=app.ProgressDialog.getDisplayState;
+            end
         end
     end
 
@@ -971,7 +1073,35 @@ classdef ThermalSimulatorApp < handle
             app.ProgressDialog.Message=sprintf(app.t('已处理 %d / %d 个工况。取消会在当前工况结束后生效。', ...
                 'Processed %d / %d cases. Cancellation takes effect between cases.'),done,total);
             drawnow;
-            cancelled=app.ProgressDialog.CancelRequested;
+            cancelled=app.ProgressDialog.CancelRequested || app.CancelOperationRequested;
+        end
+
+        function cancelled = operationProgress(app,event)
+            app.OperationProgress=event;
+            elapsed=toc(app.OperationStarted);
+            message=app.t(event.messageZh,event.messageEn);
+            if isfield(event,'contextEn')
+                context=app.t(event.contextZh,event.contextEn);
+                message=[context newline message];
+            end
+            message=[message newline sprintf(app.t('已运行 %.1f 秒。','Elapsed %.1f s.'),elapsed)];
+            if ~isempty(app.ProgressDialog) && isvalid(app.ProgressDialog)
+                if isfield(event,'solveJobsCompleted') && ~startsWith(event.stage,'report')
+                    app.ProgressDialog.Indeterminate='off';
+                    app.ProgressDialog.Value=event.solveJobsCompleted/event.solveJobsTotal;
+                    message=[message newline sprintf(app.t('已完成 %d / %d 个热求解任务。', ...
+                        'Completed %d / %d thermal-solution jobs.'),event.solveJobsCompleted,event.solveJobsTotal)];
+                else
+                    app.ProgressDialog.Indeterminate='on';
+                end
+                app.ProgressDialog.Message=message;
+            end
+            app.setStatus(strrep(message,newline,' | '));
+            drawnow limitrate
+            cancelled=app.CancelOperationRequested;
+            if ~isempty(app.ProgressDialog) && isvalid(app.ProgressDialog)
+                cancelled=cancelled || app.ProgressDialog.CancelRequested;
+            end
         end
 
         function applyWorkspaceState(app,state)
@@ -1032,8 +1162,9 @@ classdef ThermalSimulatorApp < handle
             try
                 path=app.ProjectPath;
                 if saveAs || isempty(path)
-                    [file,folder]=uiputfile('*.mat',app.t('保存完整项目','Save complete project'),'leotherm_project.mat');
+                    [file,folder]=leotherm.uiFileDialog(app.Figure,@uiputfile,'*.mat',app.t('保存完整项目','Save complete project'),'leotherm_project.mat');
                     if isequal(file,0), return; end
+                    file=leotherm.englishArtifactFilename(file,'leotherm_project.mat');
                     path=fullfile(folder,file);
                 end
                 app.saveProject(path,true);
@@ -1059,8 +1190,7 @@ classdef ThermalSimulatorApp < handle
 
         function requestClose(app)
             if app.IsBusy
-                uialert(app.Figure,app.t('计算正在进行，请在完成后关闭窗口。','An operation is running. Close the window after it finishes.'), ...
-                    app.t('正在运行','Operation running'));
+                app.stopOperation(true);
                 return
             end
             if app.confirmLeave, delete(app); end
@@ -1070,7 +1200,7 @@ classdef ThermalSimulatorApp < handle
             if app.IsBusy, return; end
             try
                 if ~app.confirmLeave, return; end
-                [file,folder]=uigetfile('*.mat',app.t('打开完整项目','Open complete project'));
+                [file,folder]=leotherm.uiFileDialog(app.Figure,@uigetfile,'*.mat',app.t('打开完整项目','Open complete project'));
                 if isequal(file,0), return; end
                 app.loadProject(fullfile(folder,file));
                 app.setStatus([app.t('项目已恢复：','Project restored: ') file]);
@@ -1083,7 +1213,7 @@ classdef ThermalSimulatorApp < handle
             app.Figure = uifigure('Name', app.t('低轨卫星热仿真工作台', ...
                 'LEO Thermal Simulation Workbench'), ...
                 'Position', [80, 60, 1380, 860], ...
-                'Color', [0.96, 0.97, 0.97], 'Visible', visibility, ...
+                'Color', [0.96, 0.97, 0.97], 'Visible', visibility, 'Tag','LEOThermMainWindow', ...
                 'CloseRequestFcn', @(~, ~) app.requestClose);
             app.RootGrid = uigridlayout(app.Figure, [4, 1]);
             app.RootGrid.RowHeight = {58, 30, '1x', 30};
@@ -1107,14 +1237,17 @@ classdef ThermalSimulatorApp < handle
             app.createScenarioTab;
             app.createSweepTab;
             app.createNetworkTab;
-            app.createGeometryTab;
-            app.createThermalModelTab;
+            app.MeshAxes = [];
+            app.ThermalModelStatusLabel = [];
+            app.GeometryTab = uitab(app.TabGroup,'Title',app.t('三维几何','3-D geometry'));
+            app.ThermalModelTab = uitab(app.TabGroup, ...
+                'Title',app.t('工程热模型','Engineering thermal model'));
             app.TelemetryWorkspace = leotherm.TelemetryPanel(app.TabGroup, app.Language, ...
-                @() app.telemetryModel, @(value, message) app.setBusy(value, message));
+                @() app.telemetryModel, @(value, message) app.setBusy(value, message), true);
             app.createResultsTab;
             app.CalibrationWorkspace = leotherm.CalibrationPanel(app.TabGroup, app.Language, ...
                 @() app.telemetryModel, @() app.TelemetryWorkspace.getState, ...
-                @(value, message) app.setBusy(value, message));
+                @(value, message) app.setBusy(value, message), true);
             app.TabGroup.SelectionChangedFcn = @(~,~) app.configTabChanged;
             app.MainTabGroup.SelectionChangedFcn = @(~,~) app.mainTabChanged;
             fileMenu = uimenu(app.Figure,'Text',app.t('项目','Project'));
@@ -1165,7 +1298,7 @@ classdef ThermalSimulatorApp < handle
             app.VersionLabel.Layout.Column = 2;
 
             app.LanguageDropdown = uidropdown(header, ...
-                'Items', {'中文', 'English'}, 'ItemsData', {'zh', 'en'}, ...
+                'Items', app.t({'中文','英语'},{'Chinese','English'}), 'ItemsData', {'zh', 'en'}, ...
                 'Value', app.Language, ...
                 'Tooltip', app.t('选择界面和图表语言', ...
                 'Select the interface and chart language'), ...
@@ -1194,9 +1327,9 @@ classdef ThermalSimulatorApp < handle
             task.BackgroundColor = [0.93, 0.96, 0.95];
 
             heading = uigridlayout(task, [1, 3]);
-            heading.ColumnWidth = {180, 170, '1x'};
+            heading.ColumnWidth = {190, 170, '1x'};
             heading.Padding = [0, 0, 0, 0];
-            uilabel(heading, 'Text', app.t('当前仿真任务', 'Current simulation task'), ...
+            uilabel(heading, 'Text', app.t('完整任务与报告', 'Complete task and report'), ...
                 'FontWeight', 'bold', 'FontSize', 14);
             app.TaskStatusLabel = uilabel(heading, 'Text', app.t('正在检查', 'Checking'), ...
                 'FontWeight', 'bold', 'Tag', 'TaskStatusLabel');
@@ -1236,12 +1369,12 @@ classdef ThermalSimulatorApp < handle
 
             actions = uigridlayout(task, [1, 3]);
             actions.Layout.Row = 4;
-            actions.ColumnWidth = {145, 160, '1x'};
+            actions.ColumnWidth = {170, 330, '1x'};
             actions.Padding = [0, 0, 0, 0];
-            app.TaskCheckButton = uibutton(actions, 'Text', app.t('检查任务', 'Check task'), ...
+            app.TaskCheckButton = uibutton(actions, 'Text', app.t('检查完整任务', 'Check complete task'), ...
                 'Tag', 'TaskCheckButton', 'ButtonPushedFcn', @(~,~) app.checkPipelineUI);
-            app.TaskRunButton = uibutton(actions, 'Text', app.t('运行任务', 'Run task'), ...
-                'FontWeight', 'bold', 'BackgroundColor', [0.12, 0.53, 0.46], ...
+            app.TaskRunButton = uibutton(actions, 'Text', app.t('运行完整任务并生成报告', 'Run complete task and generate report'), ...
+                'FontWeight', 'bold', 'BackgroundColor', [0.24, 0.34, 0.36], ...
                 'FontColor', [1, 1, 1], 'Tag', 'TaskRunButton', ...
                 'ButtonPushedFcn', @(~,~) app.runPipelineUI);
             app.TaskSweepButton = [];
@@ -1270,13 +1403,13 @@ classdef ThermalSimulatorApp < handle
             subtitle.VerticalAlignment = 'center';
 
             selection = uigridlayout(layout, [1, 2]);
-            selection.ColumnWidth = {170, 360};
+            selection.ColumnWidth = {170, 400};
             selection.Padding = [0, 0, 0, 0];
             uilabel(selection, 'Text', app.t('我要做什么', 'I want to'));
             app.QuickStartTemplate = uidropdown(selection, ...
-                'Items', app.t({'第一次仿真', '热滞后分析', '遥测验证', '复现论文：参考任务与36工况'}, ...
-                {'First simulation', 'Thermal-lag analysis', 'Telemetry validation', 'Paper: reference task and 36 cases'}), ...
-                'ItemsData', {'first', 'lag', 'telemetry', 'paper'}, 'Value', 'first', ...
+                'Items', app.t({'第一次仿真', '热滞后分析', '遥测验证', '复现论文：参考任务与36工况','当前配置与报告'}, ...
+                {'First simulation', 'Thermal-lag analysis', 'Telemetry validation', 'Paper: reference task and 36 cases','Current configuration and report'}), ...
+                'ItemsData', {'first', 'lag', 'telemetry', 'paper','current'}, 'Value', 'first', ...
                 'Tag', 'QuickStartTemplate', ...
                 'Tooltip', app.t('选择任务目标，不需要先理解所有模型参数。', ...
                 'Choose a task goal without learning every model parameter first.'), ...
@@ -1333,6 +1466,10 @@ classdef ThermalSimulatorApp < handle
                 return
             end
             switch app.QuickStartTemplate.Value
+                case 'current'
+                    app.QuickStartInfoLabel.Text=app.t('使用当前场景、热网络及勾选的阶段运行完整任务。', ...
+                        'Run the complete task using the current configuration and selected stages.');
+                    app.QuickStartRunButton.Text=app.t('运行完整任务并生成报告','Run complete task and report');
                 case 'paper'
                     app.QuickStartInfoLabel.Text = app.t( ...
                         '自动运行论文参考任务、36工况和3个步长加密算例，并生成本次结果的报告。当前工作区设置不变。', ...
@@ -1444,14 +1581,14 @@ classdef ThermalSimulatorApp < handle
             app.placeControl(controls,app.EarthIRModel,19,'地球红外模型','Earth infrared model');
 
             app.RunScenarioButton = uibutton(sidebar, 'push', ...
-                'Text', app.t('运行单场景', 'Run scenario'), ...
+                'Text', app.t('运行单场景', 'Run single scenario'), 'Tag','RunScenarioButton', ...
                 'FontWeight', 'bold', ...
                 'BackgroundColor', [0.12, 0.53, 0.46], ...
                 'FontColor', [1, 1, 1], ...
                 'ButtonPushedFcn', @(~, ~) app.executeScenarioFromUI);
             app.RunScenarioButton.Layout.Row = 2;
             app.RunScenarioButton.Layout.Column = 1;
-            app.RunScenarioButton.Visible = 'off';
+            app.RunScenarioButton.Visible = 'on';
 
             scenarioInputs = {app.StartDate, app.StartTime, app.DurationHours, app.TimeStepS, ...
                 app.WarmupOrbits, app.AltitudeKm, app.InclinationDeg, app.RaanDeg, ...
@@ -1467,11 +1604,8 @@ classdef ThermalSimulatorApp < handle
             plotGrid.RowHeight = {'1x', '1x'};
             plotGrid.ColumnWidth = {'1x', '1x'};
             plotGrid.Padding = [4, 4, 4, 4];
-            app.ScenarioAxes = gobjects(4, 1);
-            for k = 1:4
-                app.ScenarioAxes(k) = uiaxes(plotGrid);
-                app.styleAxes(app.ScenarioAxes(k));
-            end
+            app.ScenarioPlotGrid = plotGrid;
+            app.ScenarioAxes = [];
         end
 
         function createSweepTab(app)
@@ -1481,9 +1615,13 @@ classdef ThermalSimulatorApp < handle
             layout.ColumnWidth = {370, '1x'};
             layout.Padding = [12, 12, 12, 12];
 
-            controls = uigridlayout(layout, [14, 2]);
+            sidebar=uigridlayout(layout,[2 1]);
+            sidebar.Layout.Column=1; sidebar.RowHeight={'1x',38};
+            sidebar.Padding=[0 0 0 0];
+            controls = uigridlayout(sidebar, [12, 2]);
+            controls.Layout.Row=1; controls.Scrollable='on';
             controls.ColumnWidth = {150, '1x'};
-            controls.RowHeight = repmat({30}, 1, 14);
+            controls.RowHeight = repmat({30}, 1, 12);
             controls.RowSpacing = 8;
             controls.Padding = [10, 8, 10, 8];
             app.ScanMode = uidropdown(controls, ...
@@ -1532,15 +1670,15 @@ classdef ThermalSimulatorApp < handle
                 'BackgroundColor', [0.94, 0.96, 0.95]);
             note.Layout.Row = [9, 11];
             note.Layout.Column = [1, 2];
-            app.RunSweepButton = uibutton(controls, 'push', ...
-                'Text', app.t('运行参数扫描', 'Run parameter sweep'), ...
+            app.RunSweepButton = uibutton(sidebar, 'push', ...
+                'Text', app.t('运行参数扫描', 'Run parameter sweep'), 'Tag','RunSweepButton', ...
                 'FontWeight', 'bold', ...
                 'BackgroundColor', [0.12, 0.53, 0.46], ...
                 'FontColor', [1, 1, 1], ...
                 'ButtonPushedFcn', @(~, ~) app.executeSweepFromUI);
-            app.RunSweepButton.Layout.Row = 13;
-            app.RunSweepButton.Layout.Column = [1, 2];
-            app.RunSweepButton.Visible = 'off';
+            app.RunSweepButton.Layout.Row = 2;
+            app.RunSweepButton.Layout.Column = 1;
+            app.RunSweepButton.Visible = 'on';
             scanInputs={app.ScanAltitudeList,app.ScanBetaList,app.ScanBranch, ...
                 app.ScanDateList,app.ScanInclinationList,app.ScanRaanList};
             for k=1:numel(scanInputs), scanInputs{k}.ValueChangedFcn=@(~,~)app.scanEdited; end
@@ -1550,11 +1688,8 @@ classdef ThermalSimulatorApp < handle
             output.RowHeight = {'1x', 210};
             charts = uigridlayout(output, [2, 2]);
             charts.Padding = [2, 2, 2, 2];
-            app.SweepAxes = gobjects(4, 1);
-            for k = 1:4
-                app.SweepAxes(k) = uiaxes(charts);
-                app.styleAxes(app.SweepAxes(k));
-            end
+            app.SweepPlotGrid = charts;
+            app.SweepAxes = [];
             app.SweepTable = uitable(output, 'Data', table);
             app.SweepTable.Layout.Row = 2;
         end
@@ -1633,10 +1768,8 @@ classdef ThermalSimulatorApp < handle
         end
 
         function createGeometryTab(app)
-            app.GeometryTab = uitab(app.TabGroup, ...
-                'Title', app.t('三维几何', '3-D geometry'));
-            layout = uigridlayout(app.GeometryTab, [3, 1]);
-            layout.RowHeight = {48, 42, '1x'};
+            layout = uigridlayout(app.GeometryTab, [4, 1]);
+            layout.RowHeight = {48, 42, 38, '1x'};
             layout.Padding = [12, 12, 12, 12];
 
             toolbar = uigridlayout(layout, [1, 12]);
@@ -1670,7 +1803,7 @@ classdef ThermalSimulatorApp < handle
                 'ButtonPushedFcn', @(~,~) app.previewMeshUI);
             app.MeshPreviewButton.Layout.Column = 5;
             app.MeshThermalRunButton = uibutton(toolbar, 'push', ...
-                'Text', app.t('运行面片热仿真', 'Run face thermal simulation'), ...
+                'Text', app.t('运行面片热仿真', 'Run face thermal simulation'), 'Tag','RunSurfaceButton', ...
                 'ButtonPushedFcn', @(~,~) app.runMeshThermalUI);
             app.MeshThermalRunButton.Layout.Column = 6;
             app.MeshThermalRunButton.Visible = 'off';
@@ -1717,7 +1850,7 @@ classdef ThermalSimulatorApp < handle
                 'ValueChangedFcn', @(~,~) app.volumeParameterChanged);
             app.VolumeSpecificHeat.Layout.Column = 7;
             app.VolumeRunButton = uibutton(volume, 'push', ...
-                'Text', app.t('运行体导热', 'Run volume conduction'), ...
+                'Text', app.t('运行体导热', 'Run volume conduction'), 'Tag','RunVolumeButton', ...
                 'ButtonPushedFcn', @(~,~) app.runVolumeThermalUI);
             app.VolumeRunButton.Layout.Column = 8;
             app.VolumeRunButton.Visible = 'off';
@@ -1735,8 +1868,19 @@ classdef ThermalSimulatorApp < handle
                 app.t('未载入体网格', 'No volume mesh loaded'), 'FontWeight', 'bold');
             app.VolumeStatusLabel.Layout.Column = 11;
 
+            moduleActions=uigridlayout(layout,[1 3]);
+            moduleActions.Layout.Row=3;
+            moduleActions.ColumnWidth={'1x','1x','1x'};
+            moduleActions.Padding=[0 0 0 0];
+            localButtons={app.MeshThermalRunButton,app.VolumeRunButton,app.CoupledRunButton};
+            for index=1:3
+                localButtons{index}.Parent=moduleActions;
+                localButtons{index}.Layout.Row=1;
+                localButtons{index}.Layout.Column=index;
+                localButtons{index}.Visible='on';
+            end
             content = uigridlayout(layout, [1, 2]);
-            content.Layout.Row = 3;
+            content.Layout.Row = 4;
             content.ColumnWidth = {'1.5x', '1x'};
             app.MeshAxes = uiaxes(content);
             app.MeshAxes.Layout.Column = 1;
@@ -1788,8 +1932,6 @@ classdef ThermalSimulatorApp < handle
 
         function createThermalModelTab(app)
             %CREATETHERMALMODELTAB Engineering thermal-model exchange entry point.
-            app.ThermalModelTab = uitab(app.TabGroup, ...
-                'Title', app.t('工程热模型', 'Engineering thermal model'));
             layout = uigridlayout(app.ThermalModelTab, [4, 1]);
             layout.RowHeight = {48, 44, '1x', 58};
             layout.Padding = [14, 14, 14, 14];
@@ -1885,6 +2027,27 @@ classdef ThermalSimulatorApp < handle
             axesHandle.Box = 'on';
         end
 
+        function ensurePlotAxes(app, name)
+            if strcmp(name,'scenario')
+                axesHandles = app.ScenarioAxes;
+                parent = app.ScenarioPlotGrid;
+            else
+                axesHandles = app.SweepAxes;
+                parent = app.SweepPlotGrid;
+            end
+            if ~isempty(axesHandles) && all(isvalid(axesHandles)), return; end
+            axesHandles = gobjects(4,1);
+            for index = 1:4
+                axesHandles(index) = uiaxes(parent);
+                app.styleAxes(axesHandles(index));
+            end
+            if strcmp(name,'scenario')
+                app.ScenarioAxes = axesHandles;
+            else
+                app.SweepAxes = axesHandles;
+            end
+        end
+
         function syncScenarioControls(app)
             scenario = app.CurrentScenario;
             value = scenario.startEpoch;
@@ -1950,11 +2113,11 @@ classdef ThermalSimulatorApp < handle
             try
                 scenario = app.collectScenario;
                 leotherm.validateNetwork(app.CurrentNetwork);
-                app.ProgressDialog = uiprogressdlg(app.Figure, ...
+                app.ProgressDialog = leotherm.OperationProgressDialog(app.Figure,app.Language,'CancelFcn',@()app.stopOperation(false), ...
                     'Title', app.t('单场景仿真', 'Single-scenario simulation'), ...
                     'Message', app.t('正在传播轨道、热流和多节点温度...', ...
                     'Propagating orbit, heat loads, and multi-node temperatures...'), ...
-                    'Indeterminate', 'on');
+                    'Indeterminate', 'on','Cancelable','on');
                 drawnow;
                 app.runScenario(scenario, app.CurrentNetwork);
                 app.setStatus(sprintf(app.t('单场景完成：%d个历元，β角 %.2f°', ...
@@ -1962,8 +2125,12 @@ classdef ThermalSimulatorApp < handle
                     numel(app.CurrentResult.timeS), ...
                     app.CurrentResult.metrics.meanBetaDeg));
             catch exception
-                app.showException(app.t('单场景计算失败', ...
-                    'Single-scenario computation failed'), exception);
+                if strcmp(exception.identifier,'leotherm:OperationCancelled')
+                    app.setStatus(app.t('单场景计算已停止。','Single-scenario computation stopped.'));
+                else
+                    app.showException(app.t('单场景计算失败', ...
+                        'Single-scenario computation failed'), exception);
+                end
             end
             clear cleanup
         end
@@ -1981,7 +2148,7 @@ classdef ThermalSimulatorApp < handle
                 altitudes = leotherm.parseNumericList( ...
                     app.ScanAltitudeList.Value, ...
                     app.t('轨道高度', 'orbit altitude'));
-                app.ProgressDialog = uiprogressdlg(app.Figure, ...
+                app.ProgressDialog = leotherm.OperationProgressDialog(app.Figure,app.Language,'CancelFcn',@()app.stopOperation(false), ...
                     'Title', app.t('参数扫描', 'Parameter sweep'), ...
                     'Message', app.t('正在逐个计算并保留失败状态...', ...
                     'Computing each case and retaining failure states...'), ...
@@ -2044,6 +2211,8 @@ classdef ThermalSimulatorApp < handle
             if isempty(result)
                 return
             end
+            windowCleanup = leotherm.preserveAppWindows;
+            app.ensurePlotAxes('scenario');
             timeHour = result.timeS / 3600;
             for k = 1:4
                 cla(app.ScenarioAxes(k));
@@ -2095,6 +2264,9 @@ classdef ThermalSimulatorApp < handle
             xlabel(app.ScenarioAxes(4), app.t('时间（h）', 'Time (h)'));
             ylabel(app.ScenarioAxes(4), app.t('偏差（m）', 'Bias (m)'));
             legend(app.ScenarioAxes(4), 'Location', 'best');
+            % First Web axes rendering can change the native owner state.
+            drawnow;
+            delete(windowCleanup);
         end
 
         function updateSweepPlots(app)
@@ -2105,6 +2277,8 @@ classdef ThermalSimulatorApp < handle
             if isempty(summary)
                 return
             end
+            windowCleanup = leotherm.preserveAppWindows;
+            app.ensurePlotAxes('sweep');
             valid = strcmp(summary.status, 'complete');
             if ismember('accessible', summary.Properties.VariableNames)
                 valid = valid & summary.accessible;
@@ -2113,6 +2287,8 @@ classdef ThermalSimulatorApp < handle
             if isempty(data)
                 for k=1:numel(app.SweepAxes), cla(app.SweepAxes(k)); end
                 app.updateSweepTable(summary(1:min(500,height(summary)),:));
+                drawnow;
+                delete(windowCleanup);
                 return
             end
             if ismember('actual_beta_deg', data.Properties.VariableNames)
@@ -2157,6 +2333,8 @@ classdef ThermalSimulatorApp < handle
             end
             displayRows = min(height(summary), 500);
             app.updateSweepTable(summary(1:displayRows, :));
+            drawnow;
+            delete(windowCleanup);
         end
 
         function updateResultSummary(app)
@@ -2512,7 +2690,7 @@ classdef ThermalSimulatorApp < handle
             app.TaskStatusLabel.FontColor = color;
             app.TaskSummaryLabel.Text = summary;
             app.TaskGuidanceLabel.Text = guidance;
-            app.TaskRunButton.Text = app.t('运行任务', 'Run task');
+            app.TaskRunButton.Text = app.t('运行完整任务并生成报告', 'Run complete task and generate report');
             app.TaskRunButton.Enable = app.onOff(ready && ~app.IsBusy);
             app.TaskCheckButton.Enable = app.onOff(~app.IsBusy);
             app.TaskResultsButton.Enable = app.onOff(~isempty(app.CurrentResult) ...
@@ -2705,7 +2883,7 @@ classdef ThermalSimulatorApp < handle
 
         function importThermalModelUI(app)
             if app.IsBusy, return; end
-            [file, folder] = uigetfile({'*.mat;*.json', ...
+            [file, folder] = leotherm.uiFileDialog(app.Figure,@uigetfile,{'*.mat;*.json', ...
                 app.t('工程热模型 (*.mat, *.json)', 'Engineering thermal model (*.mat, *.json)')}, ...
                 app.t('导入工程热模型', 'Import engineering thermal model'));
             if isequal(file, 0), return; end
@@ -2719,7 +2897,7 @@ classdef ThermalSimulatorApp < handle
 
         function importThermalModelMappingUI(app)
             if app.IsBusy || isempty(app.CurrentThermalModel), return; end
-            [file, folder] = uigetfile({'*.mat;*.json', ...
+            [file, folder] = leotherm.uiFileDialog(app.Figure,@uigetfile,{'*.mat;*.json', ...
                 app.t('显式映射 (*.mat, *.json)', 'Explicit mapping (*.mat, *.json)')}, ...
                 app.t('载入显式网络映射', 'Load explicit network mapping'));
             if isequal(file, 0), return; end
@@ -2734,9 +2912,10 @@ classdef ThermalSimulatorApp < handle
             if app.IsBusy || isempty(app.CurrentThermalModel), return; end
             try
                 mapping = app.generateThermalModelMappingTemplate;
-                [file, folder] = uiputfile({'*.json', 'JSON (*.json)'}, ...
+                [file, folder] = leotherm.uiFileDialog(app.Figure,@uiputfile,{'*.json', 'JSON (*.json)'}, ...
                     app.t('保存显式映射模板', 'Save explicit mapping template'), 'thermal_model_mapping.json');
                 if isequal(file, 0), return; end
+                file=leotherm.englishArtifactFilename(file,'thermal_model_mapping.json');
                 target = fullfile(folder, file);
                 fid = fopen(target, 'w', 'n', 'UTF-8');
                 if fid < 0, error('leotherm:NetworkMappingIO', 'Cannot create mapping template.'); end
@@ -2796,7 +2975,7 @@ classdef ThermalSimulatorApp < handle
                 return
             end
             extension = ['*.' lower(char(format))];
-            [file, folder] = uiputfile({extension, app.t( ...
+            [file, folder] = leotherm.uiFileDialog(app.Figure,@uiputfile,{extension, app.t( ...
                 sprintf('工程热模型 (*.%s)', lower(char(format))), ...
                 sprintf('Engineering thermal model (*.%s)', lower(char(format))))}, ...
                 app.t('导出工程热模型', 'Export engineering thermal model'), ...
@@ -2805,6 +2984,7 @@ classdef ThermalSimulatorApp < handle
             [~, ~, ext] = fileparts(file);
             if isempty(ext), file = [file extension(2:end)]; end
             try
+                file=leotherm.englishArtifactFilename(file,'thermal_model.mat');
                 app.saveThermalModel(fullfile(folder, file));
             catch exception
                 app.showException(app.t('工程热模型导出失败', ...
@@ -2850,7 +3030,7 @@ classdef ThermalSimulatorApp < handle
 
         function importMeshUI(app)
             if app.IsBusy, return; end
-            [file, folder] = uigetfile({'*.stl;*.obj', 'Surface mesh (*.stl, *.obj)'}, ...
+            [file, folder] = leotherm.uiFileDialog(app.Figure,@uigetfile,{'*.stl;*.obj', 'Surface mesh (*.stl, *.obj)'}, ...
                 app.t('选择卫星表面网格', 'Select spacecraft surface mesh'));
             if isequal(file, 0), return; end
             try
@@ -2863,7 +3043,7 @@ classdef ThermalSimulatorApp < handle
 
         function importVolumeMeshUI(app)
             if app.IsBusy, return; end
-            [file, folder] = uigetfile('*.msh', app.t('选择 Gmsh 体网格', 'Select Gmsh volume mesh'));
+            [file, folder] = leotherm.uiFileDialog(app.Figure,@uigetfile,'*.msh', app.t('选择 Gmsh 体网格', 'Select Gmsh volume mesh'));
             if isequal(file, 0), return; end
             try
                 app.loadVolumeMesh(fullfile(folder, file));
@@ -2876,7 +3056,7 @@ classdef ThermalSimulatorApp < handle
         function runVolumeThermalUI(app)
             if app.IsBusy, return; end
             if isempty(app.CurrentVolumeMesh)
-                uialert(app.Figure, app.t('请先导入 Gmsh 体网格。', 'Import a Gmsh volume mesh first.'), ...
+                leotherm.uiAlert(app.Figure,app.Language, app.t('请先导入 Gmsh 体网格。', 'Import a Gmsh volume mesh first.'), ...
                     app.t('没有体网格', 'No volume mesh'));
                 return
             end
@@ -2904,7 +3084,7 @@ classdef ThermalSimulatorApp < handle
         function runSurfaceVolumeUI(app)
             if app.IsBusy, return; end
             if isempty(app.CurrentGeometry) || isempty(app.CurrentVolumeMesh)
-                uialert(app.Figure, app.t( ...
+                leotherm.uiAlert(app.Figure,app.Language, app.t( ...
                     '请先同时导入 STL/OBJ 表面网格和 Gmsh 体网格。', ...
                     'Import both an STL/OBJ surface mesh and a Gmsh volume mesh first.'), ...
                     app.t('缺少耦合网格', 'Coupling meshes required'));
@@ -2953,7 +3133,7 @@ classdef ThermalSimulatorApp < handle
                 app.scalarText(app.fieldOrDefault(contact, 'conductanceWK', []), ''), ...
                 app.listText(app.fieldOrDefault(volumeThermal, 'fixedNodeIndices', [])), ...
                 app.scalarText(app.fieldOrDefault(volumeThermal, 'fixedTemperatureK', 293.15), '293.15')};
-            answer = inputdlg(prompt, app.t('耦合边界设置', 'Coupling boundary settings'), ...
+            answer = leotherm.uiInputDialog(app.Figure,app.Language,prompt, app.t('耦合边界设置', 'Coupling boundary settings'), ...
                 [1 1 1 1 1], defaults);
             if isempty(answer), return; end
             try
@@ -2970,11 +3150,12 @@ classdef ThermalSimulatorApp < handle
         end
 
         function previewMeshUI(app)
+            if isempty(app.MeshAxes) || ~isvalid(app.MeshAxes), return; end
             try
                 mode = app.MeshDisplayMode.Value;
                 if strcmp(mode, 'volume_temperature')
                     if isempty(app.CurrentVolumeResult)
-                        uialert(app.Figure, app.t('请先运行体网格导热。', ...
+                        leotherm.uiAlert(app.Figure,app.Language, app.t('请先运行体网格导热。', ...
                             'Run volume conduction first.'), app.t('没有体网格结果', 'No volume result'));
                         return
                     end
@@ -2987,7 +3168,7 @@ classdef ThermalSimulatorApp < handle
                 return
             end
             if isempty(app.CurrentGeometry)
-                uialert(app.Figure, app.t('请先导入 STL 或 OBJ 网格。', ...
+                leotherm.uiAlert(app.Figure,app.Language, app.t('请先导入 STL 或 OBJ 网格。', ...
                     'Import an STL or OBJ mesh first.'), app.t('没有网格', 'No mesh'));
                 return
             end
@@ -2996,7 +3177,7 @@ classdef ThermalSimulatorApp < handle
                 values = [];
                 if strcmp(mode, 'final_temperature')
                     if isempty(app.CurrentMeshResult) || app.meshResultIsStale
-                        uialert(app.Figure, app.t('请先运行面片热仿真。', ...
+                        leotherm.uiAlert(app.Figure,app.Language, app.t('请先运行面片热仿真。', ...
                             'Run a face thermal simulation first.'), app.t('没有面片结果', 'No face result'));
                         return
                     end
@@ -3066,7 +3247,7 @@ classdef ThermalSimulatorApp < handle
         function runMeshThermalUI(app)
             if app.IsBusy, return; end
             if isempty(app.CurrentGeometry)
-                uialert(app.Figure, app.t('请先导入 STL 或 OBJ 网格。', ...
+                leotherm.uiAlert(app.Figure,app.Language, app.t('请先导入 STL 或 OBJ 网格。', ...
                     'Import an STL or OBJ mesh first.'), app.t('没有网格', 'No mesh'));
                 return
             end
@@ -3164,10 +3345,11 @@ classdef ThermalSimulatorApp < handle
             try
                 result = app.CurrentVolumeResult;
                 material = result.model.material;
+                current = app.volumeMaterial;
                 stale = ~isequaln(result.mesh, app.CurrentVolumeMesh) ...
-                    || ~isequaln(material.conductivityWmK, app.VolumeConductivity.Value) ...
-                    || ~isequaln(material.densityKgM3, app.VolumeDensity.Value) ...
-                    || ~isequaln(material.specificHeatJkgK, app.VolumeSpecificHeat.Value);
+                    || ~isequaln(material.conductivityWmK, current.conductivityWmK) ...
+                    || ~isequaln(material.densityKgM3, current.densityKgM3) ...
+                    || ~isequaln(material.specificHeatJkgK, current.specificHeatJkgK);
             catch
                 stale = true;
             end
@@ -3179,12 +3361,13 @@ classdef ThermalSimulatorApp < handle
             try
                 result = app.CurrentSurfaceVolumeResult;
                 material = result.volume.model.material;
+                current = app.volumeMaterial;
                 stale = ~isequaln(result.scenario, app.collectScenario) ...
                     || ~isequaln(result.surfaceMesh, app.CurrentGeometry) ...
                     || ~isequaln(result.volumeMesh, app.CurrentVolumeMesh) ...
-                    || ~isequaln(material.conductivityWmK, app.VolumeConductivity.Value) ...
-                    || ~isequaln(material.densityKgM3, app.VolumeDensity.Value) ...
-                    || ~isequaln(material.specificHeatJkgK, app.VolumeSpecificHeat.Value);
+                    || ~isequaln(material.conductivityWmK, current.conductivityWmK) ...
+                    || ~isequaln(material.densityKgM3, current.densityKgM3) ...
+                    || ~isequaln(material.specificHeatJkgK, current.specificHeatJkgK);
             catch
                 stale = true;
             end
@@ -3195,6 +3378,15 @@ classdef ThermalSimulatorApp < handle
                 if flag, value = 'yes'; else, value = 'no'; end
             else
                 if flag, value = '是'; else, value = '否'; end
+            end
+        end
+
+        function material = volumeMaterial(app)
+            material = struct('conductivityWmK',1,'densityKgM3',1000,'specificHeatJkgK',1000);
+            if ~isempty(app.VolumeConductivity) && isvalid(app.VolumeConductivity)
+                material.conductivityWmK = app.VolumeConductivity.Value;
+                material.densityKgM3 = app.VolumeDensity.Value;
+                material.specificHeatJkgK = app.VolumeSpecificHeat.Value;
             end
         end
 
@@ -3268,9 +3460,9 @@ classdef ThermalSimulatorApp < handle
             app.updateTaskPanel;
             title = app.t('仿真配置检查', 'Simulation configuration check');
             if ready
-                uialert(app.Figure, message, title, 'Icon', 'success');
+                leotherm.uiAlert(app.Figure,app.Language, message, title, 'Icon', 'success');
             else
-                uialert(app.Figure, message, title, 'Icon', 'warning');
+                leotherm.uiAlert(app.Figure,app.Language, message, title, 'Icon', 'warning');
             end
         end
 
@@ -3387,10 +3579,7 @@ classdef ThermalSimulatorApp < handle
                 task.geometry.solver = 'coupled';
                 task.surfaceMesh = app.CurrentGeometry;
                 task.volumeMesh = app.CurrentVolumeMesh;
-                task.material = struct( ...
-                    'conductivityWmK', app.VolumeConductivity.Value, ...
-                    'densityKgM3', app.VolumeDensity.Value, ...
-                    'specificHeatJkgK', app.VolumeSpecificHeat.Value);
+                task.material = app.volumeMaterial;
                 task.couplingOptions = app.CouplingOptions;
             end
             telemetry = app.TelemetryWorkspace.getState;
@@ -3427,10 +3616,10 @@ classdef ThermalSimulatorApp < handle
                     if ~isempty(audit.warnings)
                         message = [message newline app.pipelinePreflightWarnings(audit)];
                     end
-                    uialert(app.Figure, message, app.t('任务已就绪', 'Task ready'), ...
+                    leotherm.uiAlert(app.Figure,app.Language, message, app.t('任务已就绪', 'Task ready'), ...
                         'Icon', 'success');
                 else
-                    uialert(app.Figure, app.pipelinePreflightMessage(audit), ...
+                    leotherm.uiAlert(app.Figure,app.Language, app.pipelinePreflightMessage(audit), ...
                         app.t('任务配置需修改', 'Task needs review'), 'Icon', 'warning');
                 end
             catch exception
@@ -3440,7 +3629,7 @@ classdef ThermalSimulatorApp < handle
 
         function runPipelineUI(app)
             if app.IsBusy, return; end
-            parent = uigetdir(pwd, app.t('选择任务结果保存位置', ...
+            parent = leotherm.uiFileDialog(app.Figure,@uigetdir,pwd, app.t('选择任务结果保存位置', ...
                 'Choose where to save the task result'));
             if isequal(parent, 0), return; end
             name = ['leotherm_' datestr(now, 'yyyymmdd_HHMMSS') '_' ...
@@ -3456,7 +3645,9 @@ classdef ThermalSimulatorApp < handle
                 app.setBusy(true, app.t('正在运行完整任务...', ...
                     'Running the complete task...'));
                 cleanup = onCleanup(@() app.finishOperation);
-                run = leotherm.runThermalPipeline(task, outputDirectory);
+                app.ProgressDialog=leotherm.OperationProgressDialog(app.Figure,app.Language,'CancelFcn',@()app.stopOperation(false),'Title',app.t('仿真任务进度','Simulation task progress'), ...
+                    'Indeterminate','on','Cancelable','on');
+                run = leotherm.runThermalPipeline(task, outputDirectory,@(event)app.operationProgress(event));
                 app.adoptPipelineRun(run);
                 app.MainTabGroup.SelectedTab = app.ResultsTab;
                 app.setStatus(sprintf(app.t('任务完成，报告位于：%s', ...
@@ -3465,8 +3656,13 @@ classdef ThermalSimulatorApp < handle
                     ['thermal_report_' app.Language '.pdf'])));
                 clear cleanup
             catch exception
-                app.showException(app.t('任务运行失败', 'Task failed'), exception);
+                if strcmp(exception.identifier,'leotherm:OperationCancelled')
+                    app.setStatus(app.t('仿真任务已停止。','Simulation task stopped.'));
+                else
+                    app.showException(app.t('任务运行失败', 'Task failed'), exception);
+                end
             end
+            clear cleanup
         end
 
         function adoptPipelineRun(app, run)
@@ -3506,6 +3702,7 @@ classdef ThermalSimulatorApp < handle
         end
 
         function runTelemetryTask(app)
+            app.prepareWorkspace('telemetry');
             if app.IsBusy, return; end
             [ready, ~] = app.checkSimulationTask('scenario');
             if ~ready
@@ -3568,6 +3765,7 @@ classdef ThermalSimulatorApp < handle
         end
 
         function openAdvancedWorkspace(app)
+            app.prepareWorkspace('scenario');
             app.MainTabGroup.SelectedTab = app.SimulationTab;
             app.TabGroup.SelectedTab = app.ScenarioTab;
         end
@@ -3580,7 +3778,7 @@ classdef ThermalSimulatorApp < handle
             projectDir = fullfile(root, 'examples', 'projects');
             files = dir(fullfile(projectDir, '*.mat'));
             if isempty(files)
-                uialert(app.Figure, app.t( ...
+                leotherm.uiAlert(app.Figure,app.Language, app.t( ...
                     '尚未生成示例项目。请先运行 examples/create_example_projects。', ...
                     'Example projects are not generated yet. Run examples/create_example_projects first.'), ...
                     app.t('没有示例项目', 'No example projects'));
@@ -3606,18 +3804,16 @@ classdef ThermalSimulatorApp < handle
             if app.IsBusy
                 return
             end
+            if strcmp(app.QuickStartTemplate.Value,'current')
+                app.runPipelineUI;
+                return
+            end
             if strcmp(app.QuickStartTemplate.Value,'paper')
-                parent=uigetdir(pwd,app.t('选择论文复现结果保存位置','Choose where to save the paper study'));
+                parent=leotherm.uiFileDialog(app.Figure,@uigetdir,pwd,app.t('选择论文复现结果保存位置','Choose where to save the paper study'));
                 if isequal(parent,0), return; end
                 destination=fullfile(parent,['paper_' datestr(now,'yyyymmdd_HHMMSS') '_' char(extractBefore(string(java.util.UUID.randomUUID),9))]);
                 try
-                    app.setBusy(true,app.t('正在复现参考任务与36工况...','Recomputing the reference task and 36 cases...'));
-                    cleanup=onCleanup(@() app.finishOperation);
-                    leotherm.runPaperStudy(destination,app.Language);
-                    pdf=fullfile(destination,'report',['thermal_report_' app.Language '.pdf']);
-                    app.setStatus(sprintf(app.t('论文复现完成，报告：%s','Paper study complete; report: %s'),pdf));
-                    clear cleanup
-                    winopen(pdf);
+                    app.runPaperTask(destination,true);
                 catch exception
                     app.showException(app.t('论文复现失败','Paper study failed'),exception);
                 end
@@ -3639,6 +3835,7 @@ classdef ThermalSimulatorApp < handle
                 case 'telemetry'
                     app.PipelineOptions.telemetry = true;
                     app.PipelineTelemetryCheck.Value = true;
+                    app.prepareWorkspace('telemetry');
                     app.MainTabGroup.SelectedTab = app.SimulationTab;
                     app.TabGroup.SelectedTab = app.TelemetryWorkspace.Tab;
                     app.setStatus(app.t('请在遥测页导入数据并完成预检。', ...
@@ -3674,6 +3871,7 @@ classdef ThermalSimulatorApp < handle
                 app.PipelineGeometryCheck.Value = false;
                 app.PipelineTelemetryCheck.Value = false;
                 app.PipelineCalibrationCheck.Value = false;
+                app.prepareWorkspace('scenario');
                 app.MainTabGroup.SelectedTab = app.SimulationTab;
                 app.TabGroup.SelectedTab = app.ScenarioTab;
                 app.updateTaskPanel;
@@ -3689,7 +3887,7 @@ classdef ThermalSimulatorApp < handle
             root = leotherm.installRoot;
             templates = leotherm.listSimulationTemplates(fullfile(root, 'templates'));
             if isempty(templates)
-                uialert(app.Figure, app.t('没有可用任务模板。', 'No task templates are available.'), ...
+                leotherm.uiAlert(app.Figure,app.Language, app.t('没有可用任务模板。', 'No task templates are available.'), ...
                     app.t('任务向导', 'Task wizard'));
                 return
             end
@@ -3705,7 +3903,7 @@ classdef ThermalSimulatorApp < handle
             if ~ok, return; end
             try
                 if index > numel(templates)
-                    [file, folder] = uigetfile('*.json', ...
+                    [file, folder] = leotherm.uiFileDialog(app.Figure,@uigetfile,'*.json', ...
                         app.t('选择任务模板', 'Choose a task template'));
                     if isequal(file, 0), return; end
                     path = fullfile(folder, file);
@@ -3718,7 +3916,7 @@ classdef ThermalSimulatorApp < handle
                 end
                 configuration = leotherm.applySimulationTemplate(template, ...
                     leotherm.defaultScenario, leotherm.defaultReceiverNetwork);
-                answer = inputdlg({ ...
+                answer = leotherm.uiInputDialog(app.Figure,app.Language,{ ...
                     app.t('任务名称', 'Task name'), ...
                     app.t('仿真时长（小时）', 'Duration (hours)'), ...
                     app.t('时间步长（秒）', 'Time step (s)')}, ...
@@ -3769,9 +3967,10 @@ classdef ThermalSimulatorApp < handle
             app.syncScenarioControls;
             app.syncNetworkControls;
             if strcmp(configuration.mode, 'telemetry')
+                app.prepareWorkspace('telemetry');
                 app.MainTabGroup.SelectedTab = app.SimulationTab;
                 app.TabGroup.SelectedTab = app.TelemetryWorkspace.Tab;
-                [file, folder] = uigetfile('*.csv', app.t('选择遥测 CSV', 'Choose telemetry CSV'));
+                [file, folder] = leotherm.uiFileDialog(app.Figure,@uigetfile,'*.csv', app.t('选择遥测 CSV', 'Choose telemetry CSV'));
                 if ~isequal(file, 0)
                     app.TelemetryWorkspace.importSource(fullfile(folder, file));
                     app.TelemetryWorkspace.setWorkflow('orbit');
@@ -3785,6 +3984,7 @@ classdef ThermalSimulatorApp < handle
                         'Template loaded. You can select a CSV on the telemetry page later.'));
                 end
             else
+                app.prepareWorkspace('scenario');
                 app.MainTabGroup.SelectedTab = app.SimulationTab;
                 app.TabGroup.SelectedTab = app.ScenarioTab;
                 app.updateTaskPanel;
@@ -3987,12 +4187,13 @@ classdef ThermalSimulatorApp < handle
                 network = app.CurrentNetwork;
                 softwareVersion = leotherm.version;
                 displayLanguage = app.Language;
-                [file, folder] = uiputfile('*.mat', ...
+                [file, folder] = leotherm.uiFileDialog(app.Figure,@uiputfile,'*.mat', ...
                     app.t('保存仿真配置', 'Save simulation configuration'), ...
                     'leotherm_configuration.mat');
                 if isequal(file, 0)
                     return
                 end
+                file=leotherm.englishArtifactFilename(file,'leotherm_configuration.mat');
                 save(fullfile(folder, file), 'scenario', 'network', ...
                     'softwareVersion', 'displayLanguage');
                 app.setStatus(sprintf(app.t('配置已保存：%s', ...
@@ -4005,7 +4206,7 @@ classdef ThermalSimulatorApp < handle
 
         function loadConfiguration(app)
             try
-                [file, folder] = uigetfile('*.mat', ...
+                [file, folder] = leotherm.uiFileDialog(app.Figure,@uigetfile,'*.mat', ...
                     app.t('导入仿真配置', 'Load simulation configuration'));
                 if isequal(file, 0)
                     return
@@ -4075,7 +4276,7 @@ classdef ThermalSimulatorApp < handle
                 pdfPath = fullfile(app.LastPipelineRun.outputDirectory, ...
                     'report', ['thermal_report_' app.LastPipelineRun.input.language '.pdf']);
                 if ~isfile(pdfPath)
-                    uialert(app.Figure, app.t( ...
+                    leotherm.uiAlert(app.Figure,app.Language, app.t( ...
                         '本次任务的报告文件未找到。请检查结果目录或重新运行。', ...
                         'This run PDF is missing. Check its result directory or rerun.'), ...
                         app.t('报告不可用', 'Report unavailable'));
@@ -4093,12 +4294,12 @@ classdef ThermalSimulatorApp < handle
                     && isempty(app.CurrentMeshResult) && isempty(app.CurrentVolumeResult) ...
                     && isempty(app.CurrentSurfaceVolumeResult) ...
                     && isempty(telemetryState.result) && isempty(telemetryState.report)
-                uialert(app.Figure, app.t('当前没有可导出的结果。', ...
+                leotherm.uiAlert(app.Figure,app.Language, app.t('当前没有可导出的结果。', ...
                     'There are no results to export.'), ...
                     app.t('没有结果', 'No results'));
                 return
             end
-            folder = uigetdir(pwd, app.t('选择结果导出目录', ...
+            folder = leotherm.uiFileDialog(app.Figure,@uigetdir,pwd, app.t('选择结果导出目录', ...
                 'Select result export directory'));
             if isequal(folder, 0)
                 return
@@ -4163,7 +4364,7 @@ classdef ThermalSimulatorApp < handle
                 'Running software self-test...'));
             cleanup = onCleanup(@() app.finishOperation);
             try
-                app.ProgressDialog = uiprogressdlg(app.Figure, ...
+                app.ProgressDialog = leotherm.OperationProgressDialog(app.Figure,app.Language,'CancelFcn',@()app.stopOperation(false), ...
                     'Title', app.t('软件自检', 'Software self-test'), ...
                     'Message', app.t('正在运行自动验证套件...', ...
                     'Running automated verification suite...'), ...
@@ -4173,7 +4374,7 @@ classdef ThermalSimulatorApp < handle
                 passed = sum([results.Passed]);
                 app.setStatus(sprintf(app.t('软件自检通过：%d/%d', ...
                     'Software self-test passed: %d/%d'), passed, numel(results)));
-                uialert(app.Figure, sprintf(app.t('%d/%d项测试全部通过。', ...
+                leotherm.uiAlert(app.Figure,app.Language, sprintf(app.t('%d/%d项测试全部通过。', ...
                     'All %d/%d tests passed.'), passed, numel(results)), ...
                     app.t('自检通过', 'Self-test passed'), 'Icon', 'success');
             catch exception
@@ -4193,22 +4394,38 @@ classdef ThermalSimulatorApp < handle
                 'and semi-synthetic code bias.\n' ...
                 'Implemented in pure MATLAB; the default network is not mission calibrated.']), ...
                 leotherm.version);
-            uialert(app.Figure, message, app.t('关于', 'About'));
+            leotherm.uiAlert(app.Figure,app.Language, message, app.t('关于', 'About'));
         end
 
         function finishOperation(app)
+            if ~isvalid(app), return; end
             if ~isempty(app.ProgressDialog) && isvalid(app.ProgressDialog)
                 close(app.ProgressDialog);
             end
             app.ProgressDialog = [];
             currentMessage = app.StatusLabel.Text;
             app.setBusy(false, currentMessage);
+            if ~app.CloseAfterOperation && app.MainTabGroup.SelectedTab == app.SimulationTab
+                app.configTabChanged;
+            end
             app.updateTaskPanel;
             app.updateResultState;
+            if app.CloseAfterOperation
+                app.CloseAfterOperation=false;
+                if app.confirmLeave
+                    delete(app);
+                elseif app.MainTabGroup.SelectedTab == app.SimulationTab
+                    app.configTabChanged;
+                end
+            end
         end
 
         function setBusy(app, value, message)
             if value && ~app.IsBusy
+                app.CancelOperationRequested=false;
+                app.CloseAfterOperation=false;
+                app.OperationStarted=tic;
+                app.OperationProgress=[];
                 controls=findall(app.Figure,'-property','Enable');
                 app.BusyControls=cell(numel(controls),2);
                 for k=1:numel(controls)
@@ -4253,7 +4470,7 @@ classdef ThermalSimulatorApp < handle
         function showException(app, titleText, exception)
             message = app.localizedExceptionMessage(exception);
             app.setStatus([titleText app.t('：', ': ') message]);
-            uialert(app.Figure, message, titleText, 'Icon', 'error');
+            leotherm.uiAlert(app.Figure,app.Language, message, titleText, 'Icon', 'error');
         end
 
         function [indices, labels] = displayNodes(app, network)
@@ -4384,6 +4601,7 @@ classdef ThermalSimulatorApp < handle
             app.TelemetryWorkspace.setEnabled(~app.IsBusy);
             app.CalibrationWorkspace.setEnabled(~app.IsBusy);
             setappdata(app.Figure, 'LEOThermalSimulatorApp', app);
+            app.mainTabChanged;
             drawnow;
         end
 
@@ -4402,11 +4620,29 @@ classdef ThermalSimulatorApp < handle
         end
 
         function configTabChanged(app)
+            if app.IsBusy, return; end
+            selected = app.TabGroup.SelectedTab;
+            if selected == app.ScenarioTab
+                app.prepareWorkspace('scenario');
+            elseif selected == app.SweepTab
+                app.prepareWorkspace('sweep');
+            elseif selected == app.GeometryTab
+                app.prepareWorkspace('geometry');
+            elseif selected == app.ThermalModelTab
+                app.prepareWorkspace('thermal_model');
+            elseif selected == app.TelemetryWorkspace.Tab
+                app.prepareWorkspace('telemetry');
+            elseif selected == app.CalibrationWorkspace.Tab
+                app.prepareWorkspace('calibration');
+            end
             app.refreshCalibrationContext;
             app.updateTaskPanel;
         end
 
         function mainTabChanged(app)
+            if app.MainTabGroup.SelectedTab == app.SimulationTab
+                app.configTabChanged;
+            end
             app.refreshCalibrationContext;
             if app.MainTabGroup.SelectedTab == app.ResultsTab
                 app.updateResultSummary;

@@ -2,6 +2,7 @@ function figureHandle = plotThermalReportDetail(item, path, language)
 %PLOTTHERMALREPORTDETAIL Plot retained samples with a shared publication style.
 % Returning a handle permits inspection; callers then own its lifetime.
 language=leotherm.normalizeLanguage(language); zh=strcmp(language,'zh');
+windowCleanup=leotherm.preserveAppWindows;
 if strcmp(item.stage,'paper_study')
     fig=leotherm.plotPaperStudyFigure(item,path,language);
     if nargout>0, figureHandle=fig; else, close(fig); end
@@ -110,6 +111,7 @@ catch exception
     close(fig); rethrow(exception);
 end
 if nargout>0, figureHandle=fig; else, close(fig); end
+delete(windowCleanup);
 end
 
 function charts=expandCharts(input)

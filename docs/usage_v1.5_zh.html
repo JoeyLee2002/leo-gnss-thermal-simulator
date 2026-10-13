@@ -1,0 +1,280 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEOTherm 1.5 图解用户手册</title><style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:#172831;background:#f3f6f7;font:16px/1.7 Arial,"Microsoft YaHei",sans-serif}
+nav,main{max-width:1120px;margin:auto;padding:24px 36px}nav{display:flex;gap:24px;flex-wrap:wrap;background:white;border-bottom:1px solid #cbd6da}
+main{background:white}h1{font-size:30px;color:#111;line-height:1.3;margin:16px 0 28px}h2{font-size:24px;color:#111;margin:42px 0 16px}h3{font-size:20px;color:#111;margin:30px 0 12px}
+p,li{overflow-wrap:anywhere}li{margin:8px 0}a{color:#005e85}figure{margin:24px 0 30px;border:1px solid #d4dfe3;padding:12px;break-inside:avoid}
+figure img{display:block;max-width:100%;max-height:1000px;height:auto;margin:auto}figcaption{font-size:14px;color:#465963;margin-top:12px;text-align:center}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:22px 0}th,td{border-bottom:1px solid #cbd6da;padding:10px 12px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eef3f5;color:#182a33}
+code{font:0.91em Consolas,"Microsoft YaHei",monospace;background:#eef3f5;padding:2px 4px;overflow-wrap:anywhere}pre{background:#eef3f5;border:1px solid #d4dfe3;padding:16px;white-space:pre-wrap;overflow-wrap:anywhere;break-inside:avoid}pre code{padding:0;background:none}
+hr{border:0;border-top:1px solid #cbd6da;margin:30px 0}.toc{padding:16px 24px;background:#f2f6f8}.toc ul{columns:2;padding-left:20px}.toc li{margin:4px 0;font-size:14px}
+@media(max-width:700px){main,nav{padding:18px}h1{font-size:26px}.toc ul{columns:1}table{font-size:12px}td,th{padding:6px}}
+@page{size:A4;margin:16mm 14mm 18mm}
+@media print{body{background:white;font-size:10.5pt;line-height:1.5}main{padding:0;max-width:none}nav,hr{display:none}h1{font-size:24pt}h2{font-size:18pt;margin-top:24pt;break-after:avoid}h3{font-size:13pt;break-after:avoid}p,li{orphans:3;widows:3}figure{padding:5mm;margin:5mm 0;border:1px solid #d4dfe3}figure img{max-height:170mm;max-width:100%;object-fit:contain}figcaption{font-size:9pt}table{font-size:8.8pt}thead{display:table-header-group}tr{break-inside:avoid}pre{font-size:8.5pt}.toc{background:white}.toc li{font-size:9pt}a{text-decoration:none}}
+</style></head><body><nav><a href="usage_v1.5_zh.html">中文用户手册</a><a href="quickstart_v1.5.html">English User Manual</a><a href="reproduce_paper_v1.5_zh.html">中文论文复现</a><a href="reproduce_paper_v1.5.html">English Paper Reproduction</a></nav><main><h1>LEOTherm 1.5 图解用户手册</h1><div class="toc"><strong>目录</strong><ul><li><a href="#section-1">1. 安装与启动</a></li><li><a href="#section-2">2. 快速开始：从哪里进入</a></li><li><a href="#section-3">3. 单场景：照着填写并只运行一次</a></li><li><a href="#section-4">4. 结果与导出：主动生成分析 PDF</a></li><li><a href="#section-5">5. 完整任务：可选功能一起运行并出报告</a></li><li><a href="#section-6">6. 参数扫描：从两个工况开始</a></li><li><a href="#section-7">7. 热网络：修改物理参数后重新计算</a></li><li><a href="#section-8">8. 三维：按目的选择表面、体或耦合</a></li><li><a href="#section-9">9. 工程热模型交换</a></li><li><a href="#section-10">10. 遥测：先映射、预检，再比较</a></li><li><a href="#section-11">11. 设备标定：约束参数与训练日期</a></li><li><a href="#section-12">12. 模板和项目：少填参数、保存自己的设置</a></li><li><a href="#section-13">13. 进度、停止与关闭</a></li><li><a href="#section-14">14. 常见问题</a></li></ul></div>
+<p>本手册按“开始 → 设置 → 运行 → 查看 → 导出”说明操作。截图来自 v1.5 实际界面；橙框圈出操作位置，蓝色编号对应图下说明。截图使用默认英文界面，正文给出中文含义。打开离线 HTML 可点击图片查看原始尺寸。</p>
+<p>**先选目的：**只算一个场景，读第 3 节；比较多个工况，读第 6 节；所选功能一起运行并出 PDF，读第 5 节；复现论文，使用<a href="reproduce_paper_v1.5_zh.html">论文复现图解手册</a>。</p>
+<h2 id="section-1">1. 安装与启动</h2>
+<ol>
+<li>安装免费的 <strong>MATLAB Runtime R2021b</strong>。已有兼容 Runtime 时不必重复安装，不需要 MATLAB 许可证。</li>
+<li>完整解压 <code>LEOTherm_1.5_windows_release_illustrated.zip</code>，例如解压到 <code>C:\LEOTherm</code>。保留模板、图片与手册的相对位置，不直接在 ZIP 里面运行。</li>
+<li>双击 <code>LEOTherm.exe</code>。第一次启动需建立 Runtime 缓存；等待主界面显示，不反复重启。</li>
+<li>右上角 <code>English</code> 下拉框可以切换中文。Windows 原生文件选择框使用操作系统语言。</li>
+</ol>
+<p>本图解版只更新说明材料，保留原发行版已经验证的 EXE。</p>
+<h2 id="section-2">2. 快速开始：从哪里进入</h2>
+<figure><a href="manual_images/v1_5/start_zh.png" target="_blank"><img src="manual_images/v1_5/start_zh.png" alt="图 1：快速开始的任务选择和入口"></a><figcaption>图 1：快速开始的任务选择和入口</figcaption></figure>
+<p>第一次使用且希望直接得到报告：</p>
+<ol>
+<li>① <code>I want to</code> 选择 <code>First simulation</code>（第一次仿真）。</li>
+<li>② 点击 <code>Use template and run</code>（使用模板并开始仿真）。这会使用预设场景运行完整任务，不是单场景局部按钮。</li>
+<li>在随后弹出的目录选择框中，选择<strong>结果保存父目录</strong>，例如 <code>C:\LEOThermResults</code>。软件新建任务子目录，不要求把结果放在安装目录。</li>
+<li>等待完成，查看任务报告与数据。首次练习无需网格、遥测或设备档案。</li>
+</ol>
+<p>只想修改参数并计算单场景时，点击 ③ <code>Advanced simulation</code>。④ <code>Task wizard</code> 是 JSON 模板向导。模板快捷运行会替换未保存的场景与网络配置，请先保存自己的项目；论文复现入口则保留当前工作区设置。</p>
+<h2 id="section-3">3. 单场景：照着填写并只运行一次</h2>
+<p>进入 <code>Simulation → Single scenario</code>（仿真 → 单场景）。窗口较小时向下滚动输入区，<code>Run single scenario</code> 固定在输入区底部。</p>
+<figure><a href="manual_images/v1_5/scenario_zh.png" target="_blank"><img src="manual_images/v1_5/scenario_zh.png" alt="图 2：单场景输入与局部运行按钮"></a><figcaption>图 2：单场景输入与局部运行按钮</figcaption></figure>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>练习设置</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Analysis date (UTC)</td>
+<td>2024-03-20</td>
+<td>协调世界时起始日期</td>
+</tr>
+<tr>
+<td>Start time (UTC)</td>
+<td>12:00:00</td>
+<td>起始时刻，不是本机时间</td>
+</tr>
+<tr>
+<td>Analysis duration (h)</td>
+<td>2</td>
+<td>分析时长 2 小时</td>
+</tr>
+<tr>
+<td>Time step (s)</td>
+<td>60</td>
+<td>输出采样间隔 60 秒</td>
+</tr>
+<tr>
+<td>Fixed warm-up orbits</td>
+<td>1</td>
+<td>分析前先积分 1 圈</td>
+</tr>
+<tr>
+<td>Orbit altitude (km)</td>
+<td>600</td>
+<td>高度 600 km</td>
+</tr>
+<tr>
+<td>Orbit inclination (deg)</td>
+<td>97.6</td>
+<td>轨道倾角</td>
+</tr>
+<tr>
+<td>RAAN (deg)</td>
+<td>20</td>
+<td>升交点赤经</td>
+</tr>
+<tr>
+<td>Initial argument of latitude (deg)</td>
+<td>0</td>
+<td>初始轨道相位</td>
+</tr>
+<tr>
+<td>Attitude mode</td>
+<td>Nadir pointing</td>
+<td>对地定向</td>
+</tr>
+<tr>
+<td>Roll / Pitch / Yaw angle (deg)</td>
+<td>0 / 0 / 0</td>
+<td>姿态偏置</td>
+</tr>
+<tr>
+<td>Automatic periodic thermal convergence</td>
+<td>不勾选</td>
+<td>本练习用固定预热圈数</td>
+</tr>
+</tbody></table>
+<p>太阳直射、反照和地球红外保持默认勾选；红外模型保持 <code>Finite Earth disk</code>。</p>
+<ol>
+<li>按表设置；不用更改上方完整任务的勾选项。</li>
+<li>点击图中 ④ <code>Run single scenario</code>。<strong>只计算当前场景</strong>，不自动跑扫描、三维、遥测或标定。</li>
+<li>完成后本页显示曲线，也可进入 <code>Results and export</code> 查看指标。</li>
+<li>本页运行不自动生成 PDF，也不弹出报告保存目录；需要 PDF 时按下一节导出。</li>
+</ol>
+<p>这些值是入门练习，不是论文 36 工况协议。<code>Time step</code> 表示输出采样间隔，不等于求解器内部每次积分的步长。</p>
+<h2 id="section-4">4. 结果与导出：主动生成分析 PDF</h2>
+<figure><a href="manual_images/v1_5/results_zh.png" target="_blank"><img src="manual_images/v1_5/results_zh.png" alt="图 3：结果状态与 PDF 导出"></a><figcaption>图 3：结果状态与 PDF 导出</figcaption></figure>
+<ol>
+<li>打开 <code>Results and export</code>。看顶部状态和右侧任务摘要，确认结果对应当前输入；改参数后要重新计算。</li>
+<li>左侧表格是温度与响应指标，右侧摘要记录场景和已执行内容。</li>
+<li>点击 ② <code>Generate analysis PDF</code>，选择可写的保存父目录。</li>
+<li>打开新导出目录的 <code>report</code> 子目录，查看 <code>thermal_report_en.pdf</code> 或 <code>thermal_report_zh.pdf</code>，按本次语言设置生成。</li>
+<li>同目录保留图形、CSV、MAT。优先检查 <code>thermal_node_statistics.csv</code>、<code>thermal_diagnostics.csv</code>、<code>thermal_conductive_links.csv</code> 和 <code>thermal_metric_definitions.csv</code>。</li>
+</ol>
+<p>P95−P5 是第 95 与第 5 百分位温度之差，不是最高温减最低温。指标名称、单位和定义都可在定义 CSV 中查到。</p>
+<h2 id="section-5">5. 完整任务：可选功能一起运行并出报告</h2>
+<figure><a href="manual_images/v1_5/complete_task_zh.png" target="_blank"><img src="manual_images/v1_5/complete_task_zh.png" alt="图 4：完整任务区的检查和运行顺序"></a><figcaption>图 4：完整任务区的检查和运行顺序</figcaption></figure>
+<p>这个区域位于仿真各页上方，不只在快速开始页可用。</p>
+<ol>
+<li>先在各页准备设置。① 按需选择四个阶段；四项都不勾选也能做基础热仿真并出报告。</li>
+<li>点击 ② <code>Check complete task</code>。补齐提示缺少的输入，或取消本次不需要的阶段。</li>
+<li>点击 ③ <code>Run complete task and generate report</code>，选择保存父目录。</li>
+<li>完成后查看 <code>pipeline_status.json</code>、模型快照、计算数据及 <code>report</code> 中的 PDF。报告只包含实际执行阶段的内容。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>所需准备</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Parameter sweep</td>
+<td>扫描模式、范围和当前场景</td>
+<td>比较多个工况</td>
+</tr>
+<tr>
+<td>3-D coupling</td>
+<td>表面/体网格、材料、耦合边界</td>
+<td>表面—体传热</td>
+</tr>
+<tr>
+<td>Telemetry comparison</td>
+<td>CSV、列映射、单位、有效样本</td>
+<td>与遥测比较</td>
+</tr>
+<tr>
+<td>Device calibration</td>
+<td>设备档案、参数范围、训练日期与数据</td>
+<td>估计后将参数用于任务</td>
+</tr>
+</tbody></table>
+<p>上方完整任务按钮与各页自己的按钮不同：前者跑所选流水线并出报告，后者只算当前模块。</p>
+<h2 id="section-6">6. 参数扫描：从两个工况开始</h2>
+<figure><a href="manual_images/v1_5/sweep_zh.png" target="_blank"><img src="manual_images/v1_5/sweep_zh.png" alt="图 5：扫描模式、范围和局部运行"></a><figcaption>图 5：扫描模式、范围和局部运行</figcaption></figure>
+<ol>
+<li>先在单场景页准备时长、采样、姿态和环境；扫描沿用这些设置及当前网络。</li>
+<li>进入 <code>Parameter sweep</code>，选择高度与目标 beta 角扫描。</li>
+<li><code>Altitude (km)</code> 填 <code>600</code>；<code>Target beta angle (deg)</code> 填 <code>0,30</code>；RAAN 解分支填 <code>1</code>。</li>
+<li>点击 <code>Run parameter sweep</code>。此练习是 <strong>1 个高度 × 2 个 beta 角 = 2 个工况</strong>，图中对应实际小扫描。</li>
+<li>看右侧表格与曲线；以后可用逗号列表，如 <code>400,600,800</code>，增加档位会增加计算量。</li>
+</ol>
+<p>普通扫描不自动包含论文的三档结构—射频前端热导、周期初始化和步长加密。论文 36 工况请用论文复现入口。</p>
+<h2 id="section-7">7. 热网络：修改物理参数后重新计算</h2>
+<figure><a href="manual_images/v1_5/network_zh.png" target="_blank"><img src="manual_images/v1_5/network_zh.png" alt="图 6：节点表、导热矩阵与响应角色"></a><figcaption>图 6：节点表、导热矩阵与响应角色</figcaption></figure>
+<ol>
+<li>进入 <code>Thermal network</code>，默认是 11 节点参考网络；没有设备参数时先保持默认。</li>
+<li>左表设置热容（J/K）、初始温度（K）、功耗（W）、面积（m²）、法向和光学属性，横向滚动可看后续列。</li>
+<li>右侧导热矩阵设置节点间热导（W/K），按行、列节点名找连接；软件保持矩阵对称。</li>
+<li>改响应节点、天线、振荡器或偏差设置后，点 <code>Apply roles and bias settings</code>。</li>
+<li>回到单场景页重新运行；只改表格不会自动生成新结果。</li>
+</ol>
+<p>默认内部节点可通过导热交换热量；对外投影/辐射面积为零不等于没有传热。设备参数应以设备资料为依据。</p>
+<h2 id="section-8">8. 三维：按目的选择表面、体或耦合</h2>
+<figure><a href="manual_images/v1_5/geometry_zh.png" target="_blank"><img src="manual_images/v1_5/geometry_zh.png" alt="图 7：表面与体网格的导入和计算"></a><figcaption>图 7：表面与体网格的导入和计算</figcaption></figure>
+<ol>
+<li><code>3-D geometry</code> 中先选文件长度单位，再用 <code>Import STL/OBJ</code> 导入表面；点 <code>Preview mesh</code> 核对尺寸、朝向和面片。</li>
+<li>只算面片时点击 <code>Run face thermal simulation</code>，无需体网格。</li>
+<li>体导热需要 <code>Import Gmsh volume mesh</code>，并设置导热系数（W/(m·K)）、密度（kg/m³）、比热（J/(kg·K)）；点 <code>Run volume conduction</code>。</li>
+<li>表面—体耦合需要两类网格；先用 <code>Coupling boundaries</code> 设置接触和边界，再点 <code>Run surface-volume coupling</code>。</li>
+<li>希望任务报告包含该项时，在完整任务区勾选 <code>3-D coupling</code>，检查后运行。</li>
+</ol>
+<p>本图使用发行包 <code>examples/assets/example_coupled_surface.obj</code> 和 <code>example_two_tetrahedra.msh</code> 演示导入，不是实际卫星验证。这两个极小网格用于熟悉输入；实际研究请换成自己的兼容网格。</p>
+<h2 id="section-9">9. 工程热模型交换</h2>
+<figure><a href="manual_images/v1_5/model_zh.png" target="_blank"><img src="manual_images/v1_5/model_zh.png" alt="图 8：模型导入、映射、预览与应用"></a><figcaption>图 8：模型导入、映射、预览与应用</figcaption></figure>
+<ol>
+<li><code>Import thermal model...</code> 接受符合 <code>leotherm.thermal_model.v1</code> 的 MAT/JSON；不能把任意文件改后缀后直接用。
+入门可选择发行包的 <code>examples/projects/06_engineering_model_exchange.json</code>。</li>
+<li>核对摘要中的单位、节点、材料与来源。</li>
+<li>需要转为当前热网络时，生成或载入显式映射模板，指定外部节点的对应关系。</li>
+<li>点 <code>Preview mapping</code>，确认后点 <code>Confirm and apply</code>；回单场景页重新计算。</li>
+<li><code>Export MAT</code> / <code>Export JSON</code> 保存当前规范模型；<code>Rollback network</code> 恢复网络。</li>
+</ol>
+<h2 id="section-10">10. 遥测：先映射、预检，再比较</h2>
+<figure><a href="manual_images/v1_5/telemetry_zh.png" target="_blank"><img src="manual_images/v1_5/telemetry_zh.png" alt="图 9：CSV、使用方式、预检与局部运行"></a><figcaption>图 9：CSV、使用方式、预检与局部运行</figcaption></figure>
+<ol>
+<li>无数据时可从 <code>More actions → CSV template</code> 导出空模板；有数据则点 <code>Import CSV</code>。</li>
+<li>在左侧列映射表指定源列、物理量、热节点与单位。</li>
+<li><code>Workflow</code> 选择 <code>Orbit telemetry</code>（轨道驱动）、<code>Measured heat loads</code>（热载荷驱动）或 <code>Validate current scenario</code>（比较已有场景）；第三种需先计算对应场景。</li>
+<li>设置最大相邻时间间隔与起始排除时长。轨道驱动时确认轨道与太阳位置同为地心 J2000 惯性系，只有满足时才勾选相应声明。</li>
+<li>点 <code>Preflight</code>，处理数据、单位或映射问题，再点 <code>Run simulation or comparison</code>。</li>
+<li>选择节点查看曲线、残差、有效评分样本和统计；用 <code>Export telemetry</code> 导出本页结果。</li>
+</ol>
+<p><code>Synthetic demo data</code> 是合成教程数据，不是在轨实测。软件不自动插值填补缺测；没有遥测时跳过该阶段即可。</p>
+<h2 id="section-11">11. 设备标定：约束参数与训练日期</h2>
+<figure><a href="manual_images/v1_5/calibration_zh.png" target="_blank"><img src="manual_images/v1_5/calibration_zh.png" alt="图 10：设备参数表、日期角色与标定按钮"></a><figcaption>图 10：设备参数表、日期角色与标定按钮</figcaption></figure>
+<ol>
+<li>先导入可用遥测，再进入 <code>Device calibration</code>。</li>
+<li>用 <code>Prepare calibration</code> 准备；<code>More actions</code> 可载入当前设备、导入设备档案或载入遥测日期。</li>
+<li>核对名义值（只读，要修改请到热网络页）；在参数表设置先验标准差、估计开关及上下界，范围应有设备依据。</li>
+<li>按完整 UTC 日分配训练与留出角色；留出日不参与拟合。</li>
+<li>填写传感器误差依据和所需声明，满足事实后才确认。</li>
+<li>点 <code>Calibrate to new run</code>，选择新运行位置；检查估计值及相对先验的变化，然后保存项目。</li>
+</ol>
+<p>本图只展示配置位置，没有虚构成功结果。缺少设备依据或遥测时可跳过标定。</p>
+<h2 id="section-12">12. 模板和项目：少填参数、保存自己的设置</h2>
+<figure><a href="manual_images/v1_5/wizard_inputs_zh.png" target="_blank"><img src="manual_images/v1_5/wizard_inputs_zh.png" alt="图 11：模板向导中的实际输入对话框"></a><figcaption>图 11：模板向导中的实际输入对话框</figcaption></figure>
+<ol>
+<li>快速开始点 <code>Task wizard</code>，选择内置模板或 <code>Choose another JSON template...</code>。</li>
+<li>输入框依次填写任务名、<code>Duration (hours)</code>、<code>Time step (s)</code>；例：<code>my_first_run</code>、<code>2</code>、<code>60</code>。</li>
+<li>校验后选 <code>Load only</code> 只加载，或 <code>Run now</code> 运行完整任务。想只算单场景，应先选 Load only，再用单场景局部按钮。</li>
+<li>文件方式：复制 <code>templates/01_first_simulation.json</code>，修改 <code>scenario.durationS</code> 和 <code>scenario.timeStepS</code>，再导入。JSON 时长单位是秒，如 7200，而向导时长单位是小时，如 2。</li>
+<li>右上角 <code>Save project</code> 保存工作区；<code>Open project</code> 恢复。打开项目还会恢复它保存时的语言。</li>
+</ol>
+<figure><a href="manual_images/v1_5/projects_zh.png" target="_blank"><img src="manual_images/v1_5/projects_zh.png" alt="图 12：项目保存和打开的位置"></a><figcaption>图 12：项目保存和打开的位置</figcaption></figure>
+<h2 id="section-13">13. 进度、停止与关闭</h2>
+<figure><a href="manual_images/v1_5/progress_zh.png" target="_blank"><img src="manual_images/v1_5/progress_zh.png" alt="图 13：实际任务进度和停止控件"></a><figcaption>图 13：实际任务进度和停止控件</figcaption></figure>
+<ol>
+<li>面板展示阶段、当前工况、初始化/积分进度和用时；不是预估剩余时间。</li>
+<li><code>Stop computation</code> 请求停止，变为 <code>Stopping...</code>；它不是暂停，不自动续跑。</li>
+<li>检查点停止保留已保存工况；正在执行的单次图形/PDF 导出会结束后响应下一检查点。</li>
+<li>任务标记 <code>cancelled</code>，不是 <code>complete</code>；重新运行请用新目录。</li>
+<li>运行时关闭主窗口会先请求停止，并处理未保存项目。</li>
+</ol>
+<p>图来自实际启动后停止的教程任务，只用于展示进度控件；完成验收见论文复现手册。</p>
+<h2 id="section-14">14. 常见问题</h2>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>下一步</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>双击 EXE 不启动</td>
+<td>检查 Runtime 为 R2021b，ZIP 已完整解压</td>
+</tr>
+<tr>
+<td>第一启动慢</td>
+<td>等待缓存建立，不反复重启或删除 Runtime 文件</td>
+</tr>
+<tr>
+<td>想只算一次却跑了更多</td>
+<td>使用单场景底部 Run single scenario，不用完整任务或论文按钮</td>
+</tr>
+<tr>
+<td>改参数后仍是旧曲线</td>
+<td>重算相应模块，然后导出</td>
+</tr>
+<tr>
+<td>完整任务按钮不可用</td>
+<td>Check complete task，补齐输入或取消多余阶段</td>
+</tr>
+<tr>
+<td>找不到结果</td>
+<td>查看选定父目录中新建的任务目录及 report 子目录</td>
+</tr>
+</tbody></table>
+<p>配套：<a href="reproduce_paper_v1.5_zh.html">论文复现图解手册</a>、<a href="quickstart_v1.5.html">英文用户手册</a>、<a href="verification_v1.5_release.md">发布验证记录</a>。</p>
+<p>各模块页面首次使用时加载。随包视频仍标为 v1.2.10；本版运行按钮以本图解手册为准。生成的文件基础名与子目录名使用英文 ASCII；用户已有父目录与导入文件不改名。</p>
+</main></body></html>

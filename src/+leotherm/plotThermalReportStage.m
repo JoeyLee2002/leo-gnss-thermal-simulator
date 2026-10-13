@@ -1,6 +1,7 @@
 function plotThermalReportStage(bundle, stage, path, language)
 %PLOTTHERMALREPORTSTAGE Draw only observed outputs of completed stages.
 language = leotherm.normalizeLanguage(language);
+windowCleanup=leotherm.preserveAppWindows;
 s = leotherm.thermalFigureStyle(language);
 fig = figure('Visible', 'off', 'Color', 'w', 'Units','centimeters', ...
     'Position', [2 2 s.widthCm 16]);
@@ -19,6 +20,7 @@ switch stage
 end
 leotherm.exportThermalFigure(fig, path, language);
 clear cleanup
+delete(windowCleanup);
 end
 
 function plotSingleSweep(bundle, language)

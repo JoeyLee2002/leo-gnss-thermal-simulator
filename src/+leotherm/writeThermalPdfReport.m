@@ -1,5 +1,6 @@
-function page = writeThermalPdfReport(report, bundle, path, language, assetDirectory)
+function page = writeThermalPdfReport(report, bundle, path, language, assetDirectory, progress)
 %WRITETHERMALPDFREPORT Render a readable, task-specific PDF without toolboxes.
+if nargin<6, progress=[]; end
 language = leotherm.normalizeLanguage(language);
 if ~ismember(language, {'zh','en'})
     error('leotherm:ReportExport', 'PDF language must be zh or en.');
@@ -12,12 +13,14 @@ path = tempname(fileparts(destination));
 mkdir(path);
 pageCleanup = onCleanup(@() removePageDirectory(path));
 page = 0;
+notifyPdf('任务概览','Task overview');
 lines = summaryLines(report, bundle, language);
 page = textPages(path, page, language, ...
     tr(language, '任务结果概览', 'Task result overview'), lines, 24);
 
 for k = 1:numel(report.analysis)
     item = report.analysis(k);
+    notifyPdf(item.titleZh,item.titleEn);
     if strcmp(language, 'zh')
         titleText = item.titleZh; analysisLines = item.linesZh;
     else
@@ -39,6 +42,7 @@ end
 if isfield(report, 'details')
     for k = 1:numel(report.details)
         item = report.details(k);
+        notifyPdf(item.titleZh,item.titleEn);
         if strcmp(language, 'zh')
             titleText = item.titleZh; analysisLines = item.linesZh;
         else
@@ -49,6 +53,7 @@ if isfield(report, 'details')
     end
 end
 if isfield(report, 'nodeStatistics') && ~isempty(report.nodeStatistics)
+    notifyPdf('节点统计','Node statistics');
     values = report.nodeStatistics;
     displayNames = leotherm.nodeDisplayNames(cellstr(values.node_name),language);
     lines = {tr(language, '温度为 K，热容为 J/K，功耗为配置值 W。均值采用时间加权。', ...
@@ -66,6 +71,7 @@ if isfield(report, 'nodeStatistics') && ~isempty(report.nodeStatistics)
     page = textPages(path,page,language,tr(language,'全节点统计附表','All-node statistics'),lines,30);
 end
 rows = sectionLines(report.sections, language);
+notifyPdf('输入与结果明细','Input and result details');
 if isempty(rows)
     rows = {tr(language, '没有结构化输入记录。', 'No structured input record is available.')};
 end
@@ -78,6 +84,7 @@ if ~isempty(report.telemetry)
         tr(language, '遥测对比', 'Telemetry comparison'), lines, 24);
 end
 lines = acceptanceLines(report, bundle, language);
+notifyPdf('计算检查与总结','Computation checks and conclusions');
 page = textPages(path, page, language, tr(language, '计算检查与复核记录', ...
     'Computation checks and audit record'), lines, 24);
 if isfield(report,'synthesis')
@@ -87,6 +94,7 @@ if isfield(report,'synthesis')
 end
 
 pages = arrayfun(@(k) fullfile(path,sprintf('page_%04d.pdf',k)),1:page,'UniformOutput',false);
+notifyPdf('合并 PDF 页面','Merging PDF pages');
 leotherm.mergeReportPdfPages(pages,destination);
 fid = fopen(destination, 'rb');
 if fid < 0, error('leotherm:ReportExport', 'PDF was not created: %s', destination); end
@@ -95,6 +103,11 @@ header = fread(fid, 5, '*char')';
 if ~strcmp(header, '%PDF-')
     error('leotherm:ReportExport', 'Invalid PDF output: %s', path);
 end
+    function notifyPdf(zh,en)
+        leotherm.notifyProgress(progress,'report_pdf',page,0, ...
+            sprintf('PDF (%s)：已写 %d 页；%s。',language,page,zh), ...
+            sprintf('PDF (%s): %d pages written; %s.',language,page,en));
+    end
 end
 
 function removePageDirectory(path)
@@ -140,6 +153,7 @@ else, cost = 0.024*numel(wrapText(value,100))+0.008; end
 end
 
 function page = textPage(path, page, language, titleText, lines)
+windowCleanup=leotherm.preserveAppWindows;
 page = page + 1;
 [fig, ax] = newPage(language, titleText, page);
 cleanup = onCleanup(@() close(fig));
@@ -166,9 +180,11 @@ for k = 1:numel(lines)
 end
 appendPage(fig, path, page);
 clear cleanup
+delete(windowCleanup);
 end
 
 function page = imagePage(path, page, language, titleText, imagePath)
+windowCleanup=leotherm.preserveAppWindows;
 page = page + 1;
 [fig, ~] = newPage(language, titleText, page);
 cleanup = onCleanup(@() close(fig));
@@ -178,9 +194,11 @@ axis(ax, 'image');
 axis(ax, 'off');
 appendPage(fig, path, page);
 clear cleanup
+delete(windowCleanup);
 end
 
 function page = analysisPage(path, page, language, titleText, lines, imagePath)
+windowCleanup=leotherm.preserveAppWindows;
 wrapped = {};
 justify = false(1,0);
 for k = 1:numel(lines)
@@ -211,6 +229,7 @@ image(chart, imread(imagePath));
 axis(chart, 'image'); axis(chart, 'off');
 appendPage(fig, path, page);
 clear cleanup
+delete(windowCleanup);
 end
 
 function [fig, ax] = newPage(language, titleText, page)

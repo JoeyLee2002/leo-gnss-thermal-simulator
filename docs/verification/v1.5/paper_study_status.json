@@ -1,0 +1,13 @@
+{
+  "schema": "leotherm.paper_study.v1",
+  "version": "1.5",
+  "status": "complete",
+  "stage": "complete",
+  "caseCount": 36,
+  "refinementCount": 3,
+  "solveJobsCompleted": 40,
+  "solveJobsTotal": 40,
+  "messageZh": "整理本次结果与分析。",
+  "messageEn": "Preparing run results and analysis.",
+  "heartbeatUTC": "2026-10-12T17:23:34Z"
+}

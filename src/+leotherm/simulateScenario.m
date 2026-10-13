@@ -1,6 +1,8 @@
-function result = simulateScenario(scenario, network)
+function result = simulateScenario(scenario, network, progress)
 %SIMULATESCENARIO Run orbit, environment, thermal, and bias models end to end.
 
+if nargin<3, progress=[]; end
+leotherm.notifyProgress(progress,'scenario',0,1,'正在计算轨道与光照。','Computing orbit and illumination.');
 leotherm.validateScenario(scenario);
 leotherm.validateNetwork(network);
 c = leotherm.constants;
@@ -14,13 +16,13 @@ end
 
 if isfield(scenario, 'convergence') && scenario.convergence.enabled
     [initialTemperatureK, convergence] = ...
-        leotherm.initializePeriodicState(scenario, network);
+        leotherm.initializePeriodicState(scenario, network, progress);
     runNetwork = network;
     runNetwork.initialTemperatureK = initialTemperatureK;
     orbit = leotherm.propagateCircularOrbit( ...
         scenario.startEpoch, mainElapsedS, scenario.orbit);
     orbit = applyControlledSun(orbit, scenario);
-    result = leotherm.simulateTrajectory(orbit, scenario, runNetwork, true(size(mainElapsedS)));
+    result = leotherm.simulateTrajectory(orbit, scenario, runNetwork, true(size(mainElapsedS)),progress);
 else
     warmupS = scenario.warmupOrbits * periodS;
     warmupSteps = ceil(warmupS / scenario.timeStepS);
@@ -32,7 +34,7 @@ else
         scenario.startEpoch, elapsedS, scenario.orbit);
     orbit = applyControlledSun(orbit, scenario);
     keep = elapsedS >= 0;
-    result = leotherm.simulateTrajectory(orbit, scenario, network, keep);
+    result = leotherm.simulateTrajectory(orbit, scenario, network, keep,progress);
     convergence.enabled = false;
     convergence.converged = NaN;
     convergence.cycles = scenario.warmupOrbits;

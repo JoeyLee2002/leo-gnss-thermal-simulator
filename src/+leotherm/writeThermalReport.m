@@ -1,4 +1,4 @@
-function report = writeThermalReport(input, outputDirectory, language)
+function report = writeThermalReport(input, outputDirectory, language, progress)
 %WRITETHERMALREPORT Write one unified, traceable thermal-results report.
 %   REPORT = WRITETHERMALREPORT(INPUT, OUTPUTDIRECTORY, LANGUAGE) accepts a
 %   scenario result directly or a bundle with scenarioResult,
@@ -9,6 +9,8 @@ function report = writeThermalReport(input, outputDirectory, language)
 %   LANGUAGE is 'zh', 'en', or 'both' (default).  Machine-readable files use
 %   stable English keys; Markdown and display-label columns are bilingual.
 
+if nargin<4, progress=[]; end
+leotherm.notifyProgress(progress,'report',0,1,'整理本次结果与分析。','Preparing run results and analysis.');
 if nargin < 2 || isempty(outputDirectory)
     error('leotherm:ReportExport', 'An output directory is required.');
 end
@@ -88,6 +90,8 @@ writeManifest(report, bundle, outputDirectory);
 
 for k = 1:numel(languages)
     lang = languages{k};
+    leotherm.notifyProgress(progress,'report_figures',k-1,numel(languages), ...
+        ['绘制报告图形：' lang],['Drawing report figures: ' lang]);
     if ~isempty(bundle.scenario)
         try
             leotherm.plotScenario(bundle.scenario, ...
@@ -122,15 +126,17 @@ for k = 1:numel(languages)
     end
     for j = 1:numel(report.details)
         item = report.details(j);
+        leotherm.notifyProgress(progress,'report_figures',j-1,numel(report.details), ...
+            ['绘制图形：' item.titleZh],['Drawing figure: ' item.titleEn]);
         leotherm.plotThermalReportDetail(item, ...
             fullfile(outputDirectory, [item.figureStem '_' lang '.png']), lang);
     end
-    leotherm.writeThermalPublicationFigures(report.details, outputDirectory, lang);
+    leotherm.writeThermalPublicationFigures(report.details, outputDirectory, lang,progress);
 end
 for k = 1:numel(languages)
     lang = languages{k};
     report.pdfPageCounts.(lang) = leotherm.writeThermalPdfReport(report, bundle, ...
-        fullfile(outputDirectory, ['thermal_report_' lang '.pdf']), lang, outputDirectory);
+        fullfile(outputDirectory, ['thermal_report_' lang '.pdf']), lang, outputDirectory,progress);
     writeMarkdown(report, fullfile(outputDirectory, ['thermal_report_' lang '.md']), lang);
 end
 % Preserve the exact source structs and final warnings for later re-rendering.

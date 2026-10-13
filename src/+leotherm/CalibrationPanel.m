@@ -2,6 +2,7 @@ classdef CalibrationPanel < handle
     %CALIBRATIONPANEL Explicit device priors and frozen whole-day calibration.
     properties (SetAccess = private)
         Tab
+        UIReady = false
     end
     properties (Access = private)
         Language
@@ -37,7 +38,8 @@ classdef CalibrationPanel < handle
     end
 
     methods
-        function panel = CalibrationPanel(parent, language, provider, sourceProvider, busyHandler)
+        function panel = CalibrationPanel(parent, language, provider, sourceProvider, busyHandler, deferUI)
+            if nargin < 6, deferUI = false; end
             panel.Language = leotherm.normalizeLanguage(language);
             panel.ModelProvider = provider;
             panel.SourceProvider = sourceProvider;
@@ -48,7 +50,14 @@ classdef CalibrationPanel < handle
                 'splitInput', [], 'profileStale', false, 'splitStale', false, ...
                 'outputDirectory', '', 'toleranceEnabled', false, ...
                 'toleranceDraft', '', 'lastError', '', 'lastErrorId', '');
-            panel.build(parent);
+            panel.Tab = uitab(parent, 'Title', panel.t('设备标定', 'Device calibration'));
+            if ~deferUI, panel.ensureUI; end
+        end
+
+        function ensureUI(panel)
+            if panel.UIReady, return; end
+            panel.build;
+            panel.UIReady = true;
             panel.syncSettings;
             panel.syncTables;
             panel.updateStatus;
@@ -69,6 +78,7 @@ classdef CalibrationPanel < handle
 
         function setEnabled(panel, enabled)
             panel.Enabled = logical(enabled);
+            if ~panel.UIReady, return; end
             value = 'off'; if enabled, value = 'on'; end
             for k = 1:numel(panel.Controls)
                 if isvalid(panel.Controls{k}), panel.Controls{k}.Enable = value; end
@@ -233,8 +243,7 @@ classdef CalibrationPanel < handle
     end
 
     methods (Access = private)
-        function build(panel, parent)
-            panel.Tab = uitab(parent, 'Title', panel.t('设备标定', 'Device calibration'));
+        function build(panel)
             layout = uigridlayout(panel.Tab, [5, 1]);
             layout.RowHeight = {36, 32, '1x', 300, 110};
             layout.Padding = [12 10 12 8]; layout.RowSpacing = 6;
@@ -256,7 +265,8 @@ classdef CalibrationPanel < handle
             panel.Controls{end+1} = panel.ProfileName;
             runButton = panel.button(toolbar, panel.t('标定并保存新运行', 'Calibrate to new run'), @() panel.runUI);
             runButton.Layout.Column = 4;
-            runButton.Visible = 'off';
+            runButton.Visible = 'on';
+            runButton.Tag='RunCalibrationButton';
             runButton.BackgroundColor = [0.12 0.53 0.46]; runButton.FontColor = [1 1 1];
             panel.ProfileStatus = uilabel(layout, 'WordWrap', 'on');
             panel.ProfileStatus.Layout.Row = 2;
@@ -384,6 +394,7 @@ classdef CalibrationPanel < handle
         end
 
         function captureSettings(panel)
+            if ~panel.UIReady, return; end
             panel.State.settings.temperatureSigmaK = panel.SensorSigma.Value;
             panel.State.settings.sensorEvidence = panel.SensorEvidence.Value;
             panel.State.settings.regularizationWeight = panel.Regularization.Value;
@@ -403,8 +414,8 @@ classdef CalibrationPanel < handle
         end
 
         function syncSettings(panel)
-            s = leotherm.deviceCalibrationOptions(panel.State.settings,numel(panel.State.settings.temperatureSigmaK));
-            panel.State.settings = s;
+            if ~panel.UIReady, return; end
+            s = panel.State.settings;
             panel.SensorSigma.Value = s.temperatureSigmaK;
             panel.SensorEvidence.Value = char(s.sensorEvidence);
             panel.Regularization.Value = s.regularizationWeight;
@@ -482,6 +493,7 @@ classdef CalibrationPanel < handle
         end
 
         function syncTables(panel)
+            if ~panel.UIReady, return; end
             if isempty(panel.State.profile)
                 panel.ProfileName.Value = '';
                 panel.ProfileTable.Data = cell(0,11);
@@ -592,6 +604,7 @@ classdef CalibrationPanel < handle
         end
 
         function updateStatus(panel)
+            if ~panel.UIReady, return; end
             if isempty(panel.State.profile)
                 panel.ProfileStatus.Text = panel.t('尚未载入设备档案', 'No device profile loaded');
             elseif panel.State.profileStale
@@ -651,7 +664,7 @@ classdef CalibrationPanel < handle
                     message = [panel.chineseError(exception.identifier) ...
                         sprintf('\n%s', exception.identifier)];
                 end
-                uialert(ancestor(panel.Tab, 'figure'), message, ...
+                leotherm.uiAlert(ancestor(panel.Tab, 'figure'),panel.Language, message, ...
                     panel.t('设备标定操作失败', 'Device calibration operation failed'));
             end
             clear cleanup
@@ -701,22 +714,23 @@ classdef CalibrationPanel < handle
         end
 
         function importUI(panel)
-            [file, folder] = uigetfile('*.mat', panel.t('导入设备档案', 'Import device profile'));
+            [file, folder] = leotherm.uiFileDialog(ancestor(panel.Tab,'figure'),@uigetfile,'*.mat', panel.t('导入设备档案', 'Import device profile'));
             if isequal(file, 0), return; end
             panel.importProfile(fullfile(folder, file));
         end
 
         function exportUI(panel)
-            [file, folder] = uiputfile('*.mat', panel.t('导出设备档案（新文件）', ...
+            [file, folder] = leotherm.uiFileDialog(ancestor(panel.Tab,'figure'),@uiputfile,'*.mat', panel.t('导出设备档案（新文件）', ...
                 'Export device profile (new file)'), 'device_profile.mat');
             if isequal(file, 0), return; end
+            file=leotherm.englishArtifactFilename(file,'device_profile.mat');
             panel.exportProfile(fullfile(folder, file));
         end
 
         function runUI(panel)
-            folder = uigetdir(pwd, panel.t('选择新运行的父目录', 'Choose parent folder for a new run'));
+            folder = leotherm.uiFileDialog(ancestor(panel.Tab,'figure'),@uigetdir,pwd, panel.t('选择新运行的父目录', 'Choose parent folder for a new run'));
             if isequal(folder, 0), return; end
-            name = inputdlg(panel.t('新运行目录名称', 'New run directory name'), ...
+            name = leotherm.uiInputDialog(ancestor(panel.Tab,'figure'),panel.Language,panel.t('新运行目录名称', 'New run directory name'), ...
                 panel.t('保存标定运行', 'Save calibration run'), [1 65], ...
                 {['device_calibration_' datestr(now, 'yyyymmdd_HHMMSS')]});
             if isempty(name), return; end
@@ -725,6 +739,7 @@ classdef CalibrationPanel < handle
                 error('leotherm:DeviceCalibrationExport', '%s', ...
                     panel.t('请输入单个有效的新目录名称。', 'Enter one valid new folder name.'));
             end
+            name=leotherm.englishArtifactFilename(name,'device_calibration');
             panel.run([], [], [], fullfile(folder, name));
         end
 

@@ -1,0 +1,30 @@
+[
+  {
+    "guide": "USAGE_CN",
+    "pages": 15,
+    "brokenLinks": [],
+    "emptyPages": []
+  },
+  {
+    "guide": "USAGE_EN",
+    "pages": 20,
+    "brokenLinks": [],
+    "emptyPages": []
+  },
+  {
+    "guide": "PAPER_REPRODUCTION_CN",
+    "pages": 8,
+    "brokenLinks": [],
+    "emptyPages": []
+  },
+  {
+    "guide": "PAPER_REPRODUCTION_EN",
+    "pages": 11,
+    "brokenLinks": [],
+    "emptyPages": []
+  },
+  {
+    "releaseSrcFilesUnchanged": 185,
+    "exeUnchanged": true
+  }
+]

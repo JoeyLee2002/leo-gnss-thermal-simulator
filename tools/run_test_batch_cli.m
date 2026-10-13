@@ -9,11 +9,19 @@ try
         error('leotherm:IsolatedVerification', ...
             'LEOTHERM_BATCH_SPEC and LEOTHERM_BATCH_RESULT are required.');
     end
-    spec = load(specPath, 'root', 'currentTestFiles');
+    spec = load(specPath);
     cd(spec.root);
     addpath(fullfile(spec.root, 'src'));
     timer = tic;
-    results = runtests(spec.currentTestFiles);
+    if isfield(spec, 'currentTestNames') && ~isempty(spec.currentTestNames)
+        assert(numel(spec.currentTestFiles) == 1, 'Method selection requires one test file.');
+        suite = matlab.unittest.TestSuite.fromFile(spec.currentTestFiles{1});
+        suite = suite(ismember({suite.Name}, spec.currentTestNames));
+        assert(numel(suite) == numel(spec.currentTestNames), 'A selected test method is missing.');
+        results = run(suite);
+    else
+        results = runtests(spec.currentTestFiles);
+    end
     summary.durationS = toc(timer);
     summary.total = numel(results);
     summary.passed = nnz([results.Passed]);

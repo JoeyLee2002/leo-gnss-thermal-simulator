@@ -1,0 +1,26 @@
+[
+  {
+    "name": "usage_v1.5_zh",
+    "images": 13,
+    "validImages": 13,
+    "pdf": true
+  },
+  {
+    "name": "quickstart_v1.5",
+    "images": 13,
+    "validImages": 13,
+    "pdf": true
+  },
+  {
+    "name": "reproduce_paper_v1.5_zh",
+    "images": 4,
+    "validImages": 4,
+    "pdf": true
+  },
+  {
+    "name": "reproduce_paper_v1.5",
+    "images": 4,
+    "validImages": 4,
+    "pdf": true
+  }
+]

@@ -1,0 +1,228 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LEOTherm 1.5 论文复现图解手册</title><style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:#172831;background:#f3f6f7;font:16px/1.7 Arial,"Microsoft YaHei",sans-serif}
+nav,main{max-width:1120px;margin:auto;padding:24px 36px}nav{display:flex;gap:24px;flex-wrap:wrap;background:white;border-bottom:1px solid #cbd6da}
+main{background:white}h1{font-size:30px;color:#111;line-height:1.3;margin:16px 0 28px}h2{font-size:24px;color:#111;margin:42px 0 16px}h3{font-size:20px;color:#111;margin:30px 0 12px}
+p,li{overflow-wrap:anywhere}li{margin:8px 0}a{color:#005e85}figure{margin:24px 0 30px;border:1px solid #d4dfe3;padding:12px;break-inside:avoid}
+figure img{display:block;max-width:100%;max-height:1000px;height:auto;margin:auto}figcaption{font-size:14px;color:#465963;margin-top:12px;text-align:center}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:22px 0}th,td{border-bottom:1px solid #cbd6da;padding:10px 12px;text-align:left;vertical-align:top;overflow-wrap:anywhere}th{background:#eef3f5;color:#182a33}
+code{font:0.91em Consolas,"Microsoft YaHei",monospace;background:#eef3f5;padding:2px 4px;overflow-wrap:anywhere}pre{background:#eef3f5;border:1px solid #d4dfe3;padding:16px;white-space:pre-wrap;overflow-wrap:anywhere;break-inside:avoid}pre code{padding:0;background:none}
+hr{border:0;border-top:1px solid #cbd6da;margin:30px 0}.toc{padding:16px 24px;background:#f2f6f8}.toc ul{columns:2;padding-left:20px}.toc li{margin:4px 0;font-size:14px}
+@media(max-width:700px){main,nav{padding:18px}h1{font-size:26px}.toc ul{columns:1}table{font-size:12px}td,th{padding:6px}}
+@page{size:A4;margin:16mm 14mm 18mm}
+@media print{body{background:white;font-size:10.5pt;line-height:1.5}main{padding:0;max-width:none}nav,hr{display:none}h1{font-size:24pt}h2{font-size:18pt;margin-top:24pt;break-after:avoid}h3{font-size:13pt;break-after:avoid}p,li{orphans:3;widows:3}figure{padding:5mm;margin:5mm 0;border:1px solid #d4dfe3}figure img{max-height:170mm;max-width:100%;object-fit:contain}figcaption{font-size:9pt}table{font-size:8.8pt}thead{display:table-header-group}tr{break-inside:avoid}pre{font-size:8.5pt}.toc{background:white}.toc li{font-size:9pt}a{text-decoration:none}}
+</style></head><body><nav><a href="usage_v1.5_zh.html">中文用户手册</a><a href="quickstart_v1.5.html">English User Manual</a><a href="reproduce_paper_v1.5_zh.html">中文论文复现</a><a href="reproduce_paper_v1.5.html">English Paper Reproduction</a></nav><main><h1>LEOTherm 1.5 论文复现图解手册</h1><div class="toc"><strong>目录</strong><ul><li><a href="#section-1">1. 选择正确入口</a></li><li><a href="#section-2">2. 看进度并等待报告完成</a></li><li><a href="#section-3">3. 命令行方式：一次生成两种语言</a></li><li><a href="#section-4">4. 固定实验协议</a></li><li><a href="#section-5">5. 找到报告和原始数据</a></li><li><a href="#section-6">6. 按字段验收：不是只看PDF存在</a></li><li><a href="#section-7">7. 哪些指标对应论文结果</a></li><li><a href="#section-8">8. 重新运行与停止后的处理</a></li></ul></div>
+<p>本手册从点击入口讲到结果核对。界面图来自 v1.5；数据导览来自已完成的 Runtime 验证输出。验收时使用<strong>你自己新运行生成的文件</strong>，不要把教程图片当作本次计算成功的证明。</p>
+<p>前提：免费 MATLAB Runtime R2021b 已安装、发行包完整解压、结果目录可写。计算时间取决于主机；不要以截图用时作为预计完成时间。</p>
+<h2 id="section-1">1. 选择正确入口</h2>
+<figure><a href="manual_images/v1_5/paper_zh.png" target="_blank"><img src="manual_images/v1_5/paper_zh.png" alt="图 1：论文目标与复现按钮"></a><figcaption>图 1：论文目标与复现按钮</figcaption></figure>
+<ol>
+<li>打开 EXE，停留在 <code>Quick start</code>。GUI 报告跟随所选语言；要中文报告，先在右上角切换中文。</li>
+<li>① 选择 <code>Paper: reference task and 36 cases</code>（复现论文：参考任务与36工况）。不要选择 First simulation，也不要在普通扫描页手工拼接。</li>
+<li>② 点击 <code>Reproduce paper and report</code>（复现论文并生成报告）。</li>
+<li>在 Windows 目录选择框中选择可写的<strong>保存父目录</strong>，如 <code>C:\LEOThermResults</code>。软件创建 <code>paper_&lt;时间戳&gt;_&lt;标识&gt;</code> 子目录，记下它的路径。</li>
+<li>不必逐页填写 36 组参数或更改四个阶段勾选项。专用入口构造固定协议，并保留当前工作区设置。</li>
+</ol>
+<p>Windows 文件选择框语言跟随操作系统。GUI 输出当前语言；一次计算需要中英两份报告时，用第 3 节命令的 <code>both</code>。</p>
+<h2 id="section-2">2. 看进度并等待报告完成</h2>
+<figure><a href="manual_images/v1_5/progress_zh.png" target="_blank"><img src="manual_images/v1_5/progress_zh.png" alt="图 2：真实进度面板与停止按钮"></a><figcaption>图 2：真实进度面板与停止按钮</figcaption></figure>
+<ol>
+<li>查看当前参考任务/工况、初始化或积分阶段及用时。</li>
+<li><strong>40 = 1 个参考任务 + 36 个主工况 + 3 个加密算例</strong>。完成数不等于剩余时间比例。</li>
+<li>一组工况还在预热或积分时，已完成数可以不变；不要重复点击运行。</li>
+<li>达到 40/40 后仍要生成图形与 PDF；<strong>最终 status=complete 才是整套任务完成</strong>。</li>
+<li>完整复现时不要点 <code>Stop computation</code>。它是取消，不是暂停；保存的数据保留，但状态是 <code>cancelled</code>，不会自动续跑。</li>
+</ol>
+<p>这张界面图来自真实启动后停止的教程任务，只演示控件；不是完成截图。</p>
+<h2 id="section-3">3. 命令行方式：一次生成两种语言</h2>
+<p>在 EXE 所在目录打开 PowerShell：</p>
+<pre><code class="language-powershell">.\LEOTherm.exe --paper-study &quot;C:\LEOThermResults\paper_run_01&quot; both
+</code></pre>
+<p>这里是<strong>尚不存在的新任务目录</strong>，不是 GUI 选择的父目录。已存在则改为 <code>paper_run_02</code>。语言可选 <code>en</code>、<code>zh</code>、<code>both</code>，默认 both。</p>
+<p>源码运行（需要 MATLAB 许可证）：</p>
+<pre><code class="language-matlab">addpath(&#39;src&#39;);
+study = leotherm.runPaperStudy(fullfile(pwd,&#39;results&#39;,&#39;paper_run_01&#39;),&#39;both&#39;);
+</code></pre>
+<h2 id="section-4">4. 固定实验协议</h2>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>设置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>轨道高度</td>
+<td>400、600、800 km</td>
+</tr>
+<tr>
+<td>目标 beta 角</td>
+<td>0°、30°、60°、75°</td>
+</tr>
+<tr>
+<td>结构—射频前端有效热导</td>
+<td>0.31、0.62、1.24 W/K</td>
+</tr>
+<tr>
+<td>主工况数</td>
+<td>3 × 4 × 3 = 36</td>
+</tr>
+<tr>
+<td>每工况分析</td>
+<td>周期初始化后 6 圈</td>
+</tr>
+<tr>
+<td>周期初始化阈值</td>
+<td>同相位相邻圈温差 0.001 K</td>
+</tr>
+<tr>
+<td>输出采样</td>
+<td>每圈 360 区间，不是所有高度同一秒数</td>
+</tr>
+<tr>
+<td>加密比较</td>
+<td>工况 2、20、36，每圈 720 区间</td>
+</tr>
+<tr>
+<td>参考任务</td>
+<td>默认11节点，7200 s，60 s输出，不预热</td>
+</tr>
+</tbody></table>
+<p>两小时入门例与普通两因素扫描不能替代这个协议。</p>
+<h2 id="section-5">5. 找到报告和原始数据</h2>
+<figure><a href="manual_images/v1_5/output_map_zh.png" target="_blank"><img src="manual_images/v1_5/output_map_zh.png" alt="图 3：实际完成输出的文件导览"></a><figcaption>图 3：实际完成输出的文件导览</figcaption></figure>
+<p>这是文件导览，不是资源管理器截图。在自己的新运行目录中查找：</p>
+<table>
+<thead>
+<tr>
+<th>文件/目录</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>paper_study_status.json</td>
+<td>阶段、最终状态和40/40任务</td>
+</tr>
+<tr>
+<td>paper_results.csv</td>
+<td>36行主工况参数和指标</td>
+</tr>
+<tr>
+<td>audit.csv</td>
+<td>协议检查、能量闭合和端点温差</td>
+</tr>
+<tr>
+<td>sweep36/time_refinement.csv</td>
+<td>2、20、36的采样加密比较</td>
+</tr>
+<tr>
+<td>open_data/</td>
+<td>39份主工况与加密时序CSV</td>
+</tr>
+<tr>
+<td>reference/</td>
+<td>参考任务快照、运行和报告数据</td>
+</tr>
+<tr>
+<td>report/</td>
+<td>本次PDF、图形和指标定义</td>
+</tr>
+<tr>
+<td>paper_study.mat</td>
+<td>完整研究记录</td>
+</tr>
+</tbody></table>
+<p>按所选语言打开 <code>report/thermal_report_zh.pdf</code> 或 <code>thermal_report_en.pdf</code>；只有 both 才要求两份都生成。</p>
+<h2 id="section-6">6. 按字段验收：不是只看PDF存在</h2>
+<figure><a href="manual_images/v1_5/paper_checks_zh.png" target="_blank"><img src="manual_images/v1_5/paper_checks_zh.png" alt="图 4：主工况表与协议检查的读法"></a><figcaption>图 4：主工况表与协议检查的读法</figcaption></figure>
+<p>本图将实际 CSV/JSON 数据排成导览，非虚构桌面。自己的结果需要：</p>
+<ol>
+<li>状态文件 <code>status=complete</code>、<code>stage=complete</code>、<code>solveJobsCompleted=40</code>、<code>solveJobsTotal=40</code>、<code>caseCount=36</code>、<code>refinementCount=3</code>。</li>
+<li><code>paper_results.csv</code> <strong>36行数据，另有表头</strong>，不是40行；参考任务和加密单独保存。</li>
+<li><code>audit.csv</code> 的 <code>case_count=36</code>，下面四个检查均为1。</li>
+<li><code>time_refinement.csv</code> 包含 case_id 2、20、36。</li>
+<li>所选语言PDF存在且能打开，CSV/MAT和图形保留。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>audit字段</th>
+<th>值为1的含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>unique_factorial_design</td>
+<td>36组三因素组合完整且不重复</td>
+</tr>
+<tr>
+<td>periodic_initialization_passed</td>
+<td>满足周期初始化条件</td>
+</tr>
+<tr>
+<td>only_target_link_changed</td>
+<td>热导试验只改变指定连接</td>
+</tr>
+<tr>
+<td>forcing_invariant_across_conductance</td>
+<td>同轨道三档热导使用相同外部驱动</td>
+</tr>
+</tbody></table>
+<p>验证输出的 <code>max_energy_closure_j</code> 约 <code>6.47e-8 J</code>，<code>max_endpoint_difference_k</code> 约 <code>5.33e-4 K</code>，分别是累计能量闭合量和周期端点温差，不是温度预测误差。</p>
+<p>无需Excel也能查看。将 <code>$run</code> 换成自己的路径后执行：</p>
+<pre><code class="language-powershell">$run = &#39;C:\LEOThermResults\paper_run_01&#39;
+Get-Content (Join-Path $run &#39;paper_study_status.json&#39;)
+$cases = Import-Csv (Join-Path $run &#39;paper_results.csv&#39;)
+$cases.Count
+$cases | Select-Object case_id,altitude_km,target_beta_deg,effective_thermal_conductance_w_per_k,rf_temperature_p95_p5_k
+Import-Csv (Join-Path $run &#39;audit.csv&#39;) | Format-List
+Import-Csv (Join-Path $run &#39;sweep36/time_refinement.csv&#39;) | Format-Table
+Get-ChildItem (Join-Path $run &#39;report&#39;) -Filter &#39;*.pdf&#39;
+</code></pre>
+<h2 id="section-7">7. 哪些指标对应论文结果</h2>
+<table>
+<thead>
+<tr>
+<th>列名</th>
+<th>含义与单位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>altitude_km / target_beta_deg</td>
+<td>高度与目标beta角</td>
+</tr>
+<tr>
+<td>effective_thermal_conductance_w_per_k</td>
+<td>结构—射频前端有效热导（W/K）</td>
+</tr>
+<tr>
+<td>rf_temperature_p95_p5_k</td>
+<td>RF第95减第5百分位温度跨度（K）</td>
+</tr>
+<tr>
+<td>orbital_phase_delay_s</td>
+<td>温度相对总外部吸收功率的轨道频率相位时延（s）</td>
+</tr>
+<tr>
+<td>harmonic_available</td>
+<td>1表示谐波指标可用</td>
+</tr>
+<tr>
+<td>eclipse_fraction</td>
+<td>分析窗口入影比例，0是持续光照</td>
+</tr>
+<tr>
+<td>warmup_cycles / periodic_error_k</td>
+<td>初始化圈数与收敛温差</td>
+</tr>
+</tbody></table>
+<p>RF P95−P5 约 <strong>0.995–6.048 K</strong>；热导 0.31→1.24 W/K 时，9组入影组合增大 <strong>8.4%–39.7%</strong>，3组持续光照组合减小 <strong>10.5%–12.1%</strong>；12组组合的相位时延缩短 <strong>36.8–131.0 s</strong>。</p>
+<p>相位时延总体约37.18–43.43 min，是周期驱动的相位换算，不是设备本身的热时间常数。比较热导时，在<strong>相同高度、相同beta</strong>的三行中比较，不要用不同轨道两行计算热导效果。</p>
+<p>加密比较：最大节点温差约0.219 K（工况2）；RF跨度差小于0.0006 K；谐波时延差小于0.13 s。这三个量对应不同指标。</p>
+<h2 id="section-8">8. 重新运行与停止后的处理</h2>
+<ol>
+<li>重新运行用新目录，不覆盖或拼接两次结果。</li>
+<li>cancelled目录可查看已保存工况，但不是完整复现，不自动续跑。</li>
+<li>偏离时对照协议、audit与指标定义，不通过删工况来达到论文范围。</li>
+<li>其他功能练习见<a href="usage_v1.5_zh.html">图解用户手册</a>，不属于36工况主研究。</li>
+</ol>
+<p>详细英文协议见<a href="reproduce_paper_v1.5.html">英文论文复现手册</a>，软件操作见<a href="usage_v1.5_zh.html">图解用户手册</a>。</p>
+</main></body></html>

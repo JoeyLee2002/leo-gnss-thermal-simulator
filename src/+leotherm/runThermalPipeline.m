@@ -1,5 +1,9 @@
-function run = runThermalPipeline(task, outputDirectory)
+function run = runThermalPipeline(task, outputDirectory, progress)
 %RUNTHERMALPIPELINE Execute one preflighted task into one immutable run folder.
+if nargin<3, progress=[]; end
+if ~isempty(progress) && ~isa(progress,'function_handle')
+    error('leotherm:InvalidProgress','Progress must be empty or a function handle.');
+end
 if nargin < 2 || isempty(outputDirectory)
     error('leotherm:PipelineOutput', 'A new output directory is required.');
 end
@@ -28,6 +32,7 @@ run = struct('schema', 'leotherm.pipeline_run.v1', ...
 currentStage = 'snapshot';
 stageStart = datetime('now', 'TimeZone', 'UTC');
 try
+    leotherm.notifyProgress(progress,'snapshot',0,1,'检查输入并保存任务快照。','Checking inputs and saving the task snapshot.');
     save(fullfile(outputDirectory, 'input_snapshot.mat'), 'task', 'audit', '-v7.3');
     run = completeStage(run, currentStage, stageStart, 'Input frozen before computation.');
     network = task.network;
@@ -67,7 +72,7 @@ try
 
     currentStage = 'nodal_simulation';
     stageStart = datetime('now', 'TimeZone', 'UTC');
-    run.scenario = leotherm.simulateScenario(task.scenario, network);
+    run.scenario = leotherm.simulateScenario(task.scenario, network,progress);
     run = completeStage(run, currentStage, stageStart, ...
         'Orbit, environmental loads, nodal temperatures and lag metrics computed.');
 
@@ -152,16 +157,18 @@ try
     currentStage = 'report';
     stageStart = datetime('now', 'TimeZone', 'UTC');
     bundle = reportBundle(run, network);
-    leotherm.writeThermalReport(bundle, fullfile(outputDirectory, 'report'), task.language);
+    leotherm.writeThermalReport(bundle, fullfile(outputDirectory, 'report'), task.language,progress);
     run = completeStage(run, currentStage, stageStart, ...
         'Task-specific PDF and audit tables written.');
     run.status = 'complete';
     run.completedUTC = datetime('now', 'TimeZone', 'UTC');
     persistRun(run);
 catch exception
-    entry = stageEntry(currentStage, 'failed', stageStart, exception.message);
+    stopped='failed';
+    if strcmp(exception.identifier,'leotherm:OperationCancelled'), stopped='cancelled'; end
+    entry = stageEntry(currentStage, stopped, stageStart, exception.message);
     run.stages(end+1) = entry;
-    run.status = 'failed';
+    run.status = stopped;
     run.completedUTC = datetime('now', 'TimeZone', 'UTC');
     run.failure = struct('identifier', exception.identifier, ...
         'message', exception.message);
@@ -194,12 +201,7 @@ status = struct('schema', run.schema, 'taskId', run.taskId, ...
     'inputFingerprint', run.inputFingerprint, 'mode', run.mode, ...
     'status', run.status, 'stages', {stageSummary(run.stages)});
 if isfield(run, 'failure'), status.failure = run.failure; end
-fid = fopen(fullfile(run.outputDirectory, 'pipeline_status.json'), 'w', 'n', 'UTF-8');
-if fid < 0
-    error('leotherm:PipelineOutput', 'Cannot write pipeline_status.json.');
-end
-cleanup = onCleanup(@() fclose(fid));
-fprintf(fid, '%s', jsonencode(status, 'PrettyPrint', true));
+leotherm.writeJsonAtomic(fullfile(run.outputDirectory, 'pipeline_status.json'), status);
 end
 
 function stages = stageSummary(entries)

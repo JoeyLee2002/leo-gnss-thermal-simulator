@@ -1,9 +1,10 @@
-function [initialTemperatureK, diagnostics] = initializePeriodicState(scenario, network)
+function [initialTemperatureK, diagnostics] = initializePeriodicState(scenario, network, progress)
 %INITIALIZEPERIODICSTATE Find the periodic thermal state at analysis start.
 % A repeatable one-orbit forcing cycle is constructed with J2 disabled and the
 % Sun direction frozen at the analysis epoch. The nonlinear network is cycled
 % until the same-phase node temperatures converge.
 
+if nargin<3, progress=[]; end
 c = leotherm.constants;
 radius = c.radiusEarth + scenario.orbit.altitudeM;
 periodS = 2 * pi * sqrt(radius^3 / c.muEarth);
@@ -35,13 +36,19 @@ converged = false;
 assert(scenario.convergence.maximumCycles >= 1, ...
     'maximumCycles must be at least one.');
 for cycle = 1:scenario.convergence.maximumCycles
+    leotherm.notifyProgress(progress,'warmup',cycle,scenario.convergence.maximumCycles, ...
+        sprintf('周期初始化：第 %d 圈（上限 %d 圈）。',cycle,scenario.convergence.maximumCycles), ...
+        sprintf('Periodic initialization: orbit %d (limit %d).',cycle,scenario.convergence.maximumCycles));
     cycleNetwork = network;
     cycleNetwork.initialTemperatureK = state;
     temperatureK = leotherm.solveThermalNetwork(timeS, externalW, ...
-        cycleNetwork, scenario.environment, scenario.integration);
+        cycleNetwork, scenario.environment, scenario.integration,struct,progress);
     next = temperatureK(end, :)';
     nodeErrorK = abs(next - state);
     errorK = max(nodeErrorK);
+    leotherm.notifyProgress(progress,'warmup',cycle,scenario.convergence.maximumCycles, ...
+        sprintf('第 %d 圈完成；同相位最大温差 %.5g K，目标 %.5g K。',cycle,errorK,scenario.convergence.toleranceK), ...
+        sprintf('Orbit %d complete; same-phase difference %.5g K, target %.5g K.',cycle,errorK,scenario.convergence.toleranceK));
     state = next;
     if cycle >= scenario.convergence.minimumCycles ...
             && errorK <= scenario.convergence.toleranceK

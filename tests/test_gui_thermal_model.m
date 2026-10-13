@@ -6,6 +6,8 @@ function testThermalModelEntryPointAndSummary(testCase)
 if ~usejava('jvm'), return; end
 app = leotherm.ThermalSimulatorApp('off', 'zh');
 cleanup = onCleanup(@() delete(app));
+verifyEmpty(testCase, findobj(app.Figure, 'Tag', 'ThermalModelImportButton'));
+app.prepareWorkspace('thermal_model');
 verifyEqual(testCase, numel(findobj(app.Figure, 'Tag', 'ThermalModelImportButton')), 1);
 verifyEqual(testCase, numel(findobj(app.Figure, 'Tag', 'ThermalModelExportMATButton')), 1);
 verifyEqual(testCase, numel(findobj(app.Figure, 'Tag', 'ThermalModelExportJSONButton')), 1);
@@ -21,6 +23,7 @@ leotherm.io.exportThermalModel(model, inputPath, 'PrettyPrint', true);
 app = leotherm.ThermalSimulatorApp('off', 'en');
 cleanupApp = onCleanup(@() delete(app));
 app.loadThermalModel(inputPath);
+app.prepareWorkspace('thermal_model');
 state = app.getState;
 verifyEqual(testCase, state.thermalModel.metadata.modelId, 'gui_fixture');
 summary = findobj(app.Figure, 'Tag', 'ThermalModelSummary');
@@ -36,6 +39,25 @@ save(badPath, 'thermalModel');
 verifyError(testCase, @() app.loadThermalModel(badPath), 'leotherm:InvalidThermalModel');
 verifyEqual(testCase, app.getState.thermalModel.metadata.modelId, 'gui_fixture');
 clear thermalModel cleanupApp cleanupFolder
+end
+
+function testLazyPagePreservesImportedStateAndDoesNotDuplicateControls(testCase)
+if ~usejava('jvm'), return; end
+folder = tempname; mkdir(folder);
+cleanupFolder = onCleanup(@() rmdir(folder, 's'));
+inputPath = fullfile(folder, 'model.json');
+leotherm.io.exportThermalModel(fixtureModel, inputPath);
+app = leotherm.ThermalSimulatorApp('off', 'en');
+cleanupApp = onCleanup(@() delete(app));
+app.loadThermalModel(inputPath);
+before = app.getState;
+verifyEmpty(testCase, findobj(app.Figure, 'Tag', 'ThermalModelSummary'));
+app.prepareWorkspace('thermal_model');
+verifyTrue(testCase, isequaln(app.getState, before));
+app.prepareWorkspace('thermal_model');
+verifyEqual(testCase, numel(findobj(app.Figure, 'Tag', 'ThermalModelImportButton')), 1);
+verifyEqual(testCase, numel(findobj(app.Figure, 'Tag', 'ThermalModelSummary')), 1);
+clear cleanupApp cleanupFolder
 end
 
 function testExplicitMappingPreviewApplyAndRollback(testCase)

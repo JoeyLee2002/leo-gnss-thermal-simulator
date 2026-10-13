@@ -1,6 +1,16 @@
 # LEO GNSS Thermal Simulator
 
-**Published paper version: v1.2.10.** Standardized bilingual metric names and a one-action paper reproduction task connect the reference simulation, 36 conditions, refinement checks and combined analysis report. Start with the [current guide](docs/quickstart_v1.2.10.md), [paper reproduction](docs/reproduce_paper_v1.2.10.md), and [bilingual video tutorial](tutorial/v1_2_10/README.md). The [v1.2.10 tag](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/tree/v1.2.10) fixes the source used in the paper. The original 36-case dataset remains at v1.2.9-sweep36.1.
+**Current release: [LEOTherm v1.5](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.5).**
+
+Download the [Windows application with illustrated manuals](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/download/v1.5/LEOTherm_1.5_windows_release_illustrated.zip), extract the whole ZIP, and open `START_HERE.html` before launching `LEOTherm.exe`. Install free **MATLAB Runtime R2021b** separately; a MATLAB licence is not required for this executable. The package does not bundle Runtime.
+
+[English illustrated user manual](docs/quickstart_v1.5.md) · [中文图解用户手册](docs/usage_v1.5_zh.md) · [English paper reproduction](docs/reproduce_paper_v1.5.md) · [中文论文复现](docs/reproduce_paper_v1.5_zh.md)
+
+Each user manual has 13 annotated figures; each paper-reproduction guide has four. Offline HTML and PDF editions are included in the download. Local module buttons compute only their own page; the separate complete-task area runs selected stages and generates a report. See the [release verification record](docs/verification_v1.5_release.md) and [illustrated-manual patch notes](patches/PATCH_v1.5_illustrated_manuals.md).
+
+v1.5 provides bilingual progress, cooperative stop/close, ASCII artifact names, native chooser restoration and hidden report figures. The release record contains 444 completed tests, seven direct Runtime check modes and a completed 40-job paper study. It separately documents MATLAB development-host teardown failures rather than counting them as successful runs.
+
+Advanced pages and charts load on demand. The illustrated package preserves the tested executable byte-for-byte; Runtime itself is not modified.
 
 ## Use the Current Version
 
@@ -8,17 +18,17 @@ From MATLAB at the repository root, run `addpath('src')`, then `leotherm.runPape
 In the GUI, select **Paper: reference task and 36 cases** on Quick start, click **Reproduce paper and report**, and choose the output location.
 The Windows executable requires free MATLAB Runtime R2021b, not a MATLAB license.
 
-[English sample report](examples/reports/thermal_report_v1.2.10_en.pdf) · [中文报告](examples/reports/thermal_report_v1.2.10_zh.pdf) · [Patch notes](patches/PATCH_v1.2.10.md) · [Verification record](docs/verification_v1.2.10.md)
+[English sample report](examples/reports/thermal_report_v1.5_en.pdf) · [中文报告](examples/reports/thermal_report_v1.5_zh.pdf) · [Patch notes](patches/PATCH_v1.5.md) · [Verification record](docs/verification_v1.5.md)
 
-## Public Release and Historical Material
+## Historical Releases
 
-**Latest release: [v1.2.10](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/tag/v1.2.10).**
+The [v1.2.10 archive](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/tree/v1.2.10), including its 381-test verification record, remains unchanged. Use v1.5 and its current illustrated instructions for new runs. Earlier tagged source, study data and releases are retained for reproducibility.
 Download the Windows application package from Assets and use the free MATLAB Runtime R2021b.
 A MATLAB license is not required. Existing compatible Runtime installations can be reused.
 The older no-installer bundle contains application 1.2.1, not this release;
 its [portable guide](docs/portable_en.md) is retained for existing users.
 
-**Start here:** [v1.2.10 user guide](docs/quickstart_v1.2.10.md) ·
+**Historical v1.2.10 material:** [user guide](docs/quickstart_v1.2.10.md) ·
 [中文版教程](docs/使用教程_v1.2.10.md) ·
 [Windows standalone package v1.2.10](https://github.com/JoeyLee2002/leo-gnss-thermal-simulator/releases/download/v1.2.10/LEOTherm_1.2.10_windows.zip).
 The standalone build requires the free MATLAB Runtime R2021b, not a MATLAB license.

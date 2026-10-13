@@ -1,8 +1,10 @@
-function result = simulateTrajectory(trajectory, scenario, network, analysisMask)
+function result = simulateTrajectory(trajectory, scenario, network, analysisMask, progress)
 %SIMULATETRAJECTORY Simulate thermal response on an external ECI trajectory.
 % Required fields are epoch, elapsedS, positionM, and velocityMps. Optional
 % fields are sunPositionM, betaDeg, periodS, raanDeg, and frameBodyAxesECI.
 
+if nargin<5, progress=[]; end
+leotherm.notifyProgress(progress,'environment',0,1,'正在计算环境吸收功率。','Computing absorbed environmental power.');
 leotherm.validateScenario(scenario);
 leotherm.validateNetwork(network);
 leotherm.validateTrajectory(trajectory);
@@ -46,7 +48,7 @@ end
 
 loads = leotherm.environmentHeatLoads(orbit, frame, network, scenario.environment);
 [temperatureK, numerics] = leotherm.solveThermalNetwork(orbit.elapsedS, loads.totalExternalW, ...
-    network, scenario.environment, scenario.integration);
+    network, scenario.environment, scenario.integration,struct,progress);
 
 result.scenario = scenario;
 result.network = network;
@@ -65,6 +67,7 @@ for k = 1:numel(historyFields)
     result.numerics.(key) = numerics.(key)(analysisMask);
 end
 result.codeBiasM = leotherm.temperatureCodeBias(result.temperatureK, network.bias);
+leotherm.notifyProgress(progress,'metrics',0,1,'正在分析温度和热响应。','Analyzing temperatures and thermal responses.');
 result.metrics = leotherm.computeMetrics(result.timeS, result.orbit, result.loads, ...
     result.temperatureK, result.codeBiasM, network);
 end

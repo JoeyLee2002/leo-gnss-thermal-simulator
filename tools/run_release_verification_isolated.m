@@ -21,7 +21,7 @@ testFiles = fullfile({files.folder}, {files.name});
 % child process makes the failure reproducible and preserves all prior batch
 % results for diagnosis. The extra startup cost is intentional release-gate
 % overhead, not a change to the scientific test suite.
-batches = partitionTests(testFiles, 1);
+[batches, selections] = partitionTests(testFiles, 1);
 versionTag = strrep(leotherm.version, '.', '_');
 stamp = char(datetime('now', 'Format', 'yyyyMMdd_HHmmss'));
 batchRoot = fullfile(root, 'results', ...
@@ -46,21 +46,25 @@ for k = 1:numel(batches)
     specPath = fullfile(batchRoot, sprintf('batch_%02d_spec.mat', k));
     resultPath = fullfile(batchRoot, sprintf('batch_%02d_result.mat', k));
     currentTestFiles = batches{k};
+    currentTestNames = selections{k};
     previousSucceeded=~isempty(regexp(priorLog,sprintf('BATCH_%02d_[^\n]*STATUS=0(?:\r?\n|$)',k),'once'));
     if previousSucceeded
-        priorSpec=load(specPath,'root','currentTestFiles');
+        priorSpec=load(specPath);
         priorResult=load(resultPath,'summary'); prior=priorResult.summary;
+        priorNames={};
+        if isfield(priorSpec,'currentTestNames'), priorNames=priorSpec.currentTestNames; end
         assert(strcmp(priorSpec.root,root) && isequal(priorSpec.currentTestFiles,currentTestFiles) && ...
+            isequal(priorNames,currentTestNames) && ...
             prior.failed==0 && prior.incomplete==0 && isempty(prior.error), ...
             'leotherm:IsolatedVerification','Resume batch inputs or results differ.');
-        batchRows=[batchRows;table(k,numel(testFiles),prior.total,prior.passed,prior.failed, ...
+        batchRows=[batchRows;table(k,numel(currentTestFiles),prior.total,prior.passed,prior.failed, ...
             prior.incomplete,NaN,0,string(fullfile(batchRoot,sprintf('batch_%02d.log',k))), ...
             'VariableNames',{'batch','test_file_count','test_count','passed','failed','incomplete','wall_time_s','exit_status','log'})]; %#ok<AGROW>
         testRows=[testRows;prior.rows]; %#ok<AGROW>
         fprintf('RESUMED_BATCH_%02d_PASSED=%d\n',k,prior.passed);
         continue
     end
-    save(specPath, 'root', 'currentTestFiles');
+    save(specPath, 'root', 'currentTestFiles', 'currentTestNames');
     oldSpec = getenv('LEOTHERM_BATCH_SPEC');
     oldResult = getenv('LEOTHERM_BATCH_RESULT');
     restore = onCleanup(@() restoreEnvironment(oldSpec, oldResult));
@@ -84,13 +88,13 @@ for k = 1:numel(batches)
             k, status, logPath);
     end
     loaded = load(resultPath, 'summary'); summary = loaded.summary;
-    batchRows = [batchRows; table(k, numel(testFiles), summary.total, ...
+    batchRows = [batchRows; table(k, numel(currentTestFiles), summary.total, ...
         summary.passed, summary.failed, summary.incomplete, elapsed, status, ...
         string(logPath), 'VariableNames', {'batch','test_file_count', ...
         'test_count','passed','failed','incomplete','wall_time_s','exit_status','log'})]; %#ok<AGROW>
     if istable(summary.rows), testRows = [testRows; summary.rows]; end %#ok<AGROW>
     fprintf('BATCH_%02d_FILES=%d TESTS=%d PASSED=%d FAILED=%d INCOMPLETE=%d STATUS=%d\n', ...
-        k, numel(testFiles), summary.total, summary.passed, summary.failed, ...
+        k, numel(currentTestFiles), summary.total, summary.passed, summary.failed, ...
         summary.incomplete, status);
     if status ~= 0 || summary.failed > 0 || ~isempty(summary.error)
         error('leotherm:IsolatedVerification', ...
@@ -135,16 +139,32 @@ for k = 1:numel(files)
 end
 end
 
-function batches = partitionTests(files, maximumFiles)
+function [batches, selections] = partitionTests(files, maximumFiles)
 names = cellfun(@(x) lower(char(x)), files, 'UniformOutput', false);
 isolated = contains(names, 'test_gui_') | contains(names, 'test_device_calibration_exports');
+reportClosure = contains(names, 'test_report_closure.m') | contains(names, 'test_unified_report.m');
 batches = cell(0,1);
-regular = files(~isolated);
+selections = cell(0,1);
+regular = files(~isolated & ~reportClosure);
 for first = 1:maximumFiles:numel(regular)
     batches{end+1,1} = regular(first:min(first+maximumFiles-1,numel(regular))); %#ok<AGROW>
+    selections{end+1,1} = {}; %#ok<AGROW>
 end
 special = files(isolated);
-for k = 1:numel(special), batches{end+1,1} = special(k); end %#ok<AGROW>
+for k = 1:numel(special)
+    batches{end+1,1} = special(k); %#ok<AGROW>
+    selections{end+1,1} = {}; %#ok<AGROW>
+end
+% Mixed GUI/PDF and bilingual report exports can fail in R2021b cleanup.
+% Keep every assertion, but give each affected report method its own process.
+closureFiles = files(reportClosure);
+for k = 1:numel(closureFiles)
+    suite = matlab.unittest.TestSuite.fromFile(closureFiles{k});
+    for j = 1:numel(suite)
+        batches{end+1,1} = closureFiles(k); %#ok<AGROW>
+        selections{end+1,1} = {suite(j).Name}; %#ok<AGROW>
+    end
+end
 end
 
 function extension = executableExtension

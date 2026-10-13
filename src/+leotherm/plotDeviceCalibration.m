@@ -1,6 +1,7 @@
 function paths = plotDeviceCalibration(result, directory, language)
 %PLOTDEVICECALIBRATION Show all checks without bridging missing samples.
 language = leotherm.normalizeLanguage(language);
+windowCleanup=leotherm.preserveAppWindows;
 target = java.io.File(char(directory));
 if ~target.isAbsolute(), target = java.io.File(fullfile(pwd,char(directory))); end
 directory = char(target.getCanonicalPath());
@@ -85,6 +86,7 @@ for nodeIndex = 1:numel(nodes)
         end
     end
 end
+delete(windowCleanup);
 end
 
 function [x,out] = breakLines(t,y,ids)

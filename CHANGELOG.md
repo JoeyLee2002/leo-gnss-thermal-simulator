@@ -1,5 +1,48 @@
 # Changelog
 
+## 1.5 - Public Illustrated Release (2026-10-13)
+
+- Publish the verified v1.5 source and Windows application with free Runtime R2021b support.
+- Add bilingual annotated user manuals (13 figures each) and paper-reproduction guides (4 figures each), in Markdown, offline HTML and PDF.
+- Include a local guide index and small mesh/model inputs for the illustrated exercises.
+- Retain the tested executable SHA-256 and all historical releases.
+- Archive the release checks, paper-study outputs and documentation audits with the source version.
+
+## 1.5 - Explicit Local And Complete Runs (2026-10-12)
+
+- Release audit: update engineering-model GUI tests for lazy page creation and preserve loaded state on first/repeated visits.
+- Publish paper-study and pipeline status JSON through same-directory atomic replacement; preserve the previous record on write/replacement failure.
+- Rewrite renamed guide references during packaging and add regression coverage for the four formerly broken distribution links.
+- Wait for the window manager to settle a requested window state in the background-figure and picker checks instead of asserting on the value read back immediately. The wait is passive, so a state the window manager never applies still fails the check.
+- Add an English user manual and an English paper-reproduction guide to the Windows distribution, covering installation, the interface, the command line, the output files and the numerical checks behind the published results.
+- Isolate each GUI/PDF report-closure test method to avoid mixed-export R2021b cleanup failures; preserve all assertions and reject any nonzero process exit.
+
+- Startup optimization build: defer unused charts and advanced views; preserve state and stale checks before view creation.
+- Bundle only live runtime resources instead of historical reports and experiment archives; retain templates, projects and paper-reproduction scripts.
+- Add source/Runtime startup measurements and page-load, state-preservation and packaging checks. Runtime libraries remain unchanged.
+
+- Restore visible run buttons in individual simulation modules; leave results on their own pages.
+- Keep four optional stages in the cross-page complete-task area, with an explicit complete-task/report action label.
+- Local single-scenario/sweep callbacks ignore global stage selections and never automatically generate a task PDF.
+- Make the sweep run button accessible below its scrollable parameter form.
+- Add the Quick start current-configuration/report shortcut and update bilingual written guides.
+- Preserve solvers, project schema, programmatic export/pipeline APIs and v1.3 window/language fixes.
+
+## 1.3 - Observable and stoppable runs (2026-10-12)
+
+- Background figure repair: scenario/sweep report exports never display a Figure window. Retain explicit previews; dispose of temporary figures if export fails.
+- Window repair: restore the owning app's normal/maximized state and foreground after all 23 file/folder picker entry points, including cancellation and errors. Preserve hidden/deleted windows.
+- Language repair: use app-owned progress controls so the requested-stop label does not switch to MATLAB Runtime's locale. English displays `Stopping...`.
+- Explicitly localize application acknowledgement/input buttons and language choices. Do not change the system locale or MathWorks installation.
+
+- Show live bilingual paper-study progress, current case, periodic initialization and elapsed time.
+- Pump GUI events during thermal integration; support cooperative stop and window close without killing MATLAB.
+- Retain saved cases and mark interrupted tasks cancelled, never complete.
+- Process progress/stop callbacks between each case during auditing and open-data export.
+- Use ASCII names for new GUI exports and bundled runtime resources; retain Chinese interface/report contents.
+- Preserve thermal equations, inputs, tolerances, accepted steps and result arrays.
+- Add progress, cancellation, filename and compiled-GUI regression checks.
+
 ## 1.2.10 - Consistent physical terminology (2026-10-11)
 
 - Share bilingual metric names between GUI tables and sweep plots.

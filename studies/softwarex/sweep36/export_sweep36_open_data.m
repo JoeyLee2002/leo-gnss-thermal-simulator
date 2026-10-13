@@ -1,6 +1,7 @@
-function export_sweep36_open_data(dataDirectory,outputDirectory)
+function export_sweep36_open_data(dataDirectory,outputDirectory,progress)
 %EXPORT_SWEEP36_OPEN_DATA Export parameters and all six-orbit temperature arcs.
 if nargin<1, dataDirectory=[]; end
+if nargin<3, progress=[]; end
 [~,~,defaultOutput]=sweep36_paths;
 if isempty(dataDirectory), dataDirectory=defaultOutput; end
 if nargin<2 || isempty(outputDirectory), outputDirectory=fullfile(defaultOutput,'open_data'); end
@@ -20,6 +21,9 @@ links=table(i,j,n.conductanceWK(sub2ind([11 11],i,j)), ...
 writetable(links,fullfile(outputDirectory,'reference_links.csv'));
 summary=readtable(fullfile(dataDirectory,'sweep36_summary.csv'));
 for k=1:height(summary)
+    leotherm.notifyProgress(progress,'export_data',k-1,height(summary), ...
+        sprintf('导出工况 %d / %d 的温度和热流时序。',k,height(summary)), ...
+        sprintf('Exporting temperature and heat-flow histories: case %d / %d.',k,height(summary)));
     row=summary(k,:);
     filename=sprintf('case_%02d_h%d_b%02d_g%.2f',row.case_id,row.altitude_km,row.target_beta_deg,row.conductance_wk);
     saved=load(fullfile(dataDirectory,[filename '.mat']),'result');

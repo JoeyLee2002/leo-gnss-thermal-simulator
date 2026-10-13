@@ -15,7 +15,9 @@ cleanup = onCleanup(@()removeTemporary(temporary));
 save(temporary,'project','-v7.3');
 leotherm.readWorkspaceProject(temporary);
 if isfile(path)
-    [ok,message] = copyfile(path,[path '.previous'],'f');
+    [~,base,extension]=fileparts(path);
+    backupName=[leotherm.englishArtifactFilename([base extension],'leotherm_project.mat') '.previous'];
+    [ok,message] = copyfile(path,fullfile(folder,backupName),'f');
     if ~ok, error('leotherm:ProjectWrite','Cannot preserve previous project: %s',message); end
 end
 [ok,message] = movefile(temporary,path,'f');

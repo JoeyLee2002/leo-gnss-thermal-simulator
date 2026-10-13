@@ -1,0 +1,34 @@
+{
+  "constructorS": 20.7254125,
+  "renderedS": 47.2095945,
+  "initialAxes": 0,
+  "pages": [
+    {
+      "name": "scenario",
+      "loadS": 14.9174275
+    },
+    {
+      "name": "sweep",
+      "loadS": 0.9955318
+    },
+    {
+      "name": "geometry",
+      "loadS": 1.8918522
+    },
+    {
+      "name": "thermal_model",
+      "loadS": 0.6298949
+    },
+    {
+      "name": "telemetry",
+      "loadS": 3.2959807
+    },
+    {
+      "name": "calibration",
+      "loadS": 3.8966238
+    }
+  ],
+  "version": "1.5",
+  "outcome": "passed",
+  "inputsPreserved": true
+}
